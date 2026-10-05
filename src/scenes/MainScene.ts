@@ -8,6 +8,7 @@ import { FloatingText, UpgradeItem, GameState, GameMode, ZombieType, BowType, BO
 import { createUpgradeCatalog } from '../systems/UpgradeCatalog';
 import { soundFX } from '../systems/SoundFX';
 import { uiManager } from '../systems/UIManager';
+import { crazyGames } from '../systems/CrazyGamesSDK';
 
 interface ActiveVortex {
   x: number;
@@ -759,6 +760,8 @@ export class MainScene extends Phaser.Scene {
   }
 
   public showVictoryScreen(): void {
+    crazyGames.gameplayStop();
+    crazyGames.happyTime();
     this.campaignCompleted = true;
     this.campaignWave = 1;
     this.saveGameData();
@@ -775,6 +778,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   public startNextWave(): void {
+    crazyGames.gameplayStart();
     this.waveCompleting = false;
     this.waveCompleteDelay = 0;
     // ── Clean up all dead zombie corpses, stuck arrows, and lingering hazards from previous wave! ──
@@ -866,6 +870,7 @@ export class MainScene extends Phaser.Scene {
 
   public togglePause(): void {
     if (this.state === 'playing') {
+      crazyGames.gameplayStop();
       this.state = 'pause';
       uiManager.setState('pause');
       const waveEl = document.getElementById('pause-wave');
@@ -875,12 +880,15 @@ export class MainScene extends Phaser.Scene {
       const skEl = document.getElementById('pause-skulls');
       if (skEl) skEl.textContent = `${this.player.skulls}`;
     } else if (this.state === 'pause') {
+      crazyGames.gameplayStart();
       this.state = 'playing';
       uiManager.setState('playing');
     }
   }
 
   public openShop(): void {
+    crazyGames.gameplayStop();
+    crazyGames.requestMidgameAd();
     uiManager.shopOpenedFromMenu = false;
     // Clean up dead bodies immediately when entering shop
     for (const z of this.zombies) {
@@ -968,6 +976,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   public returnToMenu(): void {
+    crazyGames.gameplayStop();
     // 1. If ending an active endless run, bank all earned skulls and update peak wave
     if (this.gameMode === 'endless') {
       this.bankEndlessSkulls();
@@ -1745,6 +1754,8 @@ export class MainScene extends Phaser.Scene {
   }
 
   public showGameOver(reason: string): void {
+    crazyGames.gameplayStop();
+    crazyGames.requestMidgameAd();
     if (this.gameMode === 'campaign' && this.wave > 0) {
       this.campaignWave = this.wave;
     }

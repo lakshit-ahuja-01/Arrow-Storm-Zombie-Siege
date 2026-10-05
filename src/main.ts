@@ -2,6 +2,13 @@ import Phaser from 'phaser';
 import { MainScene } from './scenes/MainScene';
 import { soundFX } from './systems/SoundFX';
 import { uiManager } from './systems/UIManager';
+import { crazyGames } from './systems/CrazyGamesSDK';
+
+// Signal loading start to CrazyGames immediately
+crazyGames.loadingStart();
+crazyGames.init().then(() => {
+  crazyGames.loadingStop();
+});
 
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
 
@@ -51,6 +58,7 @@ function getScene(): MainScene | null {
 
 function startGameWithScene() {
   try { soundFX.ensure(); } catch {}
+  crazyGames.gameplayStart();
   const s = getScene();
   if (s && s.scene.isActive()) {
     s.startGame();
@@ -186,6 +194,43 @@ function initUI() {
     btnRetry.onclick = () => startGameWithScene();
   }
 
+  const btnRewardedRevive = document.getElementById('btn-rewarded-revive');
+  if (btnRewardedRevive) {
+    btnRewardedRevive.onclick = () => {
+      crazyGames.requestRewardedAd(() => {
+        const s = getScene();
+        if (s && s.player) {
+          s.player.hp = Math.round(s.player.maxHP * 0.5);
+          s.player.dead = false;
+          if (s.tower && s.tower.hp <= 0) {
+            s.tower.hp = Math.round(s.tower.maxHP * 0.4);
+          }
+          s.state = 'playing';
+          uiManager.setState('playing');
+          crazyGames.gameplayStart();
+          s.spawnFloatingText('✨ HERO REVIVED (+50% HP)!', s.player.x, s.player.y - 40, '#2ecc71', 28);
+        }
+      });
+    };
+  }
+
+  const btnDoubleSkulls = document.getElementById('btn-double-skulls');
+  if (btnDoubleSkulls) {
+    btnDoubleSkulls.onclick = () => {
+      crazyGames.requestRewardedAd(() => {
+        const s = getScene();
+        if (s && s.player) {
+          const bonus = Math.max(50, s.kills * 2);
+          s.player.skulls += bonus;
+          s.saveGameData();
+          s.updateMenuSkullsUI();
+          btnDoubleSkulls.style.display = 'none';
+          s.spawnFloatingText(`💰 +${bonus} BONUS SKULLS!`, window.innerWidth / 2, window.innerHeight / 2, '#ffd700', 32);
+        }
+      });
+    };
+  }
+
   const btnMenu = document.getElementById('btn-menu');
   if (btnMenu) {
     btnMenu.onclick = () => {
@@ -311,6 +356,12 @@ function initUI() {
   updateSoundUI(!soundFX.muted);
 
   window.addEventListener('keydown', e => {
+    // Prevent iframe scrolling on game control keys
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+      if (e.target === document.body || e.target === canvas) {
+        e.preventDefault();
+      }
+    }
     if (e.code === 'KeyP' || e.code === 'Escape') {
       const s = getScene();
       if (s && (s.state === 'playing' || s.state === 'pause')) {
@@ -325,7 +376,7 @@ function initUI() {
         document.getElementById('btn-next-wave')?.click();
       }
     }
-  });
+  }, { passive: false });
 }
 
 if (document.readyState === 'loading') {

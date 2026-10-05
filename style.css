@@ -858,7 +858,7 @@ html, body {
 }
 
 /* ═══════════════════════════════════════════════════════
-   HUD — IN-GAME HEADS UP DISPLAY
+   HUD — IN-GAME HEADS UP DISPLAY (Fluid Responsive)
    ═══════════════════════════════════════════════════════ */
 #hud {
   position: absolute;
@@ -866,7 +866,7 @@ html, body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 22px;
+  padding: clamp(8px, 1.8vh, 16px) clamp(10px, 2vw, 22px);
   pointer-events: none;
   z-index: 20;
 }
@@ -875,16 +875,17 @@ html, body {
 #hud-left {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(6px, 1.2vh, 10px);
   background: linear-gradient(145deg, rgba(10, 16, 28, 0.88) 0%, rgba(6, 10, 18, 0.94) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  padding: 12px 16px;
+  padding: clamp(8px, 1.5vh, 12px) clamp(10px, 1.5vw, 16px);
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 1px 1px rgba(255, 255, 255, 0.08) inset;
   position: relative;
   overflow: hidden;
+  max-width: min(300px, 40vw);
 }
 
 #hud-left::before {
@@ -896,7 +897,7 @@ html, body {
 
 .hud-health { display: flex; flex-direction: column; gap: 4px; }
 .hud-label-row {
-  display: flex; align-items: center; justify-content: space-between; font-size: 11px;
+  display: flex; align-items: center; justify-content: space-between; font-size: clamp(9px, 1.3vw, 11px);
 }
 .hud-label {
   font-weight: 800;
@@ -906,11 +907,11 @@ html, body {
   gap: 6px;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  font-size: 10.5px;
+  font-size: clamp(9px, 1.2vw, 10.5px);
 }
 .hud-val {
   font-weight: 900;
-  font-size: 12px;
+  font-size: clamp(10px, 1.4vw, 12px);
   color: #f8fafc;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.4px;
@@ -918,8 +919,8 @@ html, body {
 }
 
 .health-bar {
-  height: 15px;
-  width: 230px;
+  height: clamp(10px, 1.6vh, 15px);
+  width: clamp(120px, 20vw, 230px);
   background: rgba(3, 7, 14, 0.85);
   border-radius: 8px;
   position: relative;
@@ -3315,5 +3316,175 @@ html, body {
 .wardrobe-info-desc {
   font-size: 12px;
   color: #94a3b8;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CRAZYGAMES REWARDED AD BUTTONS & GLOBAL RESPONSIVENESS
+   ═══════════════════════════════════════════════════════ */
+.btn-rewarded {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%) !important;
+  border: 1.5px solid #6ee7b7 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45) !important;
+  animation: rewardedPulse 1.8s infinite ease-in-out;
+  cursor: pointer;
+}
+.btn-rewarded:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.7) !important;
+}
+.btn-rewarded:active {
+  transform: translateY(1px);
+}
+.rewarded-ad-badge {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 10px;
+  margin-right: 6px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+@keyframes rewardedPulse {
+  0%   { transform: scale(1); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
+  50%  { transform: scale(1.02); box-shadow: 0 6px 22px rgba(16, 185, 129, 0.7); }
+  100% { transform: scale(1); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
+}
+
+/* ── Global Touch & Viewport Handling ────────────────── */
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#game-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  touch-action: none;
+}
+
+/* ── Screen & Modal Responsiveness (< 900px) ────────── */
+@media (max-width: 900px) {
+  #hud-controls-tip {
+    display: none !important;
+  }
+  #hud-left {
+    max-width: 38vw;
+  }
+  .health-bar {
+    width: clamp(110px, 20vw, 180px);
+  }
+  #hud-center-group {
+    top: 8px;
+  }
+  .boss-hud-bar {
+    min-width: 260px;
+    width: 100%;
+  }
+  .shop-card, .wardrobe-card, .pause-card, .gameover-card {
+    max-width: 94vw;
+    max-height: 92vh;
+    padding: 18px 20px;
+  }
+}
+
+/* ── Mobile & Compact Viewports (< 640px) ───────────── */
+@media (max-width: 640px) {
+  #hud {
+    padding: 6px 8px;
+  }
+  #hud-left {
+    padding: 6px 8px;
+    gap: 4px;
+    max-width: 46vw;
+    border-radius: 10px;
+  }
+  .health-bar {
+    width: clamp(90px, 26vw, 130px);
+    height: 10px;
+  }
+  .hud-label-row {
+    font-size: 8.5px;
+  }
+  .hud-val {
+    font-size: 9.5px;
+  }
+  #hud-weapons-dock {
+    gap: 3px;
+    margin-top: 2px;
+  }
+  .hud-weapon-btn {
+    padding: 2px 4px;
+    font-size: 8px;
+    gap: 3px;
+  }
+  .hud-weapon-btn .weapon-name {
+    font-size: 8px;
+  }
+  #hud-tactical-dock {
+    gap: 2px;
+    padding-top: 2px;
+  }
+  .hud-skill-btn.skill-tactical {
+    padding: 2px 4px;
+  }
+  .hud-skill-btn.skill-tactical .skill-name {
+    display: none;
+  }
+  #hud-right {
+    gap: 4px;
+  }
+  #hud-right .btn-icon {
+    width: 28px;
+    height: 28px;
+  }
+  #hud-gems, #hud-kills {
+    padding: 2px 6px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .gameover-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .gameover-buttons .btn {
+    width: 100%;
+  }
+}
+
+/* ── Mobile Landscape Orientation ───────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  #hud {
+    padding: 4px 10px;
+  }
+  #hud-left {
+    padding: 4px 8px;
+    gap: 3px;
+  }
+  .health-bar {
+    height: 9px;
+  }
+  #hud-center-group {
+    top: 4px;
+    gap: 4px;
+  }
+  .shop-card, .wardrobe-card {
+    max-height: 96vh;
+    padding: 10px 14px;
+  }
+  .shop-grid, .wardrobe-grid {
+    max-height: 48vh;
+  }
 }
 

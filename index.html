@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ragdoll Archers: Zombie Siege</title>
-  <meta name="description" content="Physics ragdoll archery defense game! Defend your fortress tower against endless hordes of zombies with explosive, cryo, and sawblade arrows!" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Arrow Storm: Undead Siege</title>
+  <meta name="description" content="Action-packed ragdoll archery defense game! Defend your fortress tower against endless hordes of mutating zombies with elemental arrows and active ragdoll physics." />
+  <!-- CrazyGames SDK v3 -->
+  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Creepster&family=Outfit:wght@400;500;600;700;800;900&family=Permanent+Marker&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body oncontextmenu="return false;">
   <!-- Phaser Game Canvas (Stacked below UI overlay) -->
   <canvas id="game-canvas"></canvas>
 
@@ -162,6 +164,10 @@
           <div class="stat-item"><span>Skulls Gathered</span><strong id="go-gems">0</strong></div>
         </div>
         <div class="gameover-buttons">
+          <button id="btn-rewarded-revive" class="btn btn-rewarded" type="button">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            <span>📺 REVIVE HERO (+50% HP)</span>
+          </button>
           <button id="btn-retry" class="btn btn-primary">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span>RETRY DEFENSE</span>
@@ -190,6 +196,10 @@
           <div class="stat-item"><span>Skulls Collected</span><strong id="vic-gems">0</strong></div>
         </div>
         <div class="gameover-buttons">
+          <button id="btn-double-skulls" class="btn btn-rewarded" type="button">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>📺 CLAIM 2X SKULLS</span>
+          </button>
           <button id="btn-continue-endless" class="btn btn-primary pulse">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>
             <span>CONTINUE IN ENDLESS</span>
