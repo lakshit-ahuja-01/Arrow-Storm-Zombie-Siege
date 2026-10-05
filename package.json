@@ -1,0 +1,21 @@
+{
+  "name": "ragdoll-archers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "game.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^9.8.1",
+    "phaser": "^4.2.1",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  }
+}

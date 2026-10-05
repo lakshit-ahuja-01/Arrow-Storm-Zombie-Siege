@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ragdoll Archers: Zombie Siege</title>
+  <meta name="description" content="Physics ragdoll archery defense game! Defend your fortress tower against endless hordes of zombies with explosive, cryo, and sawblade arrows!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Creepster&family=Outfit:wght@400;500;600;700;800;900&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Phaser Game Canvas (Stacked below UI overlay) -->
+  <canvas id="game-canvas"></canvas>
+
+  <div id="ui-overlay">
+    <!-- Screens -->
+    <!-- Screens -->
+    <div id="screen-menu" class="screen active">
+      <!-- Outer Zombie Game Cabinet Frame with Neon Red Border -->
+      <div class="zombie-cabinet-frame">
+        <!-- Background Zombie Artwork with Cinematic Vignette -->
+        <div class="zombie-bg-layer">
+          <div class="zombie-bg-overlay"></div>
+          <div class="zombie-fog-particles"></div>
+        </div>
+
+
+        <!-- Top-Right Currency & Audio Bar -->
+        <div class="zombie-top-right">
+          <!-- Skulls Currency Display (Glowing Skull Counter) -->
+          <div class="zombie-skull-currency" id="menu-skulls-chip" title="Total Collected Skulls">
+            <span class="zombie-skull-icon">💀</span>
+            <span class="zombie-skull-num" id="menu-skulls-count">0</span>
+          </div>
+
+          <!-- Tactical Audio Toggle -->
+          <button id="btn-sound" class="zombie-sound-btn" title="Toggle Sound">
+            <svg class="hud-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <span id="sound-text">SOUND: ON</span>
+          </button>
+        </div>
+
+        <!-- Left Menu Column: Action & Navigation -->
+        <main class="zombie-menu-left">
+          <!-- Game Title Branding -->
+          <div class="zombie-title-group">
+            <div class="zombie-subhead-row">
+              <span class="zombie-tag-icon">🏹</span>
+              <span class="zombie-subhead-text">RAGDOLL ARCHERS</span>
+              <span class="zombie-subhead-badge">UNDEAD DEFENSE</span>
+            </div>
+            <h1 class="zombie-main-title">
+              <span class="zombie-blood-text">ZOMBIE</span>
+              <span class="zombie-siege-text">SIEGE</span>
+            </h1>
+          </div>
+
+          <!-- Mode Selector (Tactical Distressed Military Badges) -->
+          <div class="zombie-mode-selector">
+            <button id="card-mode-campaign" class="zombie-mode-card active" data-mode="campaign" type="button">
+              <span class="zombie-mode-indicator"></span>
+              <div class="zombie-mode-text-box">
+                <span class="zombie-mode-tag">CAMPAIGN</span>
+                <span class="zombie-mode-sub" id="campaign-mode-sub">20 Escalating Nights</span>
+              </div>
+            </button>
+            <button id="card-mode-endless" class="zombie-mode-card" data-mode="endless" type="button">
+              <span class="zombie-mode-indicator"></span>
+              <div class="zombie-mode-text-box">
+                <span class="zombie-mode-tag">ENDLESS <span style="background:rgba(241,196,15,0.22);color:#ffd700;border:1px solid rgba(241,196,15,0.5);border-radius:4px;padding:1px 6px;font-size:10px;margin-left:4px;font-weight:900;">2X 💀</span></span>
+                <span class="zombie-mode-sub" id="endless-mode-sub">Infinite Survival • 2X Skulls</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- Main Menu Action Group (Tightly coupled button suite matching reference) -->
+          <div class="zombie-menu-actions">
+            <!-- Primary Action: Distressed White Tape Button with Glowing Red Slashes -->
+            <div class="zombie-primary-action">
+              <button id="btn-play" class="zombie-tape-btn" type="button" aria-label="Start New Game">
+                <svg class="tape-bg-svg" viewBox="0 0 420 80" preserveAspectRatio="none" aria-hidden="true">
+                  <!-- Authentic rugged torn masking tape / distressed brush strip with jagged ripped serrated edges -->
+                  <polygon
+                    class="tape-paper-path"
+                    points="
+                      20,6  65,5  120,7  180,5  250,7  320,5  380,7  402,6
+                      398,14 412,22 400,30 414,38 399,47 413,56 401,64 408,72
+                      380,71 320,74 250,72 180,74 120,72 65,74 20,72
+                      22,64 10,56 23,48 9,40 22,31 8,23 21,15 18,6
+                    "
+                  />
+                </svg>
+                <div class="tape-content">
+                  <svg class="tape-slashes-svg" viewBox="0 0 54 40" fill="none" aria-hidden="true">
+                    <line x1="8" y1="35" x2="19" y2="5" stroke="#ff0a21" stroke-width="5.8" stroke-linecap="round" />
+                    <line x1="22" y1="35" x2="33" y2="5" stroke="#ff0a21" stroke-width="5.8" stroke-linecap="round" />
+                    <line x1="36" y1="35" x2="47" y2="5" stroke="#ff0a21" stroke-width="5.8" stroke-linecap="round" />
+                  </svg>
+                  <div class="tape-text-row">
+                    <span class="tape-btn-text" id="btn-play-text">NEW GAME</span>
+                    <span class="tape-night-pill hidden" id="btn-play-badge">NIGHT 1</span>
+                  </div>
+                </div>
+              </button>
+              <button id="btn-restart-campaign" class="zombie-restart-btn hidden" type="button" title="Start a fresh run from Night 1 while keeping your upgrades and skulls">
+                <span class="restart-icon">↺</span>
+                <span class="restart-text">START FROM NIGHT 1</span>
+              </button>
+            </div>
+
+            <!-- Secondary Menu Actions (Distressed Yellow Stencil Button) -->
+            <div class="zombie-nav-list">
+              <!-- Upgrades (Distressed Crisp White Stencil with Crimson Badge) -->
+              <button id="btn-menu-upgrades" class="zombie-nav-btn nav-white" type="button">
+                <span class="nav-btn-text">UPGRADES</span>
+                <span class="nav-badge-pill">CAMPAIGN</span>
+              </button>
+              <!-- Hero Skins & Cosmetics (Distressed Crisp White Stencil with Crimson Badge) -->
+              <button id="btn-menu-wardrobe" class="zombie-nav-btn nav-white" type="button">
+                <span class="nav-btn-text">HERO SKINS</span>
+                <span class="nav-badge-pill">WARDROBE</span>
+              </button>
+            </div>
+          </div>
+        </main>
+
+        <!-- Footer Controls Info Tip (Pinned to Bottom-Left) -->
+        <footer class="zombie-cabinet-footer">
+          <div class="zombie-footer-tip">
+            <span class="tip-kbd">AIM & FIRE:</span>
+            <span class="tip-val">MOUSE</span>
+            <span class="tip-sep">•</span>
+            <span class="tip-kbd">DODGE:</span>
+            <span class="tip-val">SPACE</span>
+            <span class="tip-sep">•</span>
+            <span class="tip-kbd">PAUSE:</span>
+            <span class="tip-val">P</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+
+    <!-- Game Over Screen -->
+    <div id="screen-gameover" class="screen">
+      <div class="gameover-card">
+        <div class="gameover-icon" id="gameover-icon">
+          <svg class="modal-icon-svg skull-defeat-svg" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/>
+            <path d="M12 2C7.5 2 4 5.5 4 10c0 2.5 1.1 4.7 2.9 6.2.4.3.7.9.7 1.4V19c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2v-1.4c0-.5.3-1.1.7-1.4 1.8-1.5 2.9-3.7 2.9-6.2 0-4.5-3.5-8-8-8zm-2 15h4v2h-4v-2z"/>
+          </svg>
+        </div>
+        <h2 id="gameover-title">FORTRESS OVERRUN</h2>
+        <div class="gameover-stats">
+          <div class="stat-item"><span>Wave Survived</span><strong id="go-wave">1</strong></div>
+          <div class="stat-item"><span>Zombies Slain</span><strong id="go-kills">0</strong></div>
+          <div class="stat-item"><span>Skulls Gathered</span><strong id="go-gems">0</strong></div>
+        </div>
+        <div class="gameover-buttons">
+          <button id="btn-retry" class="btn btn-primary">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>RETRY DEFENSE</span>
+          </button>
+          <button id="btn-menu" class="btn btn-ghost">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>MAIN MENU</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory Screen (Campaign Complete) -->
+    <div id="screen-victory" class="screen">
+      <div class="gameover-card victory-card">
+        <div class="gameover-icon victory-icon">
+          <svg class="modal-icon-svg victory-trophy-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.45 1-1 1H8c-.55 0-1 .45-1 1v1h10v-1c0-.55-.45-1-1-1h-1c-.55 0-1-.45-1-1v-2.34M18 4H6v7a6 6 0 0 0 12 0V4z"/>
+          </svg>
+        </div>
+        <h2 id="victory-title" class="victory-title">FORTRESS SAVED!</h2>
+        <p class="victory-sub">You conquered all 20 Nights and vanquished Malakor the Eldritch Dragon Titan!</p>
+        <div class="gameover-stats">
+          <div class="stat-item"><span>Campaign Stage</span><strong id="vic-wave">20 / 20</strong></div>
+          <div class="stat-item"><span>Zombies Slain</span><strong id="vic-kills">0</strong></div>
+          <div class="stat-item"><span>Skulls Collected</span><strong id="vic-gems">0</strong></div>
+        </div>
+        <div class="gameover-buttons">
+          <button id="btn-continue-endless" class="btn btn-primary pulse">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>
+            <span>CONTINUE IN ENDLESS</span>
+          </button>
+          <button id="btn-vic-menu" class="btn btn-ghost">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>MAIN MENU</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="screen-pause" class="screen">
+      <div class="pause-card">
+        <div class="pause-icon">
+          <svg class="modal-icon-svg" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+          </svg>
+        </div>
+        <h2>DEFENSE PAUSED</h2>
+        <div class="pause-stats">
+          <div class="pause-stat"><span>Night</span><strong id="pause-wave">1</strong></div>
+          <div class="pause-stat"><span>Undead Remaining</span><strong id="pause-enemies">0</strong></div>
+          <div class="pause-stat"><span>Skulls</span><strong id="pause-skulls">0</strong></div>
+        </div>
+        <div class="pause-buttons">
+          <button id="btn-pause-resume" class="btn btn-primary">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <span>RESUME [P / ESC]</span>
+          </button>
+          <button id="btn-pause-restart" class="btn btn-ghost">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>RESTART NIGHT</span>
+          </button>
+          <button id="btn-pause-menu" class="btn btn-ghost">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>MAIN MENU</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen Damage Vignette -->
+    <div id="damage-vignette" class="damage-vignette"></div>
+
+    <!-- In-Game HUD -->
+    <div id="hud" class="hidden">
+      <div id="hud-left">
+        <div class="hud-health" id="hud-health-p1">
+          <div class="hud-label-row">
+            <span class="hud-label">
+              <svg class="hud-mini-svg heart-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              ARCHER
+            </span>
+            <span class="hud-val" id="hp-val-p1">100 / 100</span>
+          </div>
+          <div class="health-bar">
+            <div class="health-fill-drain" id="drain-fill-p1"></div>
+            <div class="health-fill" id="health-fill-p1"></div>
+          </div>
+        </div>
+        <div class="hud-health" id="hud-stamina-p1">
+          <div class="hud-label-row">
+            <span class="hud-label stamina-label">
+              <svg class="hud-mini-svg stamina-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              STAMINA
+            </span>
+            <span class="hud-val" id="stamina-val-p1">100 / 100</span>
+          </div>
+          <div class="health-bar stamina-bar">
+            <div class="stamina-fill-drain" id="stamina-drain-p1"></div>
+            <div class="stamina-fill" id="stamina-fill-p1"></div>
+          </div>
+        </div>
+        <div class="hud-health" id="hud-tower-barricade">
+          <div class="hud-label-row">
+            <span class="hud-label">
+              <svg class="hud-mini-svg tower-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M4 21V9l2-2h2v3h4V7h2l2 2v12M9 21v-5a3 3 0 0 1 6 0v5"/></svg>
+              TOWER
+            </span>
+            <span class="hud-val" id="hp-val-tower">300 / 300</span>
+          </div>
+          <div class="health-bar">
+            <div class="health-fill-drain" id="drain-fill-tower"></div>
+            <div class="health-fill tower" id="health-fill-tower"></div>
+          </div>
+        </div>
+
+        <!-- Dual Weapon Loadout Dock ([1] / [2] or [Q] to Quick-Swap) -->
+        <div id="hud-weapons-dock">
+          <button id="weapon-slot-1" class="hud-weapon-btn active" title="Primary Bow [1]" type="button">
+            <span class="weapon-slot-num">[1]</span>
+            <span class="weapon-slot-icon" id="weapon-icon-1">🏹</span>
+            <span class="weapon-slot-name" id="weapon-name-1">STANDARD</span>
+          </button>
+          <button id="weapon-slot-2" class="hud-weapon-btn slot-2" title="Secondary Bow [2]" type="button">
+            <span class="weapon-slot-num">[2]</span>
+            <span class="weapon-slot-icon" id="weapon-icon-2">🏹</span>
+            <span class="weapon-slot-name" id="weapon-name-2">NONE</span>
+          </button>
+        </div>
+
+        <!-- Active Tactical Ultimate Skills Dock (F / E Hotkeys) -->
+        <div id="hud-skills-dock">
+          <button id="skill-btn-volley" class="hud-skill-btn ready skill-volley" title="Rain of Fire Volley [F]" type="button">
+            <div class="skill-icon-wrap">
+              <span class="skill-icon" id="skill-icon-volley">🔥</span>
+              <div class="skill-cooldown-overlay" id="skill-cd-overlay-volley"></div>
+              <span class="skill-cd-text" id="skill-cd-text-volley">READY</span>
+            </div>
+            <div class="skill-meta">
+              <span class="skill-name">VOLLEY</span>
+              <span class="skill-key" id="skill-key-volley">[F]</span>
+            </div>
+          </button>
+
+          <button id="skill-btn-frost" class="hud-skill-btn ready skill-frost" title="Glacial Frost Nova [E]" type="button">
+            <div class="skill-icon-wrap">
+              <span class="skill-icon" id="skill-icon-frost">❄️</span>
+              <div class="skill-cooldown-overlay" id="skill-cd-overlay-frost"></div>
+              <span class="skill-cd-text" id="skill-cd-text-frost">READY</span>
+            </div>
+            <div class="skill-meta">
+              <span class="skill-name">FROST NOVA</span>
+              <span class="skill-key" id="skill-key-frost">[E]</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Special Tactical Skills Dock (R / T / G Hotkeys) - Only appears when purchased -->
+        <div id="hud-tactical-dock" style="display: none;">
+          <button id="skill-btn-nuke" class="hud-skill-btn skill-tactical skill-nuke" title="Orbital Nuclear Strike [R]" type="button" style="display: none;">
+            <div class="skill-icon-wrap">
+              <span class="skill-icon">💥</span>
+              <span class="skill-charge-badge" id="skill-charge-nuke">0</span>
+            </div>
+            <div class="skill-meta">
+              <span class="skill-name">NUKE</span>
+              <span class="skill-key">[R]</span>
+            </div>
+          </button>
+
+          <button id="skill-btn-lightning" class="hud-skill-btn skill-tactical skill-lightning" title="Chain Lightning Tempest [T]" type="button" style="display: none;">
+            <div class="skill-icon-wrap">
+              <span class="skill-icon">⚡</span>
+              <span class="skill-charge-badge" id="skill-charge-lightning">0</span>
+            </div>
+            <div class="skill-meta">
+              <span class="skill-name">LIGHTNING</span>
+              <span class="skill-key">[T]</span>
+            </div>
+          </button>
+
+          <button id="skill-btn-aegis" class="hud-skill-btn skill-tactical skill-aegis" title="Divine Aegis Shield [G]" type="button" style="display: none;">
+            <div class="skill-icon-wrap">
+              <span class="skill-icon">🌟</span>
+              <span class="skill-charge-badge" id="skill-charge-aegis">0</span>
+            </div>
+            <div class="skill-meta">
+              <span class="skill-name">AEGIS</span>
+              <span class="skill-key">[G]</span>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div id="hud-center-group">
+        <!-- Epic Boss Encounter Health Bar (Visible during Boss Waves / Apex Encounters) -->
+        <div id="boss-hud-bar" class="boss-hud-bar hidden">
+          <div class="boss-hud-header">
+            <span class="boss-hud-badge" id="boss-hud-badge">👑 BOSS TITAN</span>
+            <span class="boss-hud-name" id="boss-hud-name">GARGANTUAR TITAN</span>
+            <span class="boss-hud-hp-text" id="boss-hud-hp-text">750 / 750</span>
+          </div>
+          <div class="boss-hud-track">
+            <div class="boss-hud-drain" id="boss-hud-drain"></div>
+            <div class="boss-hud-fill" id="boss-hud-fill"></div>
+            <div class="boss-hud-teeth"></div>
+          </div>
+        </div>
+
+        <!-- Night Wave & Horde Counter Center Pill -->
+        <div id="hud-center">
+          <div id="hud-wave">Night <span id="wave-num">1</span></div>
+          <div id="hud-enemies">
+            <span class="enemy-skull-icon">🧟</span>
+            <span>HORDE:</span>
+            <span id="enemy-count">0</span>
+            <span class="enemy-alive-tag">ALIVE</span>
+          </div>
+        </div>
+      </div>
+      <div id="hud-right">
+        <div id="hud-gems">
+          <svg class="hud-mini-svg skull-svg" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/>
+            <path d="M12 2C7.5 2 4 5.5 4 10c0 2.5 1.1 4.7 2.9 6.2.4.3.7.9.7 1.4V19c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2v-1.4c0-.5.3-1.1.7-1.4 1.8-1.5 2.9-3.7 2.9-6.2 0-4.5-3.5-8-8-8zm-2 15h4v2h-4v-2z"/>
+          </svg>
+          <span id="gem-count">0</span>
+        </div>
+        <div id="hud-kills">
+          <svg class="hud-mini-svg crosshair-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/>
+          </svg>
+          <span id="kill-count">0</span>
+        </div>
+        <button id="btn-hud-pause" class="btn-icon" title="Pause Game [P / ESC]">
+          <svg class="hud-svg" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        </button>
+        <button id="btn-hud-sound" class="btn-icon" title="Toggle Sound">
+          <svg class="hud-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div id="hud-controls-tip">
+        <kbd class="key-pill">Mouse</kbd> Aim &amp; Shoot • <kbd class="key-pill">SPACE</kbd> Dodge • <kbd class="key-pill">1/2/Q</kbd> Weapons • <kbd class="key-pill">F</kbd> Volley • <kbd class="key-pill">E</kbd> Frost • <kbd class="key-pill">R/T/G</kbd> Specials • <kbd class="key-pill">P</kbd> Pause
+      </div>
+    </div>
+
+    <!-- Wave Announcement Banner -->
+    <div id="wave-banner" class="wave-banner hidden">
+      <div class="wave-banner-night" id="wb-night">NIGHT 1</div>
+      <div class="wave-banner-title" id="wb-title">ROTTEN WALKERS</div>
+      <div class="wave-banner-desc" id="wb-desc">Classic shamblers. Aim for the head!</div>
+    </div>
+
+    <!-- Upgrade Shop (Fortress Armory) -->
+    <div id="screen-shop" class="screen">
+      <!-- Fullscreen Game Background Matching Home Screen -->
+      <div class="zombie-bg-layer">
+        <div class="zombie-bg-overlay shop-bg-overlay"></div>
+        <div class="zombie-fog-particles"></div>
+      </div>
+
+      <div class="shop-card">
+        <div class="shop-header">
+          <div class="shop-title-area">
+            <div class="zombie-subhead-row shop-subhead-row">
+              <span class="zombie-tag-icon">🏹</span>
+              <span class="zombie-subhead-text">RAGDOLL ARCHERS</span>
+              <span class="zombie-subhead-badge">FORTRESS ARMORY</span>
+            </div>
+            <h2 class="shop-main-title">
+              <span class="zombie-blood-text shop-blood-text">UPGRADES</span>
+              <span class="zombie-siege-text shop-siege-text">ARSENAL</span>
+            </h2>
+            <p class="shop-subtitle">Night <span id="shop-wave-prev">1</span> Cleared! Fortify your hero and tower defenses.</p>
+            <div id="shop-toast" class="shop-toast hidden"></div>
+          </div>
+
+          <div class="shop-top-actions">
+            <!-- Skulls Currency Display (Matching Home Screen Exactly) -->
+            <div class="zombie-skull-currency shop-skull-chip" title="Total Collected Skulls">
+              <span class="zombie-skull-icon">💀</span>
+              <span class="zombie-skull-num" id="shop-gems">0</span>
+              <span class="shop-skull-label">SKULLS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar & Criteria Sorting Controls (Matching Home Mode Cards) -->
+        <div class="shop-controls-row">
+          <div class="shop-filter-bar" id="shop-filter-bar">
+            <button class="shop-filter-btn active" data-cat="all" type="button">
+              <span class="filter-indicator"></span>
+              <span>ALL UPGRADES</span>
+            </button>
+            <button class="shop-filter-btn" data-cat="bows" type="button">
+              <span class="filter-indicator"></span>
+              <span>BOWS & WEAPONS</span>
+            </button>
+            <button class="shop-filter-btn" data-cat="archer" type="button">
+              <span class="filter-indicator"></span>
+              <span>HERO PERKS</span>
+            </button>
+            <button class="shop-filter-btn" data-cat="tower" type="button">
+              <span class="filter-indicator"></span>
+              <span>FORTRESS DEFENSE</span>
+            </button>
+            <button class="shop-filter-btn" data-cat="special" type="button">
+              <span class="filter-indicator"></span>
+              <span>SPECIAL SKILLS</span>
+            </button>
+          </div>
+          <div class="shop-sort-box">
+            <span class="shop-sort-label">SORT:</span>
+            <select id="shop-sort-select" class="shop-sort-select" aria-label="Sort upgrades">
+              <option value="default">Default Priority</option>
+              <option value="cost-asc">Cost: Low to High</option>
+              <option value="cost-desc">Cost: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Upgrades Grid -->
+        <div class="shop-grid" id="shop-items"></div>
+
+        <!-- Footer Action: Signature White Brush Slash & Distressed Return -->
+        <div class="shop-footer">
+          <button id="btn-shop-return" class="zombie-nav-btn nav-white shop-return-btn" style="display:none;" type="button">
+            <span class="nav-btn-icon">💀</span>
+            <span class="nav-btn-text">MAIN MENU</span>
+          </button>
+          <div class="shop-footer-spacer"></div>
+          <button id="btn-next-wave" class="zombie-red-btn shop-red-btn" type="button">
+            <span class="red-btn-text" id="btn-next-wave-text">START NEXT NIGHT</span>
+            <kbd class="key-pill red-key-pill" id="btn-next-wave-key">[SPACE]</kbd>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Wardrobe Screen (Exclusively Accessible from Home Menu) -->
+    <div id="screen-wardrobe" class="screen">
+      <!-- Fullscreen Game Background Layer Matching Home Screen -->
+      <div class="zombie-bg-layer">
+        <div class="zombie-bg-overlay wardrobe-bg-overlay"></div>
+        <div class="zombie-fog-particles"></div>
+      </div>
+
+      <div class="wardrobe-card">
+        <div class="wardrobe-header">
+          <div class="wardrobe-title-area">
+            <div class="zombie-subhead-row wardrobe-subhead-row">
+              <span class="zombie-tag-icon">🥋</span>
+              <span class="zombie-subhead-text">RAGDOLL ARCHERS</span>
+              <span class="zombie-subhead-badge badge-wardrobe">HERO WARDROBE</span>
+            </div>
+            <h2 class="wardrobe-main-title">
+              <span class="wardrobe-purple-text">HERO</span>
+              <span class="zombie-siege-text wardrobe-siege-text">SKINS & COSMETICS</span>
+            </h2>
+            <p class="wardrobe-subtitle">Unlock custom hero themes with skulls! Selected cosmetic skin equips directly onto your archer.</p>
+            <div id="wardrobe-toast" class="shop-toast hidden"></div>
+          </div>
+
+          <div class="wardrobe-top-actions">
+            <!-- Skulls Currency Display -->
+            <div class="zombie-skull-currency shop-skull-chip" title="Total Collected Skulls">
+              <span class="zombie-skull-icon">💀</span>
+              <span class="zombie-skull-num" id="wardrobe-skulls">0</span>
+              <span class="shop-skull-label">SKULLS</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skins Grid -->
+        <div class="wardrobe-grid" id="wardrobe-items"></div>
+
+        <!-- Footer Action: Signature White Brush Slash & Return to Menu -->
+        <div class="wardrobe-footer">
+          <button id="btn-wardrobe-back" class="zombie-nav-btn nav-white" type="button">
+            <span class="nav-btn-icon">💀</span>
+            <span class="nav-btn-text">RETURN TO MENU</span>
+          </button>
+          <div class="wardrobe-footer-info">
+            <span class="wardrobe-info-tag">✨ COSMETIC ONLY</span>
+            <span class="wardrobe-info-desc">Skins customize hero visuals & animations without altering core arrow hitboxes.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating In-Game Dynamic Archer Charge Meter -->
+    <div id="charge-indicator" class="hidden">
+      <div class="charge-status-pill" id="charge-status-pill">TENSION</div>
+      <div class="charge-bar-bg">
+        <div class="charge-bar-fill" id="charge-fill"></div>
+      </div>
+      <div class="charge-stamina-tag" id="charge-stamina-tag">⚡ -12 STAMINA</div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RAGDOLL ARCHERS: ZOMBIE SIEGE</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:ital,wght@0,700;0,800;0,900;1,900&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with Forms and Container Queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#6ffbbe",
+            "inverse-surface": "#dfe2f1",
+            "on-tertiary-container": "#79000e",
+            "secondary": "#ffb95f",
+            "on-tertiary-fixed": "#410004",
+            "surface-dim": "#0f131d",
+            "on-primary-fixed-variant": "#005236",
+            "primary-fixed-dim": "#4edea3",
+            "surface-tint": "#4edea3",
+            "tertiary": "#ffb3ad",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "surface-bright": "#353944",
+            "on-error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#653e00",
+            "inverse-on-surface": "#2c303b",
+            "on-secondary-container": "#5b3800",
+            "on-surface-variant": "#bbcabf",
+            "primary": "#4edea3",
+            "tertiary-fixed": "#ffdad7",
+            "primary-container": "#10b981",
+            "surface-container-lowest": "#0a0e18",
+            "on-secondary-fixed": "#2a1700",
+            "on-tertiary-fixed-variant": "#930013",
+            "error-container": "#93000a",
+            "on-background": "#dfe2f1",
+            "on-tertiary": "#68000a",
+            "background": "#0f131d",
+            "surface-container-high": "#262a35",
+            "secondary-fixed-dim": "#ffb95f",
+            "tertiary-container": "#ff7a73",
+            "inverse-primary": "#006c49",
+            "outline-variant": "#3c4a42",
+            "secondary-container": "#ee9800",
+            "outline": "#86948a",
+            "on-secondary": "#472a00",
+            "tertiary-fixed-dim": "#ffb3ad",
+            "surface-variant": "#313540",
+            "surface": "#0f131d",
+            "surface-container-highest": "#313540",
+            "on-surface": "#dfe2f1",
+            "secondary-fixed": "#ffddb8",
+            "on-primary-fixed": "#002113",
+            "on-primary": "#003824",
+            "surface-container-low": "#171b26",
+            "surface-container": "#1c1f2a",
+            "on-primary-container": "#00422b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "gutter-mobile": "0.75rem",
+            "margin-mobile": "1rem",
+            "margin": "2rem",
+            "space-xl": "2.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "gutter": "1rem",
+            "space-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "display-lg": ["Epilogue"],
+            "headline-md": ["Epilogue"],
+            "label-md": ["Space Grotesk"],
+            "body-md": ["Space Grotesk"],
+            "headline-xl": ["Epilogue"],
+            "body-lg": ["Space Grotesk"],
+            "arcade-counter": ["Epilogue"],
+            "label-lg": ["Space Grotesk"],
+            "title-lg": ["Space Grotesk"],
+            "display-lg-mobile": ["Epilogue"],
+            "headline-xl-mobile": ["Epilogue"]
+          },
+          "fontSize": {
+            "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "0.05em", "fontWeight": "900" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "0.01em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-xl": ["38px", { "lineHeight": "46px", "letterSpacing": "0.02em", "fontWeight": "800" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "arcade-counter": ["28px", { "lineHeight": "32px", "letterSpacing": "0.04em", "fontWeight": "900" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.08em", "fontWeight": "700" }],
+            "title-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "0.02em", "fontWeight": "700" }],
+            "display-lg-mobile": ["36px", { "lineHeight": "44px", "letterSpacing": "0.04em", "fontWeight": "900" }],
+            "headline-xl-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "0.02em", "fontWeight": "800" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    /* Tactile button bevels and stone extrusions */
+    .stone-slab {
+      background: linear-gradient(180deg, #262a35 0%, #171b26 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 6px 0 #0a0e18, 0 12px 24px rgba(0, 0, 0, 0.85);
+    }
+    .stone-btn-3d {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 5px 0 #0a0e18, 0 8px 16px rgba(0, 0, 0, 0.7);
+      transition: all 0.08s ease-in-out;
+    }
+    .stone-btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 #0a0e18, 0 3px 6px rgba(0, 0, 0, 0.9);
+    }
+    .arcade-amber-btn {
+      background: linear-gradient(180deg, #ffb95f 0%, #ee9800 50%, #9e5b00 100%);
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 6px 0 #5b3800, 0 12px 28px rgba(238, 152, 0, 0.45);
+      transition: all 0.08s ease-in-out;
+    }
+    .arcade-amber-btn:hover {
+      filter: brightness(1.08);
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 6px 0 #5b3800, 0 0 35px rgba(245, 158, 11, 0.65);
+    }
+    .arcade-amber-btn:active {
+      transform: translateY(4px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 0 #5b3800, 0 4px 8px rgba(0, 0, 0, 0.9);
+    }
+    .toxic-inset-box {
+      background: #0a0e18;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.9), inset 0 0 12px rgba(16, 185, 129, 0.15);
+    }
+    @keyframes emberFloat {
+      0% { transform: translateY(0) translateX(0) scale(1); opacity: 0.8; }
+      50% { transform: translateY(-30px) translateX(15px) scale(1.2); opacity: 0.4; }
+      100% { transform: translateY(-70px) translateX(-10px) scale(0.6); opacity: 0; }
+    }
+    .floating-ember {
+      animation: emberFloat 4s infinite linear;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-x-hidden min-h-screen relative select-none font-body-md text-body-md flex flex-col justify-between">
+<!-- Full-Screen Cinematic Game Backdrop -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<img alt="Ragdoll Archers Castle Backdrop" class="w-full h-full object-cover object-center filter brightness-[0.75] contrast-[1.12] scale-105 transform origin-center transition-transform duration-1000 ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSmvVZyoEO7n2PJK1o5wTemC_nDk-faJTau0slYiZyQPQ28NxnumuD1oHTUSjI-aA3Q1LFjXErXeyS0xSLqJXrML6XKy-lUikooq4DeO5nFOKZG47c-8AbV9nHaSNH5DyM81KKPD-AeGBiI3wkbUPFVp3w_zAOfS1o9-TvXPy3Leh78DvtJKooe2KIxTebCj07JUZwmfr0rrV05qVmKNoJe3B0jRrHOUOTyzdTAmLumO3T52W5aubNVyatby1VWNnDtmsFLCjRa623"/>
+<!-- Atmospheric vignettes and gothic green fog overlays -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-surface-container-lowest/90 mix-blend-multiply"></div>
+<div class="absolute inset-0 bg-radial from-transparent via-surface-container-lowest/40 to-surface-container-lowest/95"></div>
+<!-- Atmospheric Floating Embers / Acid Spores -->
+<div class="absolute w-2 h-2 rounded-full bg-primary-container blur-[1px] top-3/4 left-1/4 floating-ember"></div>
+<div class="absolute w-1.5 h-1.5 rounded-full bg-secondary blur-[0.5px] top-2/3 right-1/3 floating-ember" style="animation-delay: 1.5s;"></div>
+<div class="absolute w-2.5 h-2.5 rounded-full bg-primary blur-[1px] bottom-1/4 right-1/5 floating-ember" style="animation-delay: 2.7s;"></div>
+<div class="absolute w-1 h-1 rounded-full bg-tertiary-container top-1/2 left-2/3 floating-ember" style="animation-delay: 0.8s;"></div>
+</div>
+<!-- TOP HUD HEADER BAR (Anchored Top Nav) -->
+<header class="relative z-30 w-full bg-surface-container-lowest/90 backdrop-blur-md border-b-2 border-outline-variant shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
+<div class="w-full max-w-7xl mx-auto px-space-lg py-space-sm flex flex-wrap items-center justify-between gap-space-md">
+<!-- Left: Player Profile & Live Currencies & XP -->
+<div class="flex items-center gap-space-md">
+<!-- Avatar Badge with Iron & Stone Bezel -->
+<div class="relative flex items-center gap-space-sm bg-surface-container-low border-2 border-outline-variant rounded-lg p-1.5 pr-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_4px_10px_rgba(0,0,0,0.7)]">
+<div class="relative w-11 h-11 rounded bg-surface-container-highest border border-primary/50 overflow-hidden flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.9)]">
+<span class="material-symbols-outlined text-primary text-3xl filter drop-shadow-[0_0_8px_rgba(78,222,163,0.8)]" data-icon="skull">skull</span>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent pointer-events-none"></div>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-[13px] leading-tight text-on-surface uppercase tracking-wider">Rank 1: Night Archer</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_6px_#4edea3]"></span>
+</div>
+<!-- XP Progress Bar -->
+<div class="flex items-center gap-2 mt-1">
+<div class="w-28 h-2.5 bg-surface-container-lowest border border-outline-variant rounded-full overflow-hidden p-[1px] toxic-inset-box">
+<div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full w-[78%] shadow-[0_0_8px_rgba(16,185,129,0.7)]"></div>
+</div>
+<span class="font-label-md text-[10px] text-on-surface-variant font-bold">780/1000</span>
+</div>
+</div>
+</div>
+<!-- Skull Currency Counter -->
+<div class="flex items-center bg-surface-container-low border border-outline-variant rounded px-2.5 py-1.5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8)]">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-xl drop-shadow-[0_0_6px_rgba(78,222,163,0.7)]" data-icon="skull">skull</span>
+<span class="font-arcade-counter text-xl text-primary font-bold tracking-wide">150</span>
+<span class="font-label-md text-xs text-on-surface-variant font-semibold uppercase ml-0.5">Skulls</span>
+</div>
+<button class="ml-2 w-5 h-5 rounded bg-secondary-container hover:bg-secondary text-on-secondary-container font-extrabold flex items-center justify-center text-xs shadow-[0_2px_0_#5b3800] active:translate-y-0.5" title="Add Skulls">+</button>
+</div>
+<!-- Night Record Anchor Chip -->
+<div class="hidden lg:flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded px-3 py-1.5 shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+<span class="material-symbols-outlined text-secondary text-lg" data-icon="local_fire_department">local_fire_department</span>
+<div class="leading-none">
+<span class="font-label-md text-[10px] uppercase text-on-surface-variant block tracking-wider font-bold">Best Defense</span>
+<span class="font-label-lg text-xs uppercase text-secondary-fixed font-bold">Night 42 Record</span>
+</div>
+</div>
+</div>
+<!-- Center Brand Title in Nav (Shared Component Spec) -->
+<div class="hidden xl:block">
+<h2 class="text-headline-md font-headline-md tracking-wider uppercase text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          RAGDOLL ARCHERS: ZOMBIE SIEGE
+        </h2>
+</div>
+<!-- Right: Audio & Screen Controls HUD -->
+<div class="flex items-center gap-2">
+<button class="w-9 h-9 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary shadow-[0_3px_0_#0a0e18] hover:border-primary active:translate-y-1 transition-all" title="Audio / SFX">
+<span class="material-symbols-outlined text-lg" data-icon="volume_up">volume_up</span>
+</button>
+<button class="w-9 h-9 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-primary shadow-[0_3px_0_#0a0e18] hover:border-primary active:translate-y-1 transition-all" title="Settings">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+</button>
+<button class="w-9 h-9 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-primary shadow-[0_3px_0_#0a0e18] hover:border-primary active:translate-y-1 transition-all" title="Toggle Fullscreen">
+<span class="material-symbols-outlined text-lg" data-icon="fullscreen">fullscreen</span>
+</button>
+<button class="w-9 h-9 rounded bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-secondary shadow-[0_3px_0_#0a0e18] hover:border-secondary-container active:translate-y-1 transition-all" title="Join Discord Community">
+<span class="material-symbols-outlined text-lg" data-icon="forum">forum</span>
+</button>
+</div>
+</div>
+</header>
+<!-- MAIN CANVAS: Title Crest, Mode Selector & Primary CTA -->
+<main class="relative z-20 flex-1 flex flex-col items-center justify-center px-4 py-6 max-w-7xl mx-auto w-full">
+<!-- EPIC VIDEO GAME TITLE CREST & LOGO -->
+<div class="text-center relative my-2">
+<!-- Physics Badge Banner -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-surface-container-highest/90 border-2 border-secondary-container shadow-[0_3px_0_#5b3800] uppercase font-label-md text-[11px] text-secondary-fixed tracking-widest font-extrabold mb-1">
+<span class="material-symbols-outlined text-sm text-secondary-container" data-icon="shield">shield</span>
+<span>PHYSICS CASTLE DEFENSE</span>
+<span class="material-symbols-outlined text-sm text-secondary-container" data-icon="sports_martial_arts">sports_martial_arts</span>
+</div>
+<!-- Main Display Title with 3D Heavy Arcade Stone & Gold Finish -->
+<div class="relative">
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg uppercase tracking-wider text-on-background drop-shadow-[0_8px_0_#000000] filter">
+<span class="bg-clip-text text-transparent bg-gradient-to-b from-[#f3f4f6] via-[#cbd5e1] to-[#64748b]">
+            RAGDOLL ARCHERS
+          </span>
+</h1>
+<!-- Decorative piercer arrow graphic icon -->
+<span class="absolute -top-3 -right-6 md:right-8 rotate-[28deg] material-symbols-outlined text-3xl md:text-5xl text-secondary-container drop-shadow-[0_4px_4px_#000]" data-icon="arrow_warm_up">arrow_warm_up</span>
+</div>
+<!-- Dripping Slime / Acid Zombie Subtitle -->
+<div class="mt-[-8px] md:mt-[-12px]">
+<h2 class="font-display-lg text-3xl md:text-5xl uppercase tracking-widest text-primary drop-shadow-[0_0_20px_rgba(78,222,163,0.7)] drop-shadow-[0_4px_0_#003824]">
+          ZOMBIE SIEGE
+        </h2>
+</div>
+<p class="font-label-lg text-xs md:text-sm text-on-surface-variant font-medium tracking-wide max-w-md mx-auto mt-1 opacity-90">
+        Hold the crenellations. Unleash ballistic volleys. Watch undead hordes shatter under dynamic ragdoll physics.
+      </p>
+</div>
+<!-- GAME MODE SELECTOR CARDS (Side-by-side Arcade Banners) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl my-4">
+<!-- MODE 1: CAMPAIGN SIEGE (Active Selection) -->
+<div class="stone-slab rounded-xl border-2 border-secondary-container p-4 relative group cursor-pointer overflow-hidden transition-all duration-150 hover:border-secondary hover:shadow-[0_0_25px_rgba(245,158,11,0.35)]">
+<!-- Selection Highlight Ribbons -->
+<div class="absolute -top-6 -right-6 w-16 h-16 bg-secondary-container/20 rotate-45 pointer-events-none"></div>
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center text-sm font-extrabold shadow-[0_2px_0_#5b3800]">
+<span class="material-symbols-outlined text-base" data-icon="castle">castle</span>
+</span>
+<div>
+<span class="font-label-md text-[10px] uppercase tracking-wider text-secondary font-bold block">Story Campaign</span>
+<h3 class="font-headline-md text-base md:text-lg text-on-surface uppercase tracking-wide">The Siege of Gallows Keep</h3>
+</div>
+</div>
+<!-- Selected Radio Pin -->
+<div class="flex items-center gap-1 bg-surface-container-lowest px-2 py-0.5 rounded border border-secondary-container text-secondary text-[11px] font-bold uppercase">
+<span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+            ACTIVE
+          </div>
+</div>
+<!-- Thumbnail & Stats Inset -->
+<div class="mt-3 bg-surface-container-lowest border border-outline-variant/60 rounded-lg p-2.5 flex items-center gap-3">
+<div class="w-16 h-16 rounded bg-surface-container-high border border-outline-variant flex-shrink-0 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-3xl text-secondary" data-icon="fort">fort</span>
+<div class="absolute bottom-0 w-full text-center bg-secondary-container text-[8px] font-bold text-on-secondary-container uppercase">Gate 4</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="text-tertiary-container font-label-md font-bold uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="warning">warning</span> Night 7 of 10
+              </span>
+<span class="text-secondary font-arcade-counter text-xs">★★★☆☆</span>
+</div>
+<div class="text-[11px] text-on-surface-variant font-medium">
+              Boss: <span class="text-error font-bold">Goliath Undead Brute</span> incoming under Blood Moon.
+            </div>
+<div class="mt-1.5 flex items-center gap-1 text-[10px] text-primary">
+<span class="material-symbols-outlined text-xs" data-icon="military_tech">military_tech</span>
+              Reward: 450 Skulls + Heavy Ballista Blueprint
+            </div>
+</div>
+</div>
+<!-- Footer Pill Badges -->
+<div class="mt-3 flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-label-md uppercase">10 Progressive Nights</span>
+<span class="text-secondary-fixed font-label-md uppercase font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="check_circle">check_circle</span> Ready to Deploy
+          </span>
+</div>
+</div>
+<!-- MODE 2: ENDLESS SIEGE -->
+<div class="stone-slab rounded-xl border-2 border-outline-variant p-4 relative group cursor-pointer overflow-hidden transition-all duration-150 hover:border-primary hover:shadow-[0_0_25px_rgba(78,222,163,0.3)]">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded bg-surface-container-highest text-primary flex items-center justify-center text-sm font-extrabold shadow-[0_2px_0_#000]">
+<span class="material-symbols-outlined text-base" data-icon="all_inclusive">all_inclusive</span>
+</span>
+<div>
+<span class="font-label-md text-[10px] uppercase tracking-wider text-primary font-bold block">Endless Survival</span>
+<h3 class="font-headline-md text-base md:text-lg text-on-surface uppercase tracking-wide">Graveyard Horde</h3>
+</div>
+</div>
+<!-- Danger Pill -->
+<div class="flex items-center gap-1 bg-surface-container-lowest px-2 py-0.5 rounded border border-outline-variant text-primary-fixed text-[11px] font-bold uppercase">
+            2.5x MULTIPLIER
+          </div>
+</div>
+<!-- Thumbnail & Stats Inset -->
+<div class="mt-3 bg-surface-container-lowest border border-outline-variant/60 rounded-lg p-2.5 flex items-center gap-3">
+<div class="w-16 h-16 rounded bg-surface-container-high border border-outline-variant flex-shrink-0 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="coffin">view_in_ar</span>
+<div class="absolute bottom-0 w-full text-center bg-primary text-[8px] font-bold text-on-primary uppercase">Infinite</div>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between text-xs mb-1">
+<span class="text-primary font-label-md font-bold uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="leaderboard">leaderboard</span> Top 8% Global
+              </span>
+<span class="text-on-surface-variant font-label-md text-[10px]">High Wave: 42</span>
+</div>
+<div class="text-[11px] text-on-surface-variant font-medium">
+              Danger: <span class="text-primary font-bold">Nightmarish Bile Swarms</span> with infinite dynamic scaling.
+            </div>
+<div class="mt-1.5 flex items-center gap-1 text-[10px] text-secondary">
+<span class="material-symbols-outlined text-xs" data-icon="stars">stars</span>
+              Earn Rare Runes &amp; Trophy Feathers
+            </div>
+</div>
+</div>
+<!-- Footer Pill Badges -->
+<div class="mt-3 flex items-center justify-between text-[11px]">
+<span class="text-on-surface-variant font-label-md uppercase">Leaderboard Active</span>
+<span class="text-on-surface-variant hover:text-primary font-label-md uppercase font-bold flex items-center gap-1">
+            Select Horde <span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+</span>
+</div>
+</div>
+</div>
+<!-- PRIMARY ACTION BUTTON (Giant Center CTA: START BATTLE) -->
+<div class="flex flex-col items-center mt-2 mb-3">
+<button class="arcade-amber-btn rounded-xl px-12 md:px-16 py-3.5 md:py-4 flex items-center gap-3 border-2 border-secondary-fixed group cursor-pointer">
+<span class="material-symbols-outlined text-3xl md:text-4xl text-on-secondary-container transition-transform group-hover:scale-110" data-icon="play_arrow">play_arrow</span>
+<div class="text-left">
+<span class="font-display-lg text-2xl md:text-3xl uppercase tracking-wider text-on-secondary-container drop-shadow-[0_2px_0_rgba(255,255,255,0.4)] block leading-none">
+            START BATTLE
+          </span>
+<span class="font-label-md text-[10px] md:text-[11px] text-on-secondary-container/90 uppercase font-extrabold tracking-widest mt-1 block">
+            PRESS [ENTER] OR CLICK TO DEFEND
+          </span>
+</div>
+</button>
+</div>
+<!-- TACTILE KEYBOARD CONTROLS HUD CHIPS -->
+<div class="flex flex-wrap items-center justify-center gap-2 max-w-3xl mx-auto opacity-95">
+<div class="flex items-center gap-1.5 bg-surface-container-lowest/80 border border-outline-variant px-2.5 py-1 rounded text-xs text-on-surface-variant">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-mono text-[10px] font-bold border border-outline-variant shadow-[0_1px_0_#000]">L-CLICK / DRAG</kbd>
+<span>Aim &amp; Draw Bow</span>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-lowest/80 border border-outline-variant px-2.5 py-1 rounded text-xs text-on-surface-variant">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-mono text-[10px] font-bold border border-outline-variant shadow-[0_1px_0_#000]">SPACE</kbd>
+<span>Ragdoll Evade</span>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-lowest/80 border border-outline-variant px-2.5 py-1 rounded text-xs text-on-surface-variant">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-mono text-[10px] font-bold border border-outline-variant shadow-[0_1px_0_#000]">1 - 4</kbd>
+<span>Fire / Bomb / Acid Arrows</span>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-lowest/80 border border-outline-variant px-2.5 py-1 rounded text-xs text-on-surface-variant">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-mono text-[10px] font-bold border border-outline-variant shadow-[0_1px_0_#000]">P</kbd>
+<span>Tactics / Pause</span>
+</div>
+</div>
+</main>
+<!-- SECONDARY ARCADE BOTTOM NAVIGATION BAR (Shared Component Spec) -->
+<footer class="relative z-30 w-full bg-surface-container-lowest/95 backdrop-blur-md border-t-2 border-outline-variant shadow-[0_-4px_24px_rgba(0,0,0,0.9)]">
+<div class="w-full max-w-7xl mx-auto px-space-md py-space-sm flex flex-col md:flex-row items-center justify-between gap-3">
+<!-- Bottom Menu Group (Exact items from Shared Component JSON: Upgrades & Armory, Undead Bestiary, How to Play) -->
+<nav class="flex items-center flex-wrap justify-center gap-space-sm">
+<!-- Tab 1: Upgrades & Armory (Active Navigation tab) -->
+<button class="flex flex-row items-center gap-space-xs bg-surface-container-high text-primary border border-primary-container px-space-md py-space-xs rounded shadow-[0_2px_0_#003824] stone-btn-3d group">
+<span class="material-symbols-outlined text-lg group-hover:scale-110 transition-transform" data-icon="shield">shield</span>
+<span class="font-label-lg text-label-lg uppercase tracking-wider font-bold">Upgrades &amp; Armory</span>
+<span class="ml-1 px-1.5 py-0.2 bg-error-container text-error rounded-full text-[10px] font-extrabold border border-error/40">3 NEW</span>
+</button>
+<!-- Tab 2: Undead Bestiary -->
+<button class="flex flex-row items-center gap-space-xs text-on-surface-variant hover:bg-surface-container-high hover:text-primary-fixed px-space-md py-space-xs rounded border border-transparent hover:border-outline-variant transition-all stone-btn-3d group">
+<span class="material-symbols-outlined text-lg text-primary/70 group-hover:text-primary" data-icon="skull">skull</span>
+<span class="font-label-lg text-label-lg uppercase tracking-wider">Undead Bestiary</span>
+<span class="ml-1 text-[11px] text-on-surface-variant/70 font-mono">(14/25)</span>
+</button>
+<!-- Tab 3: How to Play -->
+<button class="flex flex-row items-center gap-space-xs text-on-surface-variant hover:bg-surface-container-high hover:text-primary-fixed px-space-md py-space-xs rounded border border-transparent hover:border-outline-variant transition-all stone-btn-3d group">
+<span class="material-symbols-outlined text-lg text-secondary/70 group-hover:text-secondary" data-icon="menu_book">menu_book</span>
+<span class="font-label-lg text-label-lg uppercase tracking-wider">How to Play</span>
+</button>
+</nav>
+<!-- Right Footer Info: Version & Hotfix Tag -->
+<div class="flex items-center gap-3 text-xs text-on-surface-variant">
+<div class="flex items-center gap-1.5 font-label-md uppercase tracking-wider">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span>v1.4.2 - SIEGE OF THE UNDEAD (HOTFIX)</span>
+</div>
+<div class="hidden sm:block text-outline-variant">|</div>
+<span class="hidden sm:inline font-mono text-[11px] text-on-surface-variant/60">BUILD 94022-RELEASE</span>
+</div>
+</div>
+</footer>
+<!-- Light Arcade Micro-Interactions (Keyboard ENTER listener & Sound trigger cue) -->
+<script>
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        const startBtn = document.querySelector('.arcade-amber-btn');
+        if (startBtn) {
+          startBtn.classList.add('scale-95');
+          setTimeout(() => startBtn.classList.remove('scale-95'), 120);
+        }
+      }
+    });
+  </script>
+</body></html>
