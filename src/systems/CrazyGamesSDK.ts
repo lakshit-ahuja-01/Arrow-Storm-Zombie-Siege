@@ -50,7 +50,7 @@ class CrazyGamesManager {
       if (window.CrazyGames?.SDK) {
         await window.CrazyGames.SDK.init();
         this.isInitialized = true;
-        console.log('🎮 [CrazyGames SDK v3] Initialized successfully');
+        console.log('[CrazyGames SDK v3] Initialized successfully');
       } else {
         console.info('ℹ️ [CrazyGames SDK] Standalone/Offline mode active');
       }

@@ -1280,7 +1280,7 @@ export class MainScene extends Phaser.Scene {
     const campSub = document.getElementById('campaign-mode-sub');
     if (campSub) {
       if (this.campaignCompleted) {
-        campSub.textContent = '🏆 Campaign Conquered (20/20)';
+        campSub.textContent = 'Campaign Conquered (20/20)';
       } else if (this.campaignWave > 1) {
         campSub.textContent = `Night ${this.campaignWave} of 20 Reached`;
       } else {
@@ -4437,7 +4437,7 @@ export class MainScene extends Phaser.Scene {
                 this.player.hasWave1HealthBonus = true;
                 this.player.maxHP += 25; // Permanent health increase after wave 1 (115 -> 140 HP)
                 this.player.hp = this.player.maxHP; // Fully healed
-                this.spawnFloatingText('🏆 WAVE 1 SURVIVOR: +25 MAX HP! 🏆', this.player.x, this.player.y - 95, '#2ecc71', 26);
+                this.spawnFloatingText('WAVE 1 SURVIVOR: +25 MAX HP!', this.player.x, this.player.y - 95, '#2ecc71', 26);
               } else {
                 const hpHeal = Math.max(50, Math.round(this.player.maxHP * 0.45));
                 this.player.hp = Math.min(this.player.maxHP, this.player.hp + hpHeal);
