@@ -269,43 +269,36 @@ html, body {
 .zombie-menu-left {
   position: relative;
   z-index: 10;
-  height: 100%;
-  max-height: 100vh;
-  box-sizing: border-box;
-  padding: clamp(14px, 2.5vh, 42px) 0 clamp(16px, 3vh, 42px) clamp(24px, 6vw, 120px);
+  height: 100vh;
+  padding: 0 0 0 clamp(64px, 8.5vw, 160px);
   width: 100%;
   max-width: 860px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: clamp(8px, 1.8vh, 24px);
+  gap: 32px;
   text-align: left;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.zombie-menu-left::-webkit-scrollbar {
-  display: none;
 }
 
 /* ── Game Title Branding ───────────────────────────── */
 .zombie-title-group {
   display: flex;
   flex-direction: column;
-  gap: clamp(3px, 0.8vh, 8px);
+  gap: 10px;
 }
 
 .zombie-subhead-row {
   display: flex;
   align-items: center;
-  gap: clamp(6px, 1vw, 12px);
-  font-size: clamp(10.5px, min(1.2vw, 1.6vh), 15px);
+  gap: 14px;
+  font-size: 16px;
   font-weight: 900;
-  letter-spacing: clamp(1.5px, 0.3vw, 3px);
+  letter-spacing: 3.5px;
   text-transform: uppercase;
   color: #94a3b8;
 }
 
-.zombie-tag-icon { font-size: clamp(14px, 2vh, 20px); }
+.zombie-tag-icon { font-size: 22px; }
 
 .zombie-subhead-text {
   color: #e2e8f0;
@@ -315,13 +308,13 @@ html, body {
 .zombie-subhead-badge {
   background: rgba(229, 9, 20, 0.35);
   border: 1.5px solid rgba(229, 9, 20, 0.85);
-  padding: clamp(2px, 0.4vh, 4px) clamp(6px, 0.9vw, 12px);
+  padding: 4px 14px;
   border-radius: 6px;
   color: #ff4d4d;
-  font-size: clamp(9.5px, 1.2vh, 12px);
+  font-size: 12px;
   font-weight: 900;
-  letter-spacing: 1.2px;
-  box-shadow: 0 0 12px rgba(229, 9, 20, 0.65);
+  letter-spacing: 1.5px;
+  box-shadow: 0 0 14px rgba(229, 9, 20, 0.65);
 }
 
 .zombie-main-title {
@@ -333,10 +326,10 @@ html, body {
 
 .zombie-blood-text {
   font-family: 'Creepster', cursive;
-  font-size: clamp(44px, min(9.5vw, 12vh), 132px);
+  font-size: clamp(104px, 12vw, 168px);
   font-weight: 400;
   color: #e50914;
-  letter-spacing: clamp(3px, 0.5vw, 6px);
+  letter-spacing: 6px;
   text-shadow:
     0 4px 0 #7f0000,
     0 8px 0 #450a0a,
@@ -347,34 +340,34 @@ html, body {
 
 .zombie-siege-text {
   font-family: 'Black Ops One', 'Outfit', sans-serif;
-  font-size: clamp(20px, min(4.2vw, 5.2vh), 54px);
+  font-size: clamp(40px, 4.5vw, 68px);
   font-weight: 900;
   color: #ffffff;
-  letter-spacing: clamp(4px, 0.8vw, 10px);
+  letter-spacing: 12px;
   text-shadow:
     0 3px 0 #1e293b,
     0 6px 16px rgba(0, 0, 0, 0.95);
-  margin-top: clamp(2px, 0.5vh, 6px);
+  margin-top: 8px;
 }
 
 /* ── Mode Selector: Tactical Distressed Badges ─────── */
 .zombie-mode-selector {
   display: flex;
-  gap: clamp(8px, 1.2vw, 14px);
+  gap: 16px;
   width: 100%;
-  max-width: clamp(280px, 36vw, 480px);
+  max-width: 540px;
 }
 
 .zombie-mode-card {
   flex: 1;
   background: rgba(14, 18, 28, 0.92);
   border: 1.5px solid rgba(255, 255, 255, 0.16);
-  border-radius: clamp(8px, 1.2vh, 12px);
-  padding: clamp(6px, 1.1vh, 12px) clamp(8px, 1.2vw, 16px);
+  border-radius: 14px;
+  padding: 14px 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
+  gap: 14px;
   transition: all 0.15s ease;
   font-family: 'Outfit', sans-serif;
   text-align: left;
@@ -389,8 +382,8 @@ html, body {
 }
 
 .zombie-mode-indicator {
-  width: clamp(10px, 1.4vh, 14px);
-  height: clamp(10px, 1.4vh, 14px);
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.45);
@@ -401,18 +394,18 @@ html, body {
 .zombie-mode-text-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .zombie-mode-tag {
-  font-size: clamp(11.5px, min(1.3vw, 1.6vh), 14.5px);
+  font-size: 15.5px;
   font-weight: 900;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.5px;
   color: #cbd5e1;
 }
 
 .zombie-mode-sub {
-  font-size: clamp(9.5px, min(1vw, 1.3vh), 11.5px);
+  font-size: 12px;
   font-weight: 600;
   color: #78889b;
 }
@@ -450,10 +443,10 @@ html, body {
 .zombie-menu-actions {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.1vh, 12px);
+  gap: 10px;
   align-items: flex-start;
   width: 100%;
-  margin-top: clamp(-4px, -0.6vh, 0px);
+  margin-top: -6px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -471,8 +464,8 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  width: clamp(260px, min(28vw, 36vh), 400px);
-  height: clamp(46px, 7.8vh, 66px);
+  width: clamp(370px, 28vw, 450px);
+  height: 74px;
   background: transparent;
   border: none;
   outline: none;
@@ -507,16 +500,16 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: clamp(8px, 1.2vw, 14px);
+  gap: 16px;
   width: 100%;
   height: 100%;
-  padding-left: clamp(16px, 2vw, 30px);
-  padding-right: 14px;
+  padding-left: clamp(24px, 2.5vw, 36px);
+  padding-right: 20px;
 }
 
 .zombie-tape-btn .tape-slashes-svg {
-  width: clamp(30px, 3.8vw, 46px);
-  height: clamp(22px, 3vh, 34px);
+  width: 50px;
+  height: 38px;
   flex-shrink: 0;
   overflow: visible;
   filter: drop-shadow(0 0 5px #ff0a21) drop-shadow(0 0 12px rgba(229, 9, 20, 0.85));
@@ -527,16 +520,16 @@ html, body {
 .zombie-tape-btn .tape-text-row {
   display: flex;
   align-items: center;
-  gap: clamp(6px, 1vw, 12px);
+  gap: 12px;
   white-space: nowrap;
 }
 
 .zombie-tape-btn .tape-btn-text {
   font-family: 'Permanent Marker', cursive, sans-serif;
-  font-size: clamp(17px, min(2vw, 2.8vh), 27px);
+  font-size: clamp(26px, 2.2vw, 32px);
   font-weight: 900;
   color: #08090d;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
@@ -545,16 +538,16 @@ html, body {
 
 .zombie-tape-btn .tape-night-pill {
   font-family: 'Outfit', sans-serif;
-  font-size: clamp(10px, 1.2vh, 12px);
+  font-size: 12.5px;
   font-weight: 900;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: #ffffff;
   background: #e50914;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 2px 8px;
+  padding: 3px 11px;
   border-radius: 999px;
-  box-shadow: 0 0 10px rgba(229, 9, 20, 0.75);
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.75);
   white-space: nowrap;
   line-height: 1.2;
 }
@@ -587,7 +580,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(4px, 0.8vh, 8px);
+  gap: 8px;
   width: 100%;
 }
 
@@ -595,18 +588,18 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   background: rgba(14, 18, 28, 0.92);
   border: 1.5px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
   color: #cbd5e1;
   font-family: 'Outfit', sans-serif;
-  font-size: clamp(10.5px, 1.3vh, 12.5px);
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: clamp(4px, 0.8vh, 7px) clamp(10px, 1.4vw, 16px);
-  margin-left: 8px;
+  padding: 8px 20px;
+  margin-left: 14px;
   cursor: pointer;
   transition: all 160ms ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
@@ -630,7 +623,7 @@ html, body {
 }
 
 .zombie-restart-btn .restart-icon {
-  font-size: 13px;
+  font-size: 15px;
   color: #e50914;
   transition: transform 200ms ease;
 }
@@ -722,7 +715,7 @@ html, body {
 .zombie-nav-list {
   display: flex;
   flex-direction: column;
-  gap: clamp(4px, 0.8vh, 10px);
+  gap: 12px;
   align-items: flex-start;
   margin: 0;
 }
@@ -733,12 +726,12 @@ html, body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
-  padding: 2px 4px;
+  gap: 14px;
+  padding: 4px 6px;
   font-family: 'Permanent Marker', 'Outfit', cursive, sans-serif;
-  font-size: clamp(16px, min(1.8vw, 2.5vh), 27px);
+  font-size: clamp(26px, 2.1vw, 32px);
   font-weight: 900;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   transition: transform 0.15s ease, color 0.15s ease, text-shadow 0.15s ease;
   position: relative;
@@ -747,7 +740,7 @@ html, body {
 
 .zombie-nav-btn .nav-btn-text {
   white-space: nowrap;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
 }
 
 /* Nav Buttons: Clean Crisp Bone-White (Matches Zombie Theme) */
@@ -778,7 +771,7 @@ html, body {
 }
 
 .nav-btn-icon {
-  font-size: 20px;
+  font-size: 22px;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.85));
   flex-shrink: 0;
 }
@@ -787,12 +780,12 @@ html, body {
 .nav-badge-pill.badge-purple {
   background: #e50914;
   color: #ffffff;
-  font-size: clamp(9px, 1.2vh, 11px);
+  font-size: 11px;
   font-family: 'Outfit', sans-serif;
   font-weight: 900;
-  padding: clamp(2px, 0.3vh, 3px) clamp(6px, 0.8vw, 10px);
+  padding: 3px 11px;
   border-radius: 999px;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   box-shadow: 0 0 12px rgba(229, 9, 20, 0.85);
   animation: badgeGlow 1.5s infinite alternate;
   flex-shrink: 0;
@@ -802,12 +795,15 @@ html, body {
 /* ── Footer Controls Info Tip (Pinned to Bottom-Left) ─── */
 .zombie-cabinet-footer {
   position: absolute;
-  bottom: clamp(8px, 1.8vh, 26px);
-  left: clamp(24px, 6vw, 120px);
+  bottom: 34px;
+  left: clamp(64px, 8.5vw, 160px);
   z-index: 25;
   display: flex;
   align-items: center;
   font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
   color: #64748b;
   pointer-events: none;
 }
@@ -815,10 +811,10 @@ html, body {
 .zombie-footer-tip {
   display: flex;
   align-items: center;
-  gap: clamp(6px, 0.8vw, 10px);
+  gap: 11px;
   flex-wrap: wrap;
-  background: rgba(6, 8, 16, 0.90);
-  padding: clamp(4px, 0.8vh, 8px) clamp(10px, 1.3vw, 18px);
+  background: rgba(6, 8, 16, 0.88);
+  padding: 9px 24px;
   border-radius: 999px;
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
@@ -827,12 +823,12 @@ html, body {
 .tip-kbd {
   color: #e50914;
   font-weight: 900;
-  font-size: clamp(9.5px, 1.2vh, 12px);
+  font-size: 12.5px;
 }
 
 .tip-val {
   color: #cbd5e1;
-  font-size: clamp(10px, 1.2vh, 12px);
+  font-size: 13px;
 }
 
 .tip-sep {
@@ -3717,6 +3713,104 @@ html, body {
   .howto-stamina-intel {
     margin: 8px 0 6px;
     padding: 6px 10px;
+  }
+
+  /* Main Menu Compact Overrides (Only in windowed/short mode, preserves fullscreen beauty) */
+  .zombie-menu-left {
+    padding: clamp(14px, 2.5vh, 28px) 0 clamp(16px, 2.5vh, 28px) clamp(24px, 5vw, 90px);
+    gap: clamp(8px, 1.6vh, 16px);
+    overflow-y: auto;
+    scrollbar-width: none;
+    max-height: 100vh;
+  }
+  .zombie-title-group {
+    gap: 4px;
+  }
+  .zombie-subhead-row {
+    font-size: 13px;
+    gap: 8px;
+    letter-spacing: 2px;
+  }
+  .zombie-tag-icon { font-size: 16px; }
+  .zombie-subhead-badge {
+    padding: 2px 8px;
+    font-size: 10px;
+  }
+  .zombie-blood-text {
+    font-size: clamp(52px, min(10vw, 12vh), 108px);
+    letter-spacing: 4px;
+  }
+  .zombie-siege-text {
+    font-size: clamp(22px, min(4.2vw, 5.2vh), 44px);
+    letter-spacing: 7px;
+    margin-top: 3px;
+  }
+  .zombie-mode-selector {
+    max-width: 440px;
+    gap: 10px;
+  }
+  .zombie-mode-card {
+    padding: 8px 14px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+  .zombie-mode-tag {
+    font-size: 13px;
+  }
+  .zombie-mode-sub {
+    font-size: 10.5px;
+  }
+  .zombie-menu-actions {
+    gap: 8px;
+  }
+  .zombie-tape-btn {
+    width: clamp(280px, 30vw, 380px);
+    height: clamp(48px, 8vh, 62px);
+  }
+  .zombie-tape-btn .tape-content {
+    gap: 10px;
+    padding-left: 20px;
+  }
+  .zombie-tape-btn .tape-btn-text {
+    font-size: clamp(19px, 2.2vw, 24px);
+  }
+  .zombie-tape-btn .tape-slashes-svg {
+    width: 36px;
+    height: 26px;
+  }
+  .zombie-tape-btn .tape-night-pill {
+    font-size: 10.5px;
+    padding: 2px 8px;
+  }
+  .zombie-restart-btn {
+    padding: 5px 14px;
+    font-size: 11px;
+    gap: 5px;
+    margin-left: 10px;
+  }
+  .zombie-nav-list {
+    gap: 8px;
+  }
+  .zombie-nav-btn {
+    font-size: clamp(18px, 2vw, 24px);
+    gap: 10px;
+    padding: 2px 4px;
+  }
+  .nav-btn-icon {
+    font-size: 18px;
+  }
+  .nav-badge-pill {
+    font-size: 9.5px;
+    padding: 2px 8px;
+  }
+  .zombie-cabinet-footer {
+    bottom: clamp(6px, 1.5vh, 16px);
+    left: clamp(24px, 5vw, 90px);
+  }
+  .zombie-footer-tip {
+    padding: 5px 16px;
+    font-size: 11px;
+    gap: 8px;
   }
 }
 
