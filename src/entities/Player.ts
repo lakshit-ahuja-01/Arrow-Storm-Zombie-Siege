@@ -429,22 +429,12 @@ export class Player {
       const chargeEl = document.getElementById('charge-indicator');
       const fillEl = document.getElementById('charge-fill');
       const staminaTag = document.getElementById('charge-stamina-tag');
-      const statusPill = document.getElementById('charge-status-pill');
       if (chargeEl) {
         chargeEl.classList.remove('hidden');
         chargeEl.style.left = `${this.x}px`;
         chargeEl.style.top = `${this.y - 78}px`;
       }
       if (fillEl) fillEl.style.width = `${this.chargeFrac * 100}%`;
-      if (statusPill) {
-        if (this.chargeFrac >= 0.98) {
-          statusPill.textContent = '🎯 MAX POWER';
-          statusPill.classList.add('max-power');
-        } else {
-          statusPill.textContent = `${Math.round(this.chargeFrac * 100)}% TENSION`;
-          statusPill.classList.remove('max-power');
-        }
-      }
       if (staminaTag) {
         const canAfford = this.stamina >= currentCost;
         staminaTag.textContent = `⚡ -${currentCost} STAMINA`;

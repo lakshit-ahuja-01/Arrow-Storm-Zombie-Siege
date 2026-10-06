@@ -1,8 +1,8 @@
-# Arrow Storm: Undead Siege 🏹🧟‍♂️
+# Arrow Storm: Zombie Siege 🏹🧟‍♂️
 
-> **Unleash devastating archery combos and active ragdoll physics to survive the ultimate undead siege!**
+> **Unleash devastating archery combos and active ragdoll physics to survive the ultimate zombie siege!**
 
-**Arrow Storm: Undead Siege** is an action-packed, physics-driven ragdoll archery defense game built with Phaser 3, Matter.js, and TypeScript. Perched atop your fortified tower, command authentic recurve bow mechanics with dynamic draw tension to fend off relentless waves of mutating undead, siege crawlers, and colossal world bosses.
+**Arrow Storm: Zombie Siege** is an action-packed, physics-driven ragdoll archery defense game built with Phaser 3, Matter.js, and TypeScript. Perched atop your fortified tower, command authentic recurve bow mechanics with dynamic draw tension to fend off relentless waves of mutating undead, siege crawlers, and colossal world bosses.
 
 ---
 
@@ -26,10 +26,10 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/lakshit-ahuja-01/Arrow-Storm-Undead-Siege.git
+git clone https://github.com/lakshit-ahuja-01/Arrow-Storm-Zombie-Siege.git
 
 # Enter project directory
-cd Arrow-Storm-Undead-Siege
+cd Arrow-Storm-Zombie-Siege
 
 # Install dependencies
 npm install

@@ -269,36 +269,43 @@ html, body {
 .zombie-menu-left {
   position: relative;
   z-index: 10;
-  height: 100vh;
-  padding: 0 0 0 clamp(64px, 8.5vw, 160px);
+  height: 100%;
+  max-height: 100vh;
+  box-sizing: border-box;
+  padding: clamp(14px, 2.5vh, 42px) 0 clamp(16px, 3vh, 42px) clamp(24px, 6vw, 120px);
   width: 100%;
   max-width: 860px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 32px;
+  gap: clamp(8px, 1.8vh, 24px);
   text-align: left;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.zombie-menu-left::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Game Title Branding ───────────────────────────── */
 .zombie-title-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(3px, 0.8vh, 8px);
 }
 
 .zombie-subhead-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 16px;
+  gap: clamp(6px, 1vw, 12px);
+  font-size: clamp(10.5px, min(1.2vw, 1.6vh), 15px);
   font-weight: 900;
-  letter-spacing: 3.5px;
+  letter-spacing: clamp(1.5px, 0.3vw, 3px);
   text-transform: uppercase;
   color: #94a3b8;
 }
 
-.zombie-tag-icon { font-size: 22px; }
+.zombie-tag-icon { font-size: clamp(14px, 2vh, 20px); }
 
 .zombie-subhead-text {
   color: #e2e8f0;
@@ -308,13 +315,13 @@ html, body {
 .zombie-subhead-badge {
   background: rgba(229, 9, 20, 0.35);
   border: 1.5px solid rgba(229, 9, 20, 0.85);
-  padding: 4px 14px;
+  padding: clamp(2px, 0.4vh, 4px) clamp(6px, 0.9vw, 12px);
   border-radius: 6px;
   color: #ff4d4d;
-  font-size: 12px;
+  font-size: clamp(9.5px, 1.2vh, 12px);
   font-weight: 900;
-  letter-spacing: 1.5px;
-  box-shadow: 0 0 14px rgba(229, 9, 20, 0.65);
+  letter-spacing: 1.2px;
+  box-shadow: 0 0 12px rgba(229, 9, 20, 0.65);
 }
 
 .zombie-main-title {
@@ -326,10 +333,10 @@ html, body {
 
 .zombie-blood-text {
   font-family: 'Creepster', cursive;
-  font-size: clamp(104px, 12vw, 168px);
+  font-size: clamp(44px, min(9.5vw, 12vh), 132px);
   font-weight: 400;
   color: #e50914;
-  letter-spacing: 6px;
+  letter-spacing: clamp(3px, 0.5vw, 6px);
   text-shadow:
     0 4px 0 #7f0000,
     0 8px 0 #450a0a,
@@ -340,34 +347,34 @@ html, body {
 
 .zombie-siege-text {
   font-family: 'Black Ops One', 'Outfit', sans-serif;
-  font-size: clamp(40px, 4.5vw, 68px);
+  font-size: clamp(20px, min(4.2vw, 5.2vh), 54px);
   font-weight: 900;
   color: #ffffff;
-  letter-spacing: 12px;
+  letter-spacing: clamp(4px, 0.8vw, 10px);
   text-shadow:
     0 3px 0 #1e293b,
     0 6px 16px rgba(0, 0, 0, 0.95);
-  margin-top: 8px;
+  margin-top: clamp(2px, 0.5vh, 6px);
 }
 
 /* ── Mode Selector: Tactical Distressed Badges ─────── */
 .zombie-mode-selector {
   display: flex;
-  gap: 16px;
+  gap: clamp(8px, 1.2vw, 14px);
   width: 100%;
-  max-width: 540px;
+  max-width: clamp(280px, 36vw, 480px);
 }
 
 .zombie-mode-card {
   flex: 1;
   background: rgba(14, 18, 28, 0.92);
   border: 1.5px solid rgba(255, 255, 255, 0.16);
-  border-radius: 14px;
-  padding: 14px 20px;
+  border-radius: clamp(8px, 1.2vh, 12px);
+  padding: clamp(6px, 1.1vh, 12px) clamp(8px, 1.2vw, 16px);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: clamp(8px, 1vw, 12px);
   transition: all 0.15s ease;
   font-family: 'Outfit', sans-serif;
   text-align: left;
@@ -382,8 +389,8 @@ html, body {
 }
 
 .zombie-mode-indicator {
-  width: 15px;
-  height: 15px;
+  width: clamp(10px, 1.4vh, 14px);
+  height: clamp(10px, 1.4vh, 14px);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.45);
@@ -394,18 +401,18 @@ html, body {
 .zombie-mode-text-box {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .zombie-mode-tag {
-  font-size: 15.5px;
+  font-size: clamp(11.5px, min(1.3vw, 1.6vh), 14.5px);
   font-weight: 900;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: #cbd5e1;
 }
 
 .zombie-mode-sub {
-  font-size: 12px;
+  font-size: clamp(9.5px, min(1vw, 1.3vh), 11.5px);
   font-weight: 600;
   color: #78889b;
 }
@@ -443,10 +450,10 @@ html, body {
 .zombie-menu-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(6px, 1.1vh, 12px);
   align-items: flex-start;
   width: 100%;
-  margin-top: -6px;
+  margin-top: clamp(-4px, -0.6vh, 0px);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -464,8 +471,8 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  width: clamp(370px, 28vw, 450px);
-  height: 74px;
+  width: clamp(260px, min(28vw, 36vh), 400px);
+  height: clamp(46px, 7.8vh, 66px);
   background: transparent;
   border: none;
   outline: none;
@@ -500,16 +507,16 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 16px;
+  gap: clamp(8px, 1.2vw, 14px);
   width: 100%;
   height: 100%;
-  padding-left: clamp(24px, 2.5vw, 36px);
-  padding-right: 20px;
+  padding-left: clamp(16px, 2vw, 30px);
+  padding-right: 14px;
 }
 
 .zombie-tape-btn .tape-slashes-svg {
-  width: 50px;
-  height: 38px;
+  width: clamp(30px, 3.8vw, 46px);
+  height: clamp(22px, 3vh, 34px);
   flex-shrink: 0;
   overflow: visible;
   filter: drop-shadow(0 0 5px #ff0a21) drop-shadow(0 0 12px rgba(229, 9, 20, 0.85));
@@ -520,16 +527,16 @@ html, body {
 .zombie-tape-btn .tape-text-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(6px, 1vw, 12px);
   white-space: nowrap;
 }
 
 .zombie-tape-btn .tape-btn-text {
   font-family: 'Permanent Marker', cursive, sans-serif;
-  font-size: clamp(26px, 2.2vw, 32px);
+  font-size: clamp(17px, min(2vw, 2.8vh), 27px);
   font-weight: 900;
   color: #08090d;
-  letter-spacing: 2.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
@@ -538,16 +545,16 @@ html, body {
 
 .zombie-tape-btn .tape-night-pill {
   font-family: 'Outfit', sans-serif;
-  font-size: 12.5px;
+  font-size: clamp(10px, 1.2vh, 12px);
   font-weight: 900;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: #ffffff;
   background: #e50914;
   border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 3px 11px;
+  padding: 2px 8px;
   border-radius: 999px;
-  box-shadow: 0 0 12px rgba(229, 9, 20, 0.75);
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.75);
   white-space: nowrap;
   line-height: 1.2;
 }
@@ -580,7 +587,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: clamp(4px, 0.8vh, 8px);
   width: 100%;
 }
 
@@ -588,18 +595,18 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   background: rgba(14, 18, 28, 0.92);
   border: 1.5px solid rgba(255, 255, 255, 0.22);
   border-radius: 999px;
   color: #cbd5e1;
   font-family: 'Outfit', sans-serif;
-  font-size: 13px;
+  font-size: clamp(10.5px, 1.3vh, 12.5px);
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 8px 20px;
-  margin-left: 14px;
+  padding: clamp(4px, 0.8vh, 7px) clamp(10px, 1.4vw, 16px);
+  margin-left: 8px;
   cursor: pointer;
   transition: all 160ms ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
@@ -623,7 +630,7 @@ html, body {
 }
 
 .zombie-restart-btn .restart-icon {
-  font-size: 15px;
+  font-size: 13px;
   color: #e50914;
   transition: transform 200ms ease;
 }
@@ -715,7 +722,7 @@ html, body {
 .zombie-nav-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(4px, 0.8vh, 10px);
   align-items: flex-start;
   margin: 0;
 }
@@ -726,12 +733,12 @@ html, body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 4px 6px;
+  gap: clamp(8px, 1vw, 12px);
+  padding: 2px 4px;
   font-family: 'Permanent Marker', 'Outfit', cursive, sans-serif;
-  font-size: clamp(26px, 2.1vw, 32px);
+  font-size: clamp(16px, min(1.8vw, 2.5vh), 27px);
   font-weight: 900;
-  letter-spacing: 2.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   transition: transform 0.15s ease, color 0.15s ease, text-shadow 0.15s ease;
   position: relative;
@@ -740,7 +747,7 @@ html, body {
 
 .zombie-nav-btn .nav-btn-text {
   white-space: nowrap;
-  letter-spacing: 2.5px;
+  letter-spacing: 2px;
 }
 
 /* Nav Buttons: Clean Crisp Bone-White (Matches Zombie Theme) */
@@ -771,7 +778,7 @@ html, body {
 }
 
 .nav-btn-icon {
-  font-size: 22px;
+  font-size: 20px;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.85));
   flex-shrink: 0;
 }
@@ -780,12 +787,12 @@ html, body {
 .nav-badge-pill.badge-purple {
   background: #e50914;
   color: #ffffff;
-  font-size: 11px;
+  font-size: clamp(9px, 1.2vh, 11px);
   font-family: 'Outfit', sans-serif;
   font-weight: 900;
-  padding: 3px 11px;
+  padding: clamp(2px, 0.3vh, 3px) clamp(6px, 0.8vw, 10px);
   border-radius: 999px;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   box-shadow: 0 0 12px rgba(229, 9, 20, 0.85);
   animation: badgeGlow 1.5s infinite alternate;
   flex-shrink: 0;
@@ -795,25 +802,23 @@ html, body {
 /* ── Footer Controls Info Tip (Pinned to Bottom-Left) ─── */
 .zombie-cabinet-footer {
   position: absolute;
-  bottom: 34px;
-  left: clamp(64px, 8.5vw, 160px);
+  bottom: clamp(8px, 1.8vh, 26px);
+  left: clamp(24px, 6vw, 120px);
   z-index: 25;
   display: flex;
   align-items: center;
   font-family: 'Outfit', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 1px;
   color: #64748b;
+  pointer-events: none;
 }
 
 .zombie-footer-tip {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: clamp(6px, 0.8vw, 10px);
   flex-wrap: wrap;
-  background: rgba(6, 8, 16, 0.88);
-  padding: 9px 24px;
+  background: rgba(6, 8, 16, 0.90);
+  padding: clamp(4px, 0.8vh, 8px) clamp(10px, 1.3vw, 18px);
   border-radius: 999px;
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
@@ -822,12 +827,12 @@ html, body {
 .tip-kbd {
   color: #e50914;
   font-weight: 900;
-  font-size: 12.5px;
+  font-size: clamp(9.5px, 1.2vh, 12px);
 }
 
 .tip-val {
   color: #cbd5e1;
-  font-size: 13px;
+  font-size: clamp(10px, 1.2vh, 12px);
 }
 
 .tip-sep {
@@ -846,7 +851,7 @@ html, body {
   }
 
   .zombie-menu-left {
-    padding: 70px 20px 20px;
+    padding: clamp(14px, 3vh, 32px) clamp(14px, 3vw, 24px) clamp(16px, 2.5vh, 28px);
     max-width: 100%;
   }
 
@@ -1215,7 +1220,8 @@ html, body {
 #hud-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: clamp(4px, 0.8vw, 10px);
+  flex-shrink: 0;
 }
 
 #hud-gems, #hud-kills {
@@ -1657,31 +1663,7 @@ html, body {
   align-items: center;
   gap: 3px;
 }
-.charge-status-pill {
-  font-family: 'Outfit', sans-serif;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
-  color: #cbd5e1;
-  background: rgba(10, 14, 24, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-  padding: 1.5px 8px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
-  transition: all 0.1s ease;
-}
-.charge-status-pill.max-power {
-  color: #ffffff;
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-  border-color: #2ecc71;
-  box-shadow: 0 0 12px rgba(46, 204, 113, 0.85);
-  animation: maxPowerPulse 0.4s ease-in-out infinite alternate;
-}
-@keyframes maxPowerPulse {
-  from { transform: scale(1); filter: brightness(1); }
-  to   { transform: scale(1.08); filter: brightness(1.25); }
-}
+
 .charge-bar-bg {
   width: 86px;
   height: 10px;
@@ -3391,117 +3373,519 @@ html, body {
   touch-action: none;
 }
 
-/* ── Screen & Modal Responsiveness (< 900px) ────────── */
+/* ═══════════════════════════════════════════════════════
+   CRAZYGAMES EMBEDDED & RESPONSIVE VIEWPORT BREAKPOINTS
+   Ensures perfection in both CrazyGames windowed/minimized
+   mode (960x540, 800x450, etc.) and Fullscreen (1080p+)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Compact Viewport Heights (CrazyGames Standard Player <= 680px) ── */
+@media (max-height: 680px) {
+  #hud-controls-tip {
+    display: none !important;
+  }
+
+  #hud {
+    padding: 4px clamp(6px, 1.2vw, 12px);
+  }
+
+  #hud-left {
+    padding: 4px 8px;
+    gap: 3px;
+    border-radius: 9px;
+    max-width: min(230px, 30vw);
+  }
+
+  .hud-health {
+    gap: 1.5px;
+  }
+
+  .hud-label-row {
+    font-size: 8.5px;
+  }
+
+  .hud-label {
+    font-size: 8.5px;
+    gap: 3px;
+  }
+
+  .hud-val {
+    font-size: 9.5px;
+  }
+
+  .health-bar {
+    height: 8px;
+    width: clamp(80px, 15vw, 150px);
+    border-radius: 4px;
+  }
+
+  #hud-weapons-dock {
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .hud-weapon-btn {
+    padding: 2px 5px;
+    gap: 4px;
+    border-radius: 6px;
+  }
+
+  .hud-weapon-btn .weapon-slot-name {
+    font-size: 9px;
+  }
+
+  .hud-weapon-btn .weapon-slot-num {
+    font-size: 8px;
+    padding: 1px 3px;
+  }
+
+  .hud-weapon-btn .weapon-slot-icon {
+    font-size: 13px;
+  }
+
+  #hud-skills-dock {
+    gap: 4px;
+    margin-top: 2px;
+    padding-top: 3px;
+  }
+
+  .hud-skill-btn {
+    padding: 2px 5px;
+    gap: 4px;
+    border-radius: 6px;
+  }
+
+  .skill-icon-wrap {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+  }
+
+  .skill-icon {
+    font-size: 12px;
+  }
+
+  .skill-name {
+    font-size: 8px;
+  }
+
+  .skill-key {
+    font-size: 7.5px;
+    padding: 1px 3px;
+  }
+
+  #hud-tactical-dock {
+    gap: 3px;
+    margin-top: 2px;
+    padding-top: 3px;
+  }
+
+  .hud-skill-btn.skill-tactical {
+    padding: 2px 4px;
+  }
+
+  .hud-skill-btn.skill-tactical .skill-name {
+    font-size: 7.5px;
+  }
+
+  #hud-center-group {
+    top: 5px;
+    gap: 3px;
+  }
+
+  .boss-hud-bar {
+    min-width: 240px;
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  #hud-center {
+    padding: 3px 14px;
+    gap: 1px;
+  }
+
+  #hud-wave {
+    font-size: 11px;
+  }
+
+  #hud-enemies {
+    font-size: 9.5px;
+  }
+
+  .hud-mode-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+
+  #hud-right {
+    gap: 5px;
+  }
+
+  #hud-gems, #hud-kills {
+    padding: 3px 7px;
+    font-size: 11px;
+    gap: 3px;
+    border-radius: 7px;
+  }
+
+  .btn-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .btn-icon .hud-svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .pause-card {
+    padding: 16px 22px;
+    max-width: 380px;
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+
+  .pause-icon {
+    font-size: 28px;
+    margin-bottom: 2px;
+  }
+
+  .pause-card h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .pause-stats {
+    margin-bottom: 12px;
+    gap: 6px;
+  }
+
+  .pause-stat {
+    padding: 6px 8px;
+  }
+
+  .pause-stat span {
+    font-size: 9px;
+  }
+
+  .pause-stat strong {
+    font-size: 17px;
+  }
+
+  .pause-buttons {
+    gap: 7px;
+  }
+
+  .pause-buttons .btn {
+    padding: 8px 16px;
+    font-size: 12.5px;
+    border-radius: 8px;
+  }
+
+  .gameover-card {
+    padding: 16px 22px;
+    max-width: 440px;
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+
+  .gameover-icon {
+    font-size: 32px;
+    margin-bottom: 2px;
+  }
+
+  .gameover-card h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .gameover-stats {
+    margin-bottom: 12px;
+    gap: 6px;
+  }
+
+  .stat-item {
+    padding: 6px 8px;
+    min-width: 65px;
+  }
+
+  .stat-item strong {
+    font-size: 18px;
+  }
+
+  .gameover-buttons {
+    gap: 7px;
+  }
+
+  .gameover-buttons .btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .shop-card, .wardrobe-card {
+    max-height: 95vh;
+    padding: 10px 16px;
+    border-radius: 14px;
+  }
+
+  .shop-header, .wardrobe-header {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    gap: 8px;
+  }
+
+  .shop-blood-text {
+    font-size: 28px;
+  }
+
+  .shop-siege-text {
+    font-size: 16px;
+  }
+
+  .shop-controls-row {
+    margin-bottom: 6px;
+    gap: 6px;
+  }
+
+  .shop-filter-btn {
+    padding: 4px 10px;
+    font-size: 10.5px;
+  }
+
+  .shop-grid, .wardrobe-grid {
+    gap: 6px;
+    max-height: 52vh;
+  }
+
+  .shop-item {
+    min-height: 58px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .shop-item-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    min-height: 34px;
+    font-size: 18px;
+  }
+
+  .shop-item-name {
+    font-size: 12px;
+  }
+
+  .shop-item-desc {
+    font-size: 9.5px;
+  }
+
+  .shop-item-stat {
+    font-size: 9px !important;
+  }
+
+  .shop-buy-btn {
+    min-width: 85px;
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  .shop-footer {
+    padding-top: 6px;
+    gap: 8px;
+  }
+
+  .howto-card {
+    max-height: 92vh;
+    padding: 14px 20px;
+  }
+
+  .howto-card h2 {
+    font-size: 16px;
+  }
+
+  .howto-grid {
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .howto-item {
+    padding: 6px 10px;
+  }
+
+  .howto-stamina-intel {
+    margin: 8px 0 6px;
+    padding: 6px 10px;
+  }
+}
+
+/* ── Very Short Heights (<= 500px, e.g. 800x450 or smaller embedded windows) ── */
+@media (max-height: 500px) {
+  .zombie-cabinet-footer {
+    bottom: 6px;
+  }
+
+  .zombie-footer-tip {
+    padding: 3px 10px;
+    font-size: 10px;
+    gap: 5px;
+  }
+
+  .tip-kbd, .tip-val {
+    font-size: 9.5px;
+  }
+
+  #hud {
+    padding: 2px 8px;
+  }
+
+  #hud-left {
+    padding: 3px 6px;
+    gap: 2px;
+    max-width: min(200px, 28vw);
+  }
+
+  .health-bar {
+    height: 6px;
+    width: clamp(70px, 14vw, 120px);
+  }
+
+  .hud-label-row {
+    font-size: 7.5px;
+  }
+
+  .hud-label {
+    font-size: 7.5px;
+  }
+
+  .hud-val {
+    font-size: 8.5px;
+  }
+
+  .pause-card {
+    padding: 10px 16px;
+    max-height: 96vh;
+  }
+
+  .pause-icon {
+    font-size: 22px;
+    margin-bottom: 0px;
+  }
+
+  .pause-card h2 {
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .pause-stats {
+    margin-bottom: 8px;
+    gap: 4px;
+  }
+
+  .pause-stat {
+    padding: 4px 6px;
+  }
+
+  .pause-stat strong {
+    font-size: 15px;
+  }
+
+  .pause-buttons {
+    gap: 5px;
+  }
+
+  .pause-buttons .btn {
+    padding: 6px 12px;
+    font-size: 11.5px;
+  }
+
+  .gameover-card {
+    padding: 10px 16px;
+    max-height: 96vh;
+  }
+
+  .gameover-icon {
+    font-size: 24px;
+    margin-bottom: 0px;
+  }
+
+  .gameover-card h2 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .gameover-stats {
+    margin-bottom: 8px;
+    gap: 4px;
+  }
+
+  .stat-item {
+    padding: 4px 6px;
+    min-width: 55px;
+  }
+
+  .stat-item strong {
+    font-size: 15px;
+  }
+
+  .gameover-buttons {
+    gap: 5px;
+  }
+
+  .gameover-buttons .btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* ── Extreme Short Heights (<= 420px) ── */
+@media (max-height: 420px) {
+  .zombie-cabinet-footer {
+    display: none !important;
+  }
+}
+
+/* ── Compact Widths (< 900px) ── */
 @media (max-width: 900px) {
   #hud-controls-tip {
     display: none !important;
   }
-  #hud-left {
-    max-width: 38vw;
-  }
-  .health-bar {
-    width: clamp(110px, 20vw, 180px);
-  }
-  #hud-center-group {
-    top: 8px;
-  }
+
   .boss-hud-bar {
-    min-width: 260px;
-    width: 100%;
+    min-width: 240px;
   }
+
   .shop-card, .wardrobe-card, .pause-card, .gameover-card {
-    max-width: 94vw;
-    max-height: 92vh;
-    padding: 18px 20px;
+    max-width: 95vw;
   }
 }
 
-/* ── Mobile & Compact Viewports (< 640px) ───────────── */
+/* ── Mobile Widths (< 640px) ── */
 @media (max-width: 640px) {
-  #hud {
-    padding: 6px 8px;
-  }
   #hud-left {
-    padding: 6px 8px;
-    gap: 4px;
     max-width: 46vw;
-    border-radius: 10px;
   }
+
   .health-bar {
-    width: clamp(90px, 26vw, 130px);
-    height: 10px;
+    width: clamp(75px, 24vw, 120px);
   }
-  .hud-label-row {
-    font-size: 8.5px;
-  }
-  .hud-val {
-    font-size: 9.5px;
-  }
-  #hud-weapons-dock {
-    gap: 3px;
-    margin-top: 2px;
-  }
-  .hud-weapon-btn {
-    padding: 2px 4px;
-    font-size: 8px;
-    gap: 3px;
-  }
+
   .hud-weapon-btn .weapon-name {
     font-size: 8px;
   }
-  #hud-tactical-dock {
-    gap: 2px;
-    padding-top: 2px;
-  }
-  .hud-skill-btn.skill-tactical {
-    padding: 2px 4px;
-  }
+
   .hud-skill-btn.skill-tactical .skill-name {
     display: none;
   }
-  #hud-right {
-    gap: 4px;
-  }
-  #hud-right .btn-icon {
-    width: 28px;
-    height: 28px;
-  }
-  #hud-gems, #hud-kills {
-    padding: 2px 6px;
-    font-size: 11px;
-    gap: 4px;
-  }
+
   .gameover-buttons {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
+
   .gameover-buttons .btn {
     width: 100%;
-  }
-}
-
-/* ── Mobile Landscape Orientation ───────────────────── */
-@media (max-height: 500px) and (orientation: landscape) {
-  #hud {
-    padding: 4px 10px;
-  }
-  #hud-left {
-    padding: 4px 8px;
-    gap: 3px;
-  }
-  .health-bar {
-    height: 9px;
-  }
-  #hud-center-group {
-    top: 4px;
-    gap: 4px;
-  }
-  .shop-card, .wardrobe-card {
-    max-height: 96vh;
-    padding: 10px 14px;
-  }
-  .shop-grid, .wardrobe-grid {
-    max-height: 48vh;
   }
 }
 
