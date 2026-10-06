@@ -3,11 +3,17 @@ import { MainScene } from './scenes/MainScene';
 import { soundFX } from './systems/SoundFX';
 import { uiManager } from './systems/UIManager';
 import { crazyGames } from './systems/CrazyGamesSDK';
+import { syncMobileMode } from './utils/DeviceDetection';
+
+// Apply initial device detection immediately
+syncMobileMode();
 
 // Signal loading start to CrazyGames immediately
 crazyGames.loadingStart();
 crazyGames.init().then(() => {
   crazyGames.loadingStop();
+  // Re-sync mobile mode if CrazyGames SDK reported mobile/tablet device info
+  syncMobileMode();
 });
 
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -78,12 +84,14 @@ function getScene(): MainScene | null {
 }
 
 window.addEventListener('resize', () => {
+  syncMobileMode();
   const s = getScene();
   if (s) s.handleResize();
 });
 
 window.addEventListener('orientationchange', () => {
   setTimeout(() => {
+    syncMobileMode();
     const s = getScene();
     if (s) s.handleResize();
   }, 120);

@@ -349,6 +349,18 @@ export class MainScene extends Phaser.Scene {
 
     // Global window listeners: guarantees bow ALWAYS aims and ALWAYS releases even during fast mouse or touch drags
     const getAimCoords = (clientX: number, clientY: number) => {
+      const canvasEl = this.game.canvas;
+      if (canvasEl) {
+        const rect = canvasEl.getBoundingClientRect();
+        if (rect && rect.width > 0 && rect.height > 0) {
+          const normX = (clientX - rect.left) / rect.width;
+          const normY = (clientY - rect.top) / rect.height;
+          return {
+            x: normX * this.scale.width,
+            y: normY * this.scale.height
+          };
+        }
+      }
       const scaleX = this.scale.width / (window.innerWidth || 1);
       const scaleY = this.scale.height / (window.innerHeight || 1);
       return { x: clientX * scaleX, y: clientY * scaleY };
@@ -382,6 +394,19 @@ export class MainScene extends Phaser.Scene {
       }
     });
 
+    window.addEventListener('touchstart', (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest && target.closest('button, .btn, .hud-weapon-btn, .hud-skill-btn, .mobile-jump-btn, input, a, .interactive')) {
+        return;
+      }
+      try { soundFX.ensure(); } catch {}
+      if (this.state === 'playing' && this.player && !this.player.dead && e.touches.length > 0) {
+        const coords = getAimCoords(e.touches[0].clientX, e.touches[0].clientY);
+        this.player.setAim(coords.x, coords.y);
+        this.player.startCharge();
+      }
+    }, { passive: true });
+
     window.addEventListener('touchmove', (e: TouchEvent) => {
       if (e.touches && e.touches.length > 0 && this.player && !this.player.dead) {
         const coords = getAimCoords(e.touches[0].clientX, e.touches[0].clientY);
@@ -411,6 +436,12 @@ export class MainScene extends Phaser.Scene {
         }
       }
     });
+
+    window.addEventListener('touchcancel', () => {
+      if (this.player) {
+        this.player.isCharging = false;
+      }
+    }, { passive: true });
 
     // Wire HTML UI Buttons
     this.wireUI();
@@ -940,7 +971,6 @@ export class MainScene extends Phaser.Scene {
 
   public openShop(): void {
     crazyGames.gameplayStop();
-    crazyGames.requestMidgameAd();
     uiManager.shopOpenedFromMenu = false;
     // Clean up dead bodies immediately when entering shop
     for (const z of this.zombies) {
@@ -1810,7 +1840,7 @@ export class MainScene extends Phaser.Scene {
 
   public showGameOver(reason: string): void {
     crazyGames.gameplayStop();
-    crazyGames.requestMidgameAd();
+    crazyGames.recordGamePlayedAndCheckMidgameAd();
     if (this.gameMode === 'campaign' && this.wave > 0) {
       this.campaignWave = this.wave;
     }

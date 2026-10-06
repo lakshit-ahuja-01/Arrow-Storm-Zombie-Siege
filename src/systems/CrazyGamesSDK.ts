@@ -32,6 +32,13 @@ declare global {
           loadingStart: () => void;
           loadingStop: () => void;
         };
+        user?: {
+          getSystemInfo: () => Promise<{
+            device?: { type?: 'desktop' | 'tablet' | 'mobile' };
+            os?: { name?: string };
+            browser?: { name?: string };
+          }>;
+        };
       };
     };
   }
@@ -42,6 +49,7 @@ class CrazyGamesManager {
   private isAdPlaying: boolean = false;
   private soundWasMutedBeforeAd: boolean = false;
   private isGameplayActive: boolean = false;
+  private deviceType: 'desktop' | 'tablet' | 'mobile' | null = null;
 
   public async init(): Promise<void> {
     if (this.isInitialized) return;
@@ -51,12 +59,39 @@ class CrazyGamesManager {
         await window.CrazyGames.SDK.init();
         this.isInitialized = true;
         console.log('[CrazyGames SDK v3] Initialized successfully');
+        try {
+          await this.getSystemInfo();
+        } catch {}
       } else {
         console.info('ℹ️ [CrazyGames SDK] Standalone/Offline mode active');
       }
     } catch (err) {
       console.warn('⚠️ [CrazyGames SDK] Initialization fallback:', err);
     }
+  }
+
+  public async getSystemInfo(): Promise<any> {
+    try {
+      if (window.CrazyGames?.SDK?.user?.getSystemInfo) {
+        const sys = await window.CrazyGames.SDK.user.getSystemInfo();
+        if (sys?.device?.type) {
+          this.deviceType = sys.device.type;
+          console.log(`[CrazyGames SDK v3] Device type detected: ${this.deviceType}`);
+        }
+        return sys;
+      }
+    } catch (err) {
+      console.warn('⚠️ [CrazyGames SDK] getSystemInfo fallback:', err);
+    }
+    return null;
+  }
+
+  public getDeviceType(): 'desktop' | 'tablet' | 'mobile' | null {
+    return this.deviceType;
+  }
+
+  public isMobile(): boolean {
+    return this.deviceType === 'mobile' || this.deviceType === 'tablet';
   }
 
   public loadingStart(): void {
@@ -94,6 +129,31 @@ class CrazyGamesManager {
       window.CrazyGames?.SDK?.game?.happytime();
       console.log('🎉 [CrazyGames] happytime celebration triggered');
     } catch {}
+  }
+
+  private gamesPlayedCount: number = 0;
+
+  /**
+   * Tracks completed games and triggers a midgame ad every 5 games played.
+   */
+  public recordGamePlayedAndCheckMidgameAd(): void {
+    let count = 0;
+    try {
+      const stored = localStorage.getItem('ragdoll_archers_games_played');
+      count = stored ? parseInt(stored, 10) : 0;
+      if (isNaN(count)) count = 0;
+      count += 1;
+      localStorage.setItem('ragdoll_archers_games_played', count.toString());
+    } catch {
+      this.gamesPlayedCount += 1;
+      count = this.gamesPlayedCount;
+    }
+
+    console.log(`[CrazyGames] Game session finished. Total games played: ${count}. (Ad triggers every 5 games)`);
+    if (count > 0 && count % 5 === 0) {
+      console.log(`[CrazyGames] 5-game milestone reached (${count})! Requesting midgame ad.`);
+      this.requestMidgameAd();
+    }
   }
 
   /**
