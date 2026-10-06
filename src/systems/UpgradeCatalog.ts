@@ -546,17 +546,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
     maxLevel: 3,
     level: 0,
   },
-  {
-    id: 'trebuchet',
-    category: 'tower',
-    name: 'Siege Trebuchet',
-    icon: '⚔️',
-    desc: 'Installs a rooftop war trebuchet that hurls boulders at zombies every 4s for 90 AoE damage',
-    cost: 75,
-    statLabel: 'Trebuchet: 90 AoE every 4s',
-    apply: (_p: any, tower: any) => { if (tower) tower.hasTrebuchet = true; },
-    oneTime: true,
-  },
+
   {
     id: 'smokeScreen',
     category: 'tower',

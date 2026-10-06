@@ -133,7 +133,7 @@
 
         <!-- Footer Controls Info Tip (Pinned to Bottom-Left) -->
         <footer class="zombie-cabinet-footer">
-          <div class="zombie-footer-tip">
+          <div class="zombie-footer-tip desktop-tip">
             <span class="tip-kbd">AIM & FIRE:</span>
             <span class="tip-val">MOUSE</span>
             <span class="tip-sep">•</span>
@@ -142,6 +142,13 @@
             <span class="tip-sep">•</span>
             <span class="tip-kbd">PAUSE:</span>
             <span class="tip-val">P</span>
+          </div>
+          <div class="zombie-footer-tip mobile-tip">
+            <span class="tip-kbd">AIM & FIRE:</span>
+            <span class="tip-val">DRAG & RELEASE</span>
+            <span class="tip-sep">•</span>
+            <span class="tip-kbd">DODGE:</span>
+            <span class="tip-val">JUMP BUTTON</span>
           </div>
         </footer>
       </div>
@@ -229,7 +236,7 @@
         <div class="pause-buttons">
           <button id="btn-pause-resume" class="btn btn-primary">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-            <span>RESUME [P / ESC]</span>
+            <span>RESUME</span>
           </button>
           <button id="btn-pause-restart" class="btn btn-ghost">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
@@ -289,84 +296,85 @@
           </div>
         </div>
 
-        <!-- Dual Weapon Loadout Dock ([1] / [2] or [Q] to Quick-Swap) -->
-        <div id="hud-weapons-dock">
-          <button id="weapon-slot-1" class="hud-weapon-btn active" title="Primary Bow [1]" type="button">
-            <span class="weapon-slot-num">[1]</span>
-            <span class="weapon-slot-icon" id="weapon-icon-1">🏹</span>
-            <span class="weapon-slot-name" id="weapon-name-1">STANDARD</span>
-          </button>
-          <button id="weapon-slot-2" class="hud-weapon-btn slot-2" title="Secondary Bow [2]" type="button">
-            <span class="weapon-slot-num">[2]</span>
-            <span class="weapon-slot-icon" id="weapon-icon-2">🏹</span>
-            <span class="weapon-slot-name" id="weapon-name-2">NONE</span>
-          </button>
-        </div>
-
-        <!-- Active Tactical Ultimate Skills Dock (F / E Hotkeys) -->
-        <div id="hud-skills-dock">
-          <button id="skill-btn-volley" class="hud-skill-btn ready skill-volley" title="Rain of Fire Volley [F]" type="button">
-            <div class="skill-icon-wrap">
-              <span class="skill-icon" id="skill-icon-volley">🔥</span>
-              <div class="skill-cooldown-overlay" id="skill-cd-overlay-volley"></div>
-              <span class="skill-cd-text" id="skill-cd-text-volley">READY</span>
-            </div>
-            <div class="skill-meta">
-              <span class="skill-name">VOLLEY</span>
-              <span class="skill-key" id="skill-key-volley">[F]</span>
-            </div>
-          </button>
-
-          <button id="skill-btn-frost" class="hud-skill-btn ready skill-frost" title="Glacial Frost Nova [E]" type="button">
-            <div class="skill-icon-wrap">
-              <span class="skill-icon" id="skill-icon-frost">❄️</span>
-              <div class="skill-cooldown-overlay" id="skill-cd-overlay-frost"></div>
-              <span class="skill-cd-text" id="skill-cd-text-frost">READY</span>
-            </div>
-            <div class="skill-meta">
-              <span class="skill-name">FROST NOVA</span>
-              <span class="skill-key" id="skill-key-frost">[E]</span>
-            </div>
-          </button>
-        </div>
-
-        <!-- Special Tactical Skills Dock (R / T / G Hotkeys) - Only appears when purchased -->
-        <div id="hud-tactical-dock" style="display: none;">
-          <button id="skill-btn-nuke" class="hud-skill-btn skill-tactical skill-nuke" title="Orbital Nuclear Strike [R]" type="button" style="display: none;">
-            <div class="skill-icon-wrap">
-              <span class="skill-icon">💥</span>
-              <span class="skill-charge-badge" id="skill-charge-nuke">0</span>
-            </div>
-            <div class="skill-meta">
-              <span class="skill-name">NUKE</span>
-              <span class="skill-key">[R]</span>
-            </div>
-          </button>
-
-          <button id="skill-btn-lightning" class="hud-skill-btn skill-tactical skill-lightning" title="Chain Lightning Tempest [T]" type="button" style="display: none;">
-            <div class="skill-icon-wrap">
-              <span class="skill-icon">⚡</span>
-              <span class="skill-charge-badge" id="skill-charge-lightning">0</span>
-            </div>
-            <div class="skill-meta">
-              <span class="skill-name">LIGHTNING</span>
-              <span class="skill-key">[T]</span>
-            </div>
-          </button>
-
-          <button id="skill-btn-aegis" class="hud-skill-btn skill-tactical skill-aegis" title="Divine Aegis Shield [G]" type="button" style="display: none;">
-            <div class="skill-icon-wrap">
-              <span class="skill-icon">🌟</span>
-              <span class="skill-charge-badge" id="skill-charge-aegis">0</span>
-            </div>
-            <div class="skill-meta">
-              <span class="skill-name">AEGIS</span>
-              <span class="skill-key">[G]</span>
-            </div>
-          </button>
-        </div>
+      <!-- Dual Weapon Loadout Dock ([1] / [2] or [Q] to Quick-Swap) -->
+      <div id="hud-weapons-dock">
+        <button id="weapon-slot-1" class="hud-weapon-btn active" title="Primary Bow [1]" type="button">
+          <span class="weapon-slot-num">[1]</span>
+          <span class="weapon-slot-icon" id="weapon-icon-1">🏹</span>
+          <span class="weapon-slot-name" id="weapon-name-1">STANDARD</span>
+        </button>
+        <button id="weapon-slot-2" class="hud-weapon-btn slot-2" title="Secondary Bow [2]" type="button">
+          <span class="weapon-slot-num">[2]</span>
+          <span class="weapon-slot-icon" id="weapon-icon-2">🏹</span>
+          <span class="weapon-slot-name" id="weapon-name-2">NONE</span>
+        </button>
       </div>
-      <div id="hud-center-group">
+
+      <!-- Active Tactical Ultimate Skills Dock (F / E Hotkeys) -->
+      <div id="hud-skills-dock">
+        <button id="skill-btn-volley" class="hud-skill-btn ready skill-volley" title="Rain of Fire Volley [F]" type="button">
+          <div class="skill-icon-wrap">
+            <span class="skill-icon" id="skill-icon-volley">🔥</span>
+            <div class="skill-cooldown-overlay" id="skill-cd-overlay-volley"></div>
+            <span class="skill-cd-text" id="skill-cd-text-volley">READY</span>
+          </div>
+          <div class="skill-meta">
+            <span class="skill-name">VOLLEY</span>
+            <span class="skill-key" id="skill-key-volley">[F]</span>
+          </div>
+        </button>
+
+        <button id="skill-btn-frost" class="hud-skill-btn ready skill-frost" title="Glacial Frost Nova [E]" type="button">
+          <div class="skill-icon-wrap">
+            <span class="skill-icon" id="skill-icon-frost">❄️</span>
+            <div class="skill-cooldown-overlay" id="skill-cd-overlay-frost"></div>
+            <span class="skill-cd-text" id="skill-cd-text-frost">READY</span>
+          </div>
+          <div class="skill-meta">
+            <span class="skill-name">FROST NOVA</span>
+            <span class="skill-key" id="skill-key-frost">[E]</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Special Tactical Skills Dock (R / T / G Hotkeys) - Only appears when purchased -->
+      <div id="hud-tactical-dock" style="display: none;">
+        <button id="skill-btn-nuke" class="hud-skill-btn skill-tactical skill-nuke" title="Orbital Nuclear Strike [R]" type="button" style="display: none;">
+          <div class="skill-icon-wrap">
+            <span class="skill-icon">💥</span>
+            <span class="skill-charge-badge" id="skill-charge-nuke">0</span>
+          </div>
+          <div class="skill-meta">
+            <span class="skill-name">NUKE</span>
+            <span class="skill-key">[R]</span>
+          </div>
+        </button>
+
+        <button id="skill-btn-lightning" class="hud-skill-btn skill-tactical skill-lightning" title="Chain Lightning Tempest [T]" type="button" style="display: none;">
+          <div class="skill-icon-wrap">
+            <span class="skill-icon">⚡</span>
+            <span class="skill-charge-badge" id="skill-charge-lightning">0</span>
+          </div>
+          <div class="skill-meta">
+            <span class="skill-name">LIGHTNING</span>
+            <span class="skill-key">[T]</span>
+          </div>
+        </button>
+
+        <button id="skill-btn-aegis" class="hud-skill-btn skill-tactical skill-aegis" title="Divine Aegis Shield [G]" type="button" style="display: none;">
+          <div class="skill-icon-wrap">
+            <span class="skill-icon">🌟</span>
+            <span class="skill-charge-badge" id="skill-charge-aegis">0</span>
+          </div>
+          <div class="skill-meta">
+            <span class="skill-name">AEGIS</span>
+            <span class="skill-key">[G]</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div id="hud-center-group">
         <!-- Epic Boss Encounter Health Bar (Visible during Boss Waves / Apex Encounters) -->
         <div id="boss-hud-bar" class="boss-hud-bar hidden">
           <div class="boss-hud-header">
@@ -420,6 +428,14 @@
       <div id="hud-controls-tip">
         <kbd class="key-pill">Mouse</kbd> Aim &amp; Shoot • <kbd class="key-pill">SPACE</kbd> Dodge • <kbd class="key-pill">1/2/Q</kbd> Weapons • <kbd class="key-pill">F</kbd> Volley • <kbd class="key-pill">E</kbd> Frost • <kbd class="key-pill">R/T/G</kbd> Specials • <kbd class="key-pill">P</kbd> Pause
       </div>
+
+      <!-- Dedicated Tactile Mobile Jump & Dodge Button (Visible on Mobile) -->
+      <button id="mobile-jump-btn" class="mobile-jump-btn" type="button" aria-label="Jump and Dodge">
+        <svg class="jump-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+        <span class="jump-text">JUMP</span>
+      </button>
     </div>
 
     <!-- Wave Announcement Banner -->

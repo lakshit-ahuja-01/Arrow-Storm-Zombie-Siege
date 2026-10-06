@@ -21,8 +21,6 @@ export class Tower {
   public damageReduction: number = 0;
   public hpRegen: number = 0;
   public hpRegenTimer: number = 0;
-  public hasTrebuchet: boolean = false;
-  public trebuchetTimer: number = 0;
   public hasSmokeScreen: boolean = false;
 
   private _customX: number | null = null;
@@ -116,40 +114,7 @@ export class Tower {
       }
     }
 
-    // 4. Siege Trebuchet (Launches heavy explosive boulder every 4s)
-    if (this.hasTrebuchet) {
-      this.trebuchetTimer -= dt;
-      if (this.trebuchetTimer <= 0) {
-        this.trebuchetTimer = 4.0;
-        let bestTarget: any = null;
-        let minDist = 999999;
-        for (const z of enemies) {
-          if (!z.dead && z.x > this.x + 90) {
-            const d = z.x - this.x;
-            if (d < minDist) {
-              minDist = d;
-              bestTarget = z;
-            }
-          }
-        }
-        if (bestTarget && (this.scene as any).spawnExplosion) {
-          const tx = bestTarget.x;
-          const ty = bestTarget.y - 10;
-          (this.scene as any).spawnExplosion(tx, ty, 110);
-          soundFX.playExplosion();
-          (this.scene as any).shakeScreen?.(6, 0.2);
-          (this.scene as any).spawnFloatingText?.('⚔️ TREBUCHET IMPACT! -90 AOE', tx, ty - 45, '#e67e22', 20);
-          for (const z of enemies) {
-            if (!z.dead) {
-              const dist = Phaser.Math.Distance.Between(tx, ty, z.x, z.y - 25 * z.scale);
-              if (dist <= 110) {
-                z.takeDamage(90, 80, -60, false, 'torso');
-              }
-            }
-          }
-        }
-      }
-    }
+
   }
 
   public render(g: Phaser.GameObjects.Graphics): void {
@@ -315,26 +280,6 @@ export class Tower {
       g.fillCircle(sx, sy - 1, 9);
     }
 
-    // 11. Siege Trebuchet Mounted on Tower Scaffolding
-    if (this.hasTrebuchet) {
-      const bx = tx - w / 2 + 12;
-      const by = ty - 40;
-      // Wooden A-Frame Base
-      g.lineStyle(4, 0x4a2810, 1);
-      g.lineBetween(bx - 12, ty, bx, by);
-      g.lineBetween(bx + 12, ty, bx, by);
-      g.lineBetween(bx - 10, ty - 12, bx + 10, ty - 12);
-      // Trebuchet Beam
-      g.lineStyle(3.5, 0x6b3c1b, 1);
-      g.lineBetween(bx - 14, by + 12, bx + 22, by - 16);
-      // Heavy Counterweight Box
-      g.fillStyle(0x2d1806, 1);
-      g.fillRect(bx - 19, by + 8, 10, 10);
-      g.lineStyle(1.5, 0x718093, 1);
-      g.strokeRect(bx - 19, by + 8, 10, 10);
-      // Stone Boulder ready in sling
-      g.fillStyle(0x95a5a6, 1);
-      g.fillCircle(bx + 20, by - 14, 4.5);
-    }
+
   }
 }

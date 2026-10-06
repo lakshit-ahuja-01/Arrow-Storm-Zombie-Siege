@@ -9,6 +9,7 @@ import { createUpgradeCatalog } from '../systems/UpgradeCatalog';
 import { soundFX } from '../systems/SoundFX';
 import { uiManager } from '../systems/UIManager';
 import { crazyGames } from '../systems/CrazyGamesSDK';
+import { getGameResolution } from '../main';
 
 interface ActiveVortex {
   x: number;
@@ -270,13 +271,12 @@ export class MainScene extends Phaser.Scene {
   }
 
   public create(): void {
-    const w = this.cameras.main.width;
-    const h = this.cameras.main.height;
-
-    // Matter world bounds & gravity
+    const res = getGameResolution();
+    const w = res.width;
+    const h = res.height;
+    this.scale.resize(w, h);
+    this.cameras.main.setSize(w, h);
     this.matter.world.setBounds(0, 0, w, h * 0.72 + 20);
-    this.scale.on('resize', (gameSize: Phaser.Structs.Size) => this.handleResize(gameSize));
-    window.addEventListener('resize', () => this.handleResize());
 
     this.graphicsLayer = this.add.graphics();
     this.upgrades = createUpgradeCatalog();
@@ -321,7 +321,7 @@ export class MainScene extends Phaser.Scene {
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       try { soundFX.ensure(); } catch {}
-      if (this.state === 'playing' && pointer.leftButtonDown() && this.player && !this.player.dead) {
+      if (this.state === 'playing' && (pointer.leftButtonDown() || pointer.isDown) && this.player && !this.player.dead) {
         this.player.setAim(pointer.x, pointer.y);
         this.player.startCharge();
       }
@@ -347,16 +347,54 @@ export class MainScene extends Phaser.Scene {
       }
     });
 
-    // Global window listeners: guarantees bow ALWAYS aims and ALWAYS releases even during fast drags
+    // Global window listeners: guarantees bow ALWAYS aims and ALWAYS releases even during fast mouse or touch drags
+    const getAimCoords = (clientX: number, clientY: number) => {
+      const scaleX = this.scale.width / (window.innerWidth || 1);
+      const scaleY = this.scale.height / (window.innerHeight || 1);
+      return { x: clientX * scaleX, y: clientY * scaleY };
+    };
+
     window.addEventListener('mousemove', (e: MouseEvent) => {
       if (this.player && !this.player.dead) {
-        this.player.setAim(e.clientX, e.clientY);
+        const coords = getAimCoords(e.clientX, e.clientY);
+        this.player.setAim(coords.x, coords.y);
       }
     });
 
     window.addEventListener('mouseup', (e: MouseEvent) => {
       if (this.state === 'playing' && this.player && this.player.isCharging) {
-        this.player.setAim(e.clientX, e.clientY);
+        const coords = getAimCoords(e.clientX, e.clientY);
+        this.player.setAim(coords.x, coords.y);
+        const released = this.player.releaseArrow();
+        if (released) {
+          const spawnPos = this.player.getBowTipPosition();
+          released.forEach(r => {
+            const startX = r.x !== undefined ? r.x : spawnPos.x;
+            const startY = r.y !== undefined ? r.y : spawnPos.y;
+            this.arrows.push(new Arrow(this, startX, startY, r.vx, r.vy, 'player1', {
+              damage: r.damage,
+              type: r.type,
+              bonusPierce: r.bonusPierce,
+              isPrimaryStorm: r.isPrimaryStorm
+            }));
+          });
+        }
+      }
+    });
+
+    window.addEventListener('touchmove', (e: TouchEvent) => {
+      if (e.touches && e.touches.length > 0 && this.player && !this.player.dead) {
+        const coords = getAimCoords(e.touches[0].clientX, e.touches[0].clientY);
+        this.player.setAim(coords.x, coords.y);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e: TouchEvent) => {
+      if (this.state === 'playing' && this.player && this.player.isCharging) {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const coords = getAimCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+          this.player.setAim(coords.x, coords.y);
+        }
         const released = this.player.releaseArrow();
         if (released) {
           const spawnPos = this.player.getBowTipPosition();
@@ -594,6 +632,20 @@ export class MainScene extends Phaser.Scene {
       btnAegis.onclick = () => {
         if (this.state === 'playing') this.triggerDivineAegis();
       };
+    }
+
+    const btnMobileJump = document.getElementById('mobile-jump-btn');
+    if (btnMobileJump) {
+      const doJump = (ev: Event) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try { soundFX.ensure(); } catch {}
+        if (this.state === 'playing' && this.player && !this.player.dead) {
+          this.player.triggerJump();
+        }
+      };
+      btnMobileJump.addEventListener('touchstart', doJump, { passive: false });
+      btnMobileJump.addEventListener('click', doJump);
     }
 
     window.addEventListener('keydown', e => {
@@ -1122,6 +1174,9 @@ export class MainScene extends Phaser.Scene {
         }
         if (!this.unlockedSkins.includes(this.currentSkin)) {
           this.unlockedSkins.push(this.currentSkin);
+        }
+        if (Array.isArray(data.upgrades)) {
+          data.upgrades = data.upgrades.filter((u: any) => u.id !== 'trebuchet');
         }
         if (Array.isArray(data.upgrades) && this.upgrades) {
           data.upgrades.forEach((saved: any) => {
@@ -3580,9 +3635,11 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
-  public handleResize(gameSize?: Phaser.Structs.Size): void {
-    const w = gameSize?.width || this.scale.width || window.innerWidth;
-    const h = gameSize?.height || this.scale.height || window.innerHeight;
+  public handleResize(_gameSize?: Phaser.Structs.Size): void {
+    const res = getGameResolution();
+    const w = res.width;
+    const h = res.height;
+    this.scale.resize(w, h);
     this.cameras.main.setSize(w, h);
     this.matter.world.setBounds(0, 0, w, h * 0.72 + 20);
 

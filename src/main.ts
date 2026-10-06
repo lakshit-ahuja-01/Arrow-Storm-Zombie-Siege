@@ -27,11 +27,32 @@ try {
   renderType = Phaser.CANVAS;
 }
 
+export function getGameResolution(): { width: number; height: number } {
+  const minWidth = 1200;
+  const screenW = window.innerWidth || document.documentElement.clientWidth || 1200;
+  const screenH = window.innerHeight || document.documentElement.clientHeight || 675;
+
+  if (screenW < minWidth) {
+    const aspect = screenH / screenW;
+    return {
+      width: minWidth,
+      height: Math.round(minWidth * aspect)
+    };
+  }
+
+  return {
+    width: screenW,
+    height: screenH
+  };
+}
+
+const initialRes = getGameResolution();
+
 const config: Phaser.Types.Core.GameConfig = {
   type: renderType,
   canvas: canvas,
-  width: window.innerWidth,
-  height: window.innerHeight,
+  width: initialRes.width,
+  height: initialRes.height,
   backgroundColor: '#0a0d14',
   physics: {
     default: 'matter',
@@ -41,10 +62,10 @@ const config: Phaser.Types.Core.GameConfig = {
     }
   },
   scale: {
-    mode: Phaser.Scale.RESIZE,
+    mode: Phaser.Scale.NONE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: '100%',
-    height: '100%'
+    width: initialRes.width,
+    height: initialRes.height
   },
   scene: [MainScene]
 };
@@ -55,6 +76,18 @@ export const game = new Phaser.Game(config);
 function getScene(): MainScene | null {
   return (game.scene.getScene('MainScene') as MainScene) || null;
 }
+
+window.addEventListener('resize', () => {
+  const s = getScene();
+  if (s) s.handleResize();
+});
+
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    const s = getScene();
+    if (s) s.handleResize();
+  }, 120);
+});
 
 function startGameWithScene() {
   try { soundFX.ensure(); } catch {}

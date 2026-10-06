@@ -357,9 +357,8 @@ export class UIManager {
       const isEquippedTar = up.id === 'tarMoat' && tower.hasTarMoat;
       const isEquippedPitchPits = up.id === 'pitchPits' && tower.hasPitchPits;
       const isEquippedBarrels = up.id === 'gunpowderBarrels' && tower.hasGunpowderBarrels;
-      const isEquippedTrebuchet = up.id === 'trebuchet' && tower.hasTrebuchet;
       const isEquippedSmoke = up.id === 'smokeScreen' && tower.hasSmokeScreen;
-      const isFortressDefense = isEquippedSpikes || isEquippedCaltrops || isEquippedTar || isEquippedPitchPits || isEquippedBarrels || isEquippedTrebuchet || isEquippedSmoke;
+      const isFortressDefense = isEquippedSpikes || isEquippedCaltrops || isEquippedTar || isEquippedPitchPits || isEquippedBarrels || isEquippedSmoke;
       const isOneTimeBought = !!up.oneTime && !!up.bought;
       const isEquipped = isEquippedBow || isFortressDefense || isOneTimeBought;
       const isMaxed = up.maxLevel ? (up.level || 0) >= up.maxLevel : false;

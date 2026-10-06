@@ -431,8 +431,10 @@ export class Player {
       const staminaTag = document.getElementById('charge-stamina-tag');
       if (chargeEl) {
         chargeEl.classList.remove('hidden');
-        chargeEl.style.left = `${this.x}px`;
-        chargeEl.style.top = `${this.y - 78}px`;
+        const scaleX = window.innerWidth / (this.scene.scale.width || window.innerWidth || 1);
+        const scaleY = window.innerHeight / (this.scene.scale.height || window.innerHeight || 1);
+        chargeEl.style.left = `${this.x * scaleX}px`;
+        chargeEl.style.top = `${(this.y - 78) * scaleY}px`;
       }
       if (fillEl) fillEl.style.width = `${this.chargeFrac * 100}%`;
       if (staminaTag) {
@@ -459,33 +461,7 @@ export class Player {
     this.prevSpace = spacePressed;
 
     if (spaceJustPressed && this.jumpsLeft > 0) {
-      const isEndlessMode = this.isEndless || (this.scene as any)?.gameMode === 'endless';
-      const minJumpStamina = isEndlessMode ? 3 : 4;
-      if (this.stamina < minJumpStamina) {
-        // Player is exhausted - cannot jump without stamina!
-        const sBar = document.getElementById('hud-stamina-p1');
-        if (sBar) {
-          sBar.classList.add('stamina-warning');
-          setTimeout(() => sBar.classList.remove('stamina-warning'), 650);
-        }
-        (this.scene as any).spawnFloatingText?.('⚠️ LOW STAMINA! CANNOT JUMP', this.x, this.y - 45, '#ff4757', 16);
-      } else {
-        // Deduct jump stamina and reset recovery delay
-        this.stamina = Math.max(0, this.stamina - this.jumpStaminaCost);
-        this.staminaRegenDelay = isEndlessMode ? 0.2 : 0.3;
-        this.jumpsLeft--;
-        const jumpPower = this.windWalkerLevel >= 2 ? -880 : (this.windWalkerLevel === 1 ? -820 : -720);
-        this.vy = jumpPower;
-        if (!this.onGround) {
-          soundFX.playJump();
-          (this.scene as any).spawnFloatingText?.(`DOUBLE JUMP! 🪽 (-${this.jumpStaminaCost} ⚡)`, this.x, this.y - 25, '#00d2d3', 16);
-          (this.scene as any).shakeScreen?.(4, 0.1);
-        } else {
-          soundFX.playJump();
-          (this.scene as any).spawnFloatingText?.(`-${this.jumpStaminaCost} ⚡ STAMINA`, this.x, this.y - 40, '#f1c40f', 14);
-        }
-        this.onGround = false;
-      }
+      this.triggerJump();
     }
 
     if (this.onGround) {
@@ -512,6 +488,36 @@ export class Player {
     }
 
     this.ragdoll.setPosition(this.x, this.y);
+  }
+
+  public triggerJump(): void {
+    if (this.dead || this.jumpsLeft <= 0) return;
+    const isEndlessMode = this.isEndless || (this.scene as any)?.gameMode === 'endless';
+    const minJumpStamina = isEndlessMode ? 3 : 4;
+    if (this.stamina < minJumpStamina) {
+      const sBar = document.getElementById('hud-stamina-p1');
+      if (sBar) {
+        sBar.classList.add('stamina-warning');
+        setTimeout(() => sBar.classList.remove('stamina-warning'), 650);
+      }
+      (this.scene as any).spawnFloatingText?.('⚠️ LOW STAMINA! CANNOT JUMP', this.x, this.y - 45, '#ff4757', 16);
+      return;
+    }
+
+    this.stamina = Math.max(0, this.stamina - this.jumpStaminaCost);
+    this.staminaRegenDelay = isEndlessMode ? 0.2 : 0.3;
+    this.jumpsLeft--;
+    const jumpPower = this.windWalkerLevel >= 2 ? -880 : (this.windWalkerLevel === 1 ? -820 : -720);
+    this.vy = jumpPower;
+    if (!this.onGround) {
+      soundFX.playJump();
+      (this.scene as any).spawnFloatingText?.(`DOUBLE JUMP! 🪽 (-${this.jumpStaminaCost} ⚡)`, this.x, this.y - 25, '#00d2d3', 16);
+      (this.scene as any).shakeScreen?.(4, 0.1);
+    } else {
+      soundFX.playJump();
+      (this.scene as any).spawnFloatingText?.(`-${this.jumpStaminaCost} ⚡ STAMINA`, this.x, this.y - 40, '#f1c40f', 14);
+    }
+    this.onGround = false;
   }
 
   public takeDamage(amount: number): void {

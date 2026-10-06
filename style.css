@@ -837,6 +837,7 @@ html, body {
 }
 
 /* ── Responsiveness for Smaller Displays ───────────── */
+/* ── Responsiveness for Smaller Displays ───────────── */
 @media (max-width: 768px) {
   .zombie-cabinet-frame {
     width: 100vw;
@@ -846,15 +847,106 @@ html, body {
     box-shadow: inset 0 0 30px rgba(229, 9, 20, 0.4);
   }
 
+  /* Cinematic mobile background image: centered, atmospheric, rich vignette */
+  .zombie-bg-layer {
+    background: url('/game_matched_bg.jpg') no-repeat center 20% / cover !important;
+  }
+
+  .zombie-bg-overlay {
+    background:
+      linear-gradient(180deg,
+        rgba(6, 8, 16, 0.82) 0%,
+        rgba(6, 8, 16, 0.28) 20%,
+        rgba(6, 8, 16, 0.35) 50%,
+        rgba(6, 8, 16, 0.85) 80%,
+        #060810 100%
+      ),
+      radial-gradient(circle at 50% 45%, transparent 20%, rgba(6, 8, 16, 0.65) 95%) !important;
+  }
+
   .zombie-menu-left {
-    padding: clamp(14px, 3vh, 32px) clamp(14px, 3vw, 24px) clamp(16px, 2.5vh, 28px);
+    padding: clamp(16px, 2.8vh, 32px) clamp(16px, 4vw, 24px) clamp(16px, 2.5vh, 28px);
     max-width: 100%;
+    align-items: center;
+    text-align: center;
+    gap: clamp(16px, 2.5vh, 26px);
+  }
+
+  .zombie-title-group {
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .zombie-subhead-row {
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .zombie-blood-text {
+    font-size: clamp(60px, 15vw, 86px) !important;
+    letter-spacing: 3px !important;
+  }
+
+  .zombie-siege-text {
+    font-size: clamp(24px, 6.5vw, 38px) !important;
+    letter-spacing: 6px !important;
+    margin-top: 4px;
+  }
+
+  .zombie-mode-selector {
+    max-width: 380px;
+    gap: 8px;
+  }
+
+  .zombie-mode-card {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .zombie-mode-tag {
+    font-size: 13px;
+  }
+
+  .zombie-mode-sub {
+    font-size: 10.5px;
+  }
+
+  .zombie-menu-actions {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .zombie-nav-list {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .zombie-nav-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .desktop-tip {
+    display: none !important;
+  }
+
+  .mobile-tip {
+    display: flex !important;
   }
 
   .zombie-top-right {
     top: 14px;
-    right: 16px;
-    gap: 8px;
+    right: 14px;
+    gap: 6px;
   }
 }
 
@@ -2905,34 +2997,37 @@ html, body {
 
 .endless-toast-banner {
   position: fixed;
-  top: 32px;
+  bottom: 84px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(18, 12, 14, 0.96);
+  background: rgba(14, 10, 12, 0.96);
   border: 1.5px solid #e50914;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85), 0 0 24px rgba(229, 9, 20, 0.55);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 24px rgba(229, 9, 20, 0.55);
   color: #ffffff;
-  padding: 12px 26px;
-  border-radius: 999px;
+  padding: 10px 22px;
+  border-radius: 12px;
   font-family: 'Outfit', sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  line-height: 1.4;
+  max-width: min(440px, 92vw);
+  text-align: center;
   z-index: 99999;
   pointer-events: none;
-  animation: toastSlideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: toastSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .endless-toast-banner.fade-out {
   opacity: 0;
-  transform: translate(-50%, -15px);
+  transform: translate(-50%, 15px);
 }
 
-@keyframes toastSlideDown {
+@keyframes toastSlideUp {
   from {
     opacity: 0;
-    transform: translate(-50%, -25px);
+    transform: translate(-50%, 25px);
   }
   to {
     opacity: 1;
@@ -3317,25 +3412,49 @@ html, body {
    CRAZYGAMES REWARDED AD BUTTONS & GLOBAL RESPONSIVENESS
    ═══════════════════════════════════════════════════════ */
 .btn-rewarded {
-  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%) !important;
-  border: 1.5px solid #6ee7b7 !important;
-  color: #ffffff !important;
+  background: linear-gradient(180deg, #dc141e 0%, #b80912 50%, #8b040b 100%) !important;
+  color: #fff9e6 !important;
+  border: 2px solid #f59e0b !important;
+  border-top: 2px solid #fde047 !important;
+  border-bottom: 3.5px solid #78040a !important;
+  font-family: 'Outfit', sans-serif !important;
   font-weight: 900 !important;
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45) !important;
-  animation: rewardedPulse 1.8s infinite ease-in-out;
+  letter-spacing: 1.2px !important;
+  text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9), 0 0 10px rgba(245, 158, 11, 0.4) !important;
+  box-shadow:
+    0 4px 0 #5c0207,
+    0 8px 24px rgba(220, 20, 30, 0.45),
+    0 0 16px rgba(245, 158, 11, 0.35),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.4) !important;
+  animation: rewardedPulse 2s infinite ease-in-out;
   cursor: pointer;
+  position: relative;
+}
+.btn-rewarded .btn-svg {
+  color: #fbbf24 !important;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8)) !important;
 }
 .btn-rewarded:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.15);
-  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.7) !important;
+  filter: brightness(1.15) !important;
+  transform: translateY(-2px) !important;
+  border-color: #fde047 !important;
+  box-shadow:
+    0 6px 0 #5c0207,
+    0 12px 28px rgba(220, 20, 30, 0.65),
+    0 0 24px rgba(251, 191, 36, 0.55),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55) !important;
 }
 .btn-rewarded:active {
-  transform: translateY(1px);
+  transform: translateY(3px) !important;
+  box-shadow:
+    0 1px 0 #5c0207,
+    0 4px 12px rgba(220, 20, 30, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
 }
 .rewarded-ad-badge {
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(251, 191, 36, 0.6);
+  color: #fbbf24;
   border-radius: 4px;
   padding: 1px 6px;
   font-size: 10px;
@@ -3344,9 +3463,20 @@ html, body {
   letter-spacing: 0.5px;
 }
 @keyframes rewardedPulse {
-  0%   { transform: scale(1); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
-  50%  { transform: scale(1.02); box-shadow: 0 6px 22px rgba(16, 185, 129, 0.7); }
-  100% { transform: scale(1); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); }
+  0%, 100% {
+    box-shadow:
+      0 4px 0 #5c0207,
+      0 8px 22px rgba(220, 20, 30, 0.45),
+      0 0 14px rgba(245, 158, 11, 0.35),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 4px 0 #5c0207,
+      0 12px 28px rgba(220, 20, 30, 0.7),
+      0 0 24px rgba(251, 191, 36, 0.65),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.6);
+  }
 }
 
 /* ── Global Touch & Viewport Handling ────────────────── */
@@ -3955,31 +4085,530 @@ html, body {
   }
 }
 
-/* ── Mobile Widths (< 640px) ── */
+/* ── Global Default for Mobile Controls ────────────── */
+.mobile-jump-btn {
+  display: none;
+}
+
+/* ── Mobile Widths (< 640px) ────────────────────────── */
 @media (max-width: 640px) {
+  /* ── 1. HUD & In-Game Placement (Screenshot 1 Fix) ── */
+  #hud {
+    padding: 6px 8px !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+  }
+
   #hud-left {
-    max-width: 46vw;
+    padding: 3.5px 6px !important;
+    gap: 2px !important;
+    max-width: 128px !important;
+    width: 128px !important;
+    border-radius: 9px !important;
+    background: rgba(10, 16, 28, 0.94) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    overflow: visible !important;
+  }
+
+  .hud-health {
+    gap: 1.5px !important;
+  }
+
+  .hud-label-row {
+    font-size: 7.5px !important;
+  }
+
+  .hud-label {
+    font-size: 7.5px !important;
+    gap: 2px !important;
+    letter-spacing: 0.4px !important;
+  }
+
+  .hud-mini-svg {
+    width: 8.5px !important;
+    height: 8.5px !important;
+  }
+
+  .hud-val {
+    font-size: 8px !important;
+    letter-spacing: 0.2px !important;
   }
 
   .health-bar {
-    width: clamp(75px, 24vw, 120px);
+    height: 6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 3px !important;
   }
 
-  .hud-weapon-btn .weapon-name {
-    font-size: 8px;
+  /* Center Group cleanly positioned between Left and Right with zero overlap */
+  #hud-center-group {
+    top: 6px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    gap: 2.5px !important;
+    z-index: 25 !important;
   }
 
-  .hud-skill-btn.skill-tactical .skill-name {
+  #hud-center {
+    padding: 2.5px 8px !important;
+    border-radius: 999px !important;
+    gap: 2px !important;
+  }
+
+  #hud-wave {
+    font-size: 9.5px !important;
+    letter-spacing: 0.4px !important;
+  }
+
+  #hud-enemies {
+    font-size: 8px !important;
+    gap: 2.5px !important;
+  }
+
+  .hud-mode-tag {
+    font-size: 7.5px !important;
+    padding: 1px 4px !important;
+  }
+
+  #hud-right {
+    gap: 3.5px !important;
+  }
+
+  #hud-gems, #hud-kills {
+    padding: 2.5px 5px !important;
+    font-size: 9.5px !important;
+    gap: 2px !important;
+    border-radius: 6px !important;
+  }
+
+  #btn-hud-pause, #btn-hud-sound {
+    width: 26px !important;
+    height: 26px !important;
+    padding: 3.5px !important;
+    border-radius: 6px !important;
+  }
+
+  /* Weapons & Skills: Docked at Bottom-Left for thumb controls */
+  #hud-weapons-dock {
+    position: fixed !important;
+    bottom: 18px !important;
+    left: 14px !important;
+    margin: 0 !important;
+    z-index: 45 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    pointer-events: auto !important;
+    width: auto !important;
+  }
+
+  .hud-weapon-btn {
+    padding: 5px 8px !important;
+    background: rgba(10, 16, 28, 0.94) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 9px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7) !important;
+    gap: 4px !important;
+  }
+
+  .hud-weapon-btn .weapon-slot-name {
+    display: none !important;
+  }
+
+  .hud-weapon-btn .weapon-slot-num {
+    font-size: 9.5px !important;
+    padding: 1.5px 3.5px !important;
+  }
+
+  .hud-weapon-btn .weapon-slot-icon {
+    font-size: 15px !important;
+  }
+
+  .hud-weapon-btn.active {
+    border-color: #00d2d3 !important;
+    box-shadow: 0 0 12px rgba(0, 210, 211, 0.55) !important;
+  }
+
+  #hud-skills-dock {
+    position: fixed !important;
+    bottom: 64px !important;
+    left: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    z-index: 45 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    pointer-events: auto !important;
+    width: auto !important;
+  }
+
+  .hud-skill-btn {
+    padding: 3px 5px !important;
+    background: rgba(10, 16, 28, 0.94) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 9px !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .hud-skill-btn .skill-meta {
+    display: none !important;
+  }
+
+  .hud-skill-btn .skill-icon-wrap {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  #hud-tactical-dock {
+    position: fixed !important;
+    bottom: 110px !important;
+    left: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    z-index: 45 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    pointer-events: auto !important;
+    width: auto !important;
+  }
+
+  /* Tactile Mobile Jump & Dodge Button (Bottom-Right) */
+  .mobile-jump-btn {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 18px !important;
+    right: 16px !important;
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%) !important;
+    border: 2.5px solid #7dd3fc !important;
+    color: #ffffff !important;
+    box-shadow:
+      0 4px 0 #075985,
+      0 8px 24px rgba(2, 132, 199, 0.6),
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.6) !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1px !important;
+    z-index: 50 !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    user-select: none !important;
+    transition: transform 60ms ease, box-shadow 60ms ease !important;
+  }
+
+  .mobile-jump-btn:active {
+    transform: translateY(3px) !important;
+    box-shadow:
+      0 1px 0 #075985,
+      0 4px 10px rgba(2, 132, 199, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  }
+
+  .mobile-jump-btn .jump-svg {
+    width: 22px !important;
+    height: 22px !important;
+    stroke-width: 2.5 !important;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)) !important;
+  }
+
+  .mobile-jump-btn .jump-text {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 9.5px !important;
+    font-weight: 900 !important;
+    letter-spacing: 1px !important;
+    line-height: 1 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  /* ── 2. Shop / Upgrades Screen ── */
+  .shop-card {
+    padding: 14px 12px !important;
+    max-height: 96vh !important;
+    gap: 10px !important;
+  }
+
+  .shop-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .shop-top-actions {
+    align-self: flex-end !important;
+    margin-top: -30px !important;
+  }
+
+  .shop-main-title {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .shop-blood-text {
+    font-size: clamp(26px, 7vw, 36px) !important;
+    letter-spacing: 2px !important;
+  }
+
+  .shop-siege-text {
+    font-size: clamp(16px, 4.5vw, 22px) !important;
+    letter-spacing: 3px !important;
+  }
+
+  .shop-subtitle {
+    font-size: 11px !important;
+  }
+
+  .shop-controls-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+  }
+
+  .shop-filter-bar {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    gap: 6px !important;
+    scrollbar-width: none;
+  }
+  .shop-filter-bar::-webkit-scrollbar {
     display: none;
   }
 
+  .shop-filter-btn {
+    flex-shrink: 0 !important;
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .shop-item {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .shop-item-name {
+    font-size: 13.5px !important;
+  }
+
+  .shop-item-desc {
+    font-size: 11px !important;
+  }
+
+  .shop-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: 100% !important;
+    align-items: center !important;
+    padding-top: 8px !important;
+  }
+
+  .shop-footer-spacer {
+    display: none !important;
+  }
+
+  .shop-footer .shop-return-btn {
+    flex: 1 !important;
+    min-width: 0 !important;
+    font-size: 12.5px !important;
+    padding: 10px 8px !important;
+    border-radius: 999px !important;
+  }
+
+  .shop-footer .shop-red-btn {
+    flex: 1.3 !important;
+    min-width: 0 !important;
+    font-size: 13px !important;
+    padding: 10px 10px !important;
+    border-radius: 999px !important;
+  }
+
+  .shop-footer .red-key-pill {
+    display: none !important;
+  }
+
+  /* ── 3. Wardrobe Screen (Screenshot 2 Fix) ── */
+  .wardrobe-card {
+    padding: 12px 12px 10px !important;
+    max-height: 96vh !important;
+    max-width: 96vw !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+  }
+
+  .wardrobe-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .wardrobe-subhead-row {
+    font-size: 11px !important;
+    letter-spacing: 1.5px !important;
+  }
+
+  .wardrobe-main-title {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    align-items: baseline !important;
+  }
+
+  .wardrobe-purple-text {
+    font-size: clamp(26px, 7vw, 36px) !important;
+    letter-spacing: 2px !important;
+  }
+
+  .wardrobe-siege-text {
+    font-size: clamp(14px, 4vw, 20px) !important;
+    letter-spacing: 2px !important;
+  }
+
+  .wardrobe-subtitle {
+    font-size: 10.5px !important;
+    line-height: 1.3 !important;
+  }
+
+  .wardrobe-top-actions {
+    align-self: flex-end !important;
+    margin-top: -36px !important;
+  }
+
+  .wardrobe-top-actions .shop-skull-chip {
+    padding: 3px 8px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+
+  /* Fix Wardrobe Grid Horizontal Scrollbar Bug */
+  .wardrobe-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 4px 2px 8px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .wardrobe-card-item {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    gap: 6px !important;
+    border-radius: 12px !important;
+  }
+
+  .wardrobe-card-header {
+    gap: 10px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .wardrobe-badge {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    font-size: 18px !important;
+  }
+
+  .wardrobe-item-theme {
+    font-size: 10px !important;
+  }
+
+  .wardrobe-item-name {
+    font-size: 14px !important;
+  }
+
+  .wardrobe-item-desc {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .wardrobe-features {
+    gap: 4px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .wardrobe-feat-pill {
+    font-size: 9.5px !important;
+    padding: 2px 6px !important;
+  }
+
+  .wardrobe-action-btn {
+    padding: 9px 12px !important;
+    font-size: 12.5px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Wardrobe Footer Fix */
+  .wardrobe-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding-top: 8px !important;
+    gap: 8px !important;
+  }
+
+  .wardrobe-footer .zombie-nav-btn {
+    flex: 1 !important;
+    padding: 8px 12px !important;
+    min-width: 0 !important;
+  }
+
+  .wardrobe-footer .nav-btn-text {
+    font-size: 12px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .wardrobe-footer-info {
+    flex-shrink: 0 !important;
+  }
+
+  .wardrobe-info-desc {
+    display: none !important;
+  }
+
+  .wardrobe-info-tag {
+    font-size: 10px !important;
+    padding: 4px 7px !important;
+  }
+
+  /* ── 4. Modal & Game Over Buttons ── */
   .gameover-buttons {
-    flex-direction: column;
-    gap: 6px;
+    flex-direction: column !important;
+    gap: 8px !important;
   }
 
   .gameover-buttons .btn {
-    width: 100%;
+    width: 100% !important;
+  }
+
+  .pause-buttons {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .pause-buttons .btn {
+    width: 100% !important;
   }
 }
 
