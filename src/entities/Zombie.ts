@@ -1241,27 +1241,16 @@ export class Zombie {
     // Hard boundary: zombie center stops right against the barricade spikes (8px offset) so chest touches spikes and claws reach wood
     const minBarricadeStopX = barricadeFrontX + 8 * this.scale;
 
+    // All standard wave zombies (walkers, skeletons, frostwights, pyros, etc.) advance all the way to the barricade!
+    // Only apex bosses (Malakor, Reaper) and flying Phantoms maintain special tactical arena positioning.
     let targetX = minBarricadeStopX;
-    if (this.type === 'skeleton') {
-      targetX = tower.x + (this.preferredDistance || 560) + this.personalTargetOffset;
-    } else if (this.type === 'frostwight') {
-      targetX = tower.x + (this.preferredDistance || 480) + this.personalTargetOffset;
-    } else if (this.type === 'pyro') {
-      targetX = tower.x + (this.preferredDistance || 600) + this.personalTargetOffset;
-    } else if (this.type === 'stalker') {
-      targetX = tower.x + (this.preferredDistance || 620) + this.personalTargetOffset;
-    } else if (this.type === 'phantom') {
-      targetX = tower.x + (this.preferredDistance || 360) + this.personalTargetOffset;
+    if (this.type === 'phantom') {
+      targetX = tower.x + (this.preferredDistance || 320) + this.personalTargetOffset;
     } else if (this.type === 'reaper' || this.type === 'malakor') {
-      targetX = tower.x + (this.preferredDistance || 320) + this.personalTargetOffset;
-    } else if (this.type === 'siren') {
-      targetX = tower.x + (this.preferredDistance || 340) + this.personalTargetOffset;
-    } else if (this.type === 'harvester') {
-      targetX = tower.x + (this.preferredDistance || 280) + this.personalTargetOffset;
-    } else if (this.type === 'slobber') {
-      targetX = tower.x + (this.preferredDistance || 560) + this.personalTargetOffset;
-    } else if (this.type === 'voidknight') {
-      targetX = tower.x + (this.preferredDistance || 320) + this.personalTargetOffset;
+      targetX = tower.x + (this.preferredDistance || 240) + this.personalTargetOffset;
+    } else if (this.type === 'necromancer') {
+      // Necromancer supports from mid-range but stays closer to the battle
+      targetX = tower.x + 240 + this.personalTargetOffset;
     }
 
     let moveSpeed = this.speed;
@@ -1287,49 +1276,27 @@ export class Zombie {
     moveSpeed = Math.max(16, moveSpeed);
 
     // ── Zombie Flocking & Dynamic Separation Spacing ──
+    // Zombies behind NEVER slow down or pause when a zombie ahead is frozen, injured, or staggered!
     let isQueued = false;
-    if (allZombies && allZombies.length > 1 && !this.dead) {
-      let sepForce = 0;
-      let shouldSlowBehind = false;
+    if (allZombies && allZombies.length > 1 && !this.dead && !this.isFrozen) {
       const isAir = this.isAirAttacker();
 
       for (let i = 0; i < allZombies.length; i++) {
         const other = allZombies[i];
-        if (other === this || other.dead) continue;
+        if (other === this || other.dead || other.isFrozen) continue;
         if (isAir !== other.isAirAttacker()) continue; // Separate ground with ground, air with air
 
+        // Only at the fortress wall itself do rear zombies queue neatly against the barricade.
+        // Across the open battlefield, charging zombies keep 100% full speed and surge past slowed/frozen allies!
         const dx = this.x - other.x;
         const dist = Math.abs(dx);
-        const minSpacing = (this.scale + other.scale) * 22; // ~44px spacing between normal units, ~70px for titans
+        const minSpacing = (this.scale + other.scale) * 16;
 
-        if (dist < minSpacing) {
-          const overlap = minSpacing - dist;
-          const pushWeight = (overlap / minSpacing);
+        if (this.x <= minBarricadeStopX + 35 && dist < minSpacing) {
           if (dx > 0) {
-            sepForce += pushWeight * 48; // Push right
-          } else if (dx < 0) {
-            // Push left ONLY if we are safely ahead of minBarricadeStopX so we don't penetrate the barricade
-            if (this.x > minBarricadeStopX + 6) {
-              sepForce -= pushWeight * 48; // Push left
-            }
-          } else {
-            sepForce += (this.personalTargetOffset >= 0 ? 1 : -1) * 32;
-          }
-
-          // If another zombie is directly in front on the way to the tower:
-          if (dx > 0 && dist < minSpacing * 0.95) {
-            shouldSlowBehind = true;
             isQueued = true;
           }
         }
-      }
-
-      this.x += sepForce * dt;
-      // Absolute clamp: no zombie can ever be pushed into or past the tower barricade
-      this.x = Math.max(minBarricadeStopX, this.x);
-
-      if (shouldSlowBehind) {
-        moveSpeed *= 0.68; // Smooth queueing prevents rear zombies clipping into front zombies
       }
     }
 
@@ -1527,7 +1494,7 @@ export class Zombie {
       const towerObj = (this.scene as any).tower;
       const minBarricadeStopX = towerObj ? (towerObj.x + towerObj.width / 2 + (towerObj.hasSpikes ? 32 : 24) + 8 * this.scale) : 260;
       this.x = Math.max(minBarricadeStopX, this.x + blinkDist);
-      (this.scene as any).spawnFloatingText?.('✨ PHASE BLINK!', this.x, this.y - 50, '#a29bfe', 20);
+      (this.scene as any).spawnFloatingText?.('PHASE BLINK!', this.x, this.y - 50, '#a29bfe', 20);
       this.ragdoll.setPosition(this.x, this.y);
     }
 

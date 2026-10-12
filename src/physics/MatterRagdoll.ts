@@ -868,6 +868,109 @@ export class MatterRagdoll {
     this.relaxForDeath(0, 0);
   }
 
+  public revive(x: number, y: number): void {
+    this.dead = false;
+    this.decapitated = false;
+    this.isLeftArmSevered = false;
+    this.isRightArmSevered = false;
+    this.isLeftLegSevered = false;
+    this.isRightLegSevered = false;
+    this.hasHead = true;
+    this.hasTorso = true;
+    this.hasLeftArm = true;
+    this.hasRightArm = true;
+    this.hasLeftLeg = true;
+    this.hasRightLeg = true;
+
+    const matter = this.scene.matter;
+    const s = this.scale;
+
+    // Helper to add constraint if missing
+    const addJoint = (bodyA: MatterJS.BodyType, bodyB: MatterJS.BodyType, pointA: { x: number; y: number }, pointB: { x: number; y: number }, stiffness: number = 0.9) => {
+      const c = matter.add.constraint(bodyA as any, bodyB as any, 0, stiffness, {
+        pointA,
+        pointB,
+        damping: 0.1
+      }) as unknown as MatterJS.ConstraintType;
+      this.constraints.push(c);
+      return c;
+    };
+
+    // Restore any severed or removed joints
+    if (!this.neckConstraint && this.head && this.torso) {
+      this.neckConstraint = addJoint(this.head, this.torso, { x: 0, y: 12 * s }, { x: 0, y: -18 * s }, 0.92);
+    }
+    if (!this.leftShoulderJoint && this.torso && this.leftUpperArm) {
+      this.leftShoulderJoint = addJoint(this.torso, this.leftUpperArm, { x: -8 * s, y: -14 * s }, { x: 0, y: -8 * s }, 0.85);
+    }
+    if (!this.leftElbowJoint && this.leftUpperArm && this.leftForearm) {
+      this.leftElbowJoint = addJoint(this.leftUpperArm, this.leftForearm, { x: 0, y: 8 * s }, { x: 0, y: -8 * s }, 0.85);
+    }
+    if (!this.rightShoulderJoint && this.torso && this.rightUpperArm) {
+      this.rightShoulderJoint = addJoint(this.torso, this.rightUpperArm, { x: 8 * s, y: -14 * s }, { x: 0, y: -8 * s }, 0.85);
+    }
+    if (!this.rightElbowJoint && this.rightUpperArm && this.rightForearm) {
+      this.rightElbowJoint = addJoint(this.rightUpperArm, this.rightForearm, { x: 0, y: 8 * s }, { x: 0, y: -8 * s }, 0.85);
+    }
+    if (!this.leftHipJoint && this.torso && this.leftThigh) {
+      this.leftHipJoint = addJoint(this.torso, this.leftThigh, { x: -5 * s, y: 18 * s }, { x: 0, y: -10 * s }, 0.88);
+    }
+    if (!this.leftKneeJoint && this.leftThigh && this.leftCalf) {
+      this.leftKneeJoint = addJoint(this.leftThigh, this.leftCalf, { x: 0, y: 10 * s }, { x: 0, y: -10 * s }, 0.88);
+    }
+    if (!this.rightHipJoint && this.torso && this.rightThigh) {
+      this.rightHipJoint = addJoint(this.torso, this.rightThigh, { x: 5 * s, y: 18 * s }, { x: 0, y: -10 * s }, 0.88);
+    }
+    if (!this.rightKneeJoint && this.rightThigh && this.rightCalf) {
+      this.rightKneeJoint = addJoint(this.rightThigh, this.rightCalf, { x: 0, y: 10 * s }, { x: 0, y: -10 * s }, 0.88);
+    }
+
+    const parts = [
+      this.head,
+      this.torso,
+      this.leftUpperArm,
+      this.leftForearm,
+      this.rightUpperArm,
+      this.rightForearm,
+      this.leftThigh,
+      this.leftCalf,
+      this.rightThigh,
+      this.rightCalf
+    ].filter(Boolean) as MatterJS.BodyType[];
+
+    // Ensure all bodies are kinematic static bodies so physics step does not launch them
+    for (const p of parts) {
+      matter.body.setStatic(p, true);
+      matter.body.setVelocity(p, { x: 0, y: 0 });
+      matter.body.setAngularVelocity(p, 0);
+      matter.body.setAngle(p, 0);
+      p.friction = 0.85;
+      p.frictionAir = 0.01;
+      p.restitution = 0.15;
+    }
+
+    for (const c of this.constraints) {
+      if (c) {
+        c.stiffness = 0.9;
+        c.damping = 0.1;
+      }
+    }
+
+    this.aimAngle = 0;
+    this.bowDrawFrac = 0;
+    this.setPosition(x, y);
+
+    // Sync positionPrev with current position to kill any residual Verlet velocity
+    for (const p of parts) {
+      if (p && p.position) {
+        p.positionPrev.x = p.position.x;
+        p.positionPrev.y = p.position.y;
+        matter.body.setVelocity(p, { x: 0, y: 0 });
+        matter.body.setAngularVelocity(p, 0);
+      }
+    }
+  }
+
   public renderGraphics(g: Phaser.GameObjects.Graphics, opts: {
     isHero?: boolean;
     heroSkin?: HeroSkinId;
@@ -2026,11 +2129,7 @@ export class MatterRagdoll {
       g.strokeCircle(topTipX, topTipY, 4 * s);
       g.strokeCircle(botTipX, botTipY, 4 * s);
 
-      // Searing Red Laser Sight Beam along aim vector
-      if (this.bowDrawFrac > 0.1) {
-        g.lineStyle(1.6 * s, 0xff0055, 0.75 * holoPulse);
-        g.lineBetween(handX, handY, handX + cosA * 300 * s, handY + sinA * 300 * s);
-      }
+
     } else if (heroSkin === 'valkyrie') {
       // 🪽 VALKYRIE: Sculpted Holy Feathers on Bow Limbs
       const holyGlow = Math.sin(Date.now() * 0.008) * 0.2 + 0.8;

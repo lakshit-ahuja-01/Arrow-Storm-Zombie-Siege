@@ -551,6 +551,23 @@ export class Player {
     }
   }
 
+  public revive(deckY: number, deckX?: number): void {
+    this.dead = false;
+    this.hp = Math.round(this.maxHP * 0.5);
+    this.stamina = this.maxStamina;
+    this.isCharging = false;
+    this.chargeFrac = 0;
+    this.chargeTime = 0;
+    this.cooldown = 0;
+    this.vy = 0;
+    this.onGround = true;
+    this.jumpsLeft = this.maxJumps;
+    if (deckX !== undefined) this.x = deckX;
+    this.y = deckY;
+    this.ragdoll.revive(this.x, this.y);
+    this.ragdoll.setPosition(this.x, this.y);
+  }
+
   public render(g: Phaser.GameObjects.Graphics): void {
     this.ragdoll.renderGraphics(g, {
       isHero: true,
@@ -580,12 +597,12 @@ export class Player {
         g.fillRoundedRect(bx, by, barW * sFrac, barH, 2);
 
         // Live remaining stamina fill
-        const fillCol = remFrac < 0.25 ? 0xff4757 : (remFrac < 0.5 ? 0xffa502 : 0xf1c40f);
+        const fillCol = remFrac < 0.25 ? 0xff4757 : (remFrac < 0.5 ? 0xf5af3e : 0xf29a0a);
         g.fillStyle(fillCol, 0.95);
         g.fillRoundedRect(bx, by, barW * remFrac, barH, 2);
       } else {
-        // Energy bar fill (Green/Amber/Red depending on energy level)
-        const fillCol = sFrac < 0.25 ? 0xff4757 : (sFrac < 0.5 ? 0xffa502 : 0xf1c40f);
+        // Energy bar fill
+        const fillCol = sFrac < 0.25 ? 0xff4757 : (sFrac < 0.5 ? 0xf5af3e : 0xf29a0a);
         g.fillStyle(fillCol, 0.95);
         g.fillRoundedRect(bx, by, barW * sFrac, barH, 2);
       }

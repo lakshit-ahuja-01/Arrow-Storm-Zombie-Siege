@@ -20,7 +20,7 @@ export const HERO_SKINS_CATALOG: HeroSkinDef[] = [
     cost: 0,
     desc: 'The legendary emerald ranger of the frontier with feathered hood, woven cloak, and rugged archer gauntlets.',
     tags: ['Emerald Hood & Cape', 'Leather Vambraces', 'Frontier Ranger Mark'],
-    accentColor: '#2ecc71',
+    accentColor: '#e50914',
   },
   {
     id: 'shadow_assassin',
@@ -30,7 +30,7 @@ export const HERO_SKINS_CATALOG: HeroSkinDef[] = [
     cost: 60,
     desc: 'Black hooded cloak with ragged shadows, dark ninja cloth mask, stealth vambraces, and piercing glowing violet demonic eyes.',
     tags: ['Glowing Violet Eyes', 'Ragged Shadow Shroud', 'Stealth Shinobi Garb'],
-    accentColor: '#a855f7',
+    accentColor: '#e50914',
   },
   {
     id: 'cyberpunk',
@@ -40,7 +40,7 @@ export const HERO_SKINS_CATALOG: HeroSkinDef[] = [
     cost: 75,
     desc: 'Neon cyber-visor with digital HUD optics, carbon techwear suit, neon leg emitters, and holographic bow luminescence.',
     tags: ['Neon Cyan Cyber-Visor', 'Holographic Bow Glow', 'Carbon Techwear Suit'],
-    accentColor: '#00d2d3',
+    accentColor: '#e50914',
   },
   {
     id: 'valkyrie',
@@ -50,7 +50,7 @@ export const HERO_SKINS_CATALOG: HeroSkinDef[] = [
     cost: 90,
     desc: 'Majestic golden winged helmet, polished solar battle cuirass, radiant golden aura, and flowing glowing holy wings cape.',
     tags: ['Golden Winged Helmet', 'Glowing Holy Wings Cape', 'Solar Battle Cuirass'],
-    accentColor: '#f1c40f',
+    accentColor: '#e50914',
   },
   {
     id: 'skeleton',
@@ -60,6 +60,6 @@ export const HERO_SKINS_CATALOG: HeroSkinDef[] = [
     cost: 100,
     desc: 'Turn the tables and play as an undead marksman with bleached bone anatomy, tattered burial shroud, and spectral soul-fire eyes!',
     tags: ['Play as Undead Marksman', 'Spectral Soul-Fire Eyes', 'Bleached Bone Anatomy'],
-    accentColor: '#e74c3c',
+    accentColor: '#e50914',
   },
 ];

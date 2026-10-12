@@ -2739,7 +2739,7 @@ const UPGRADES = [
   },
   {
     id: 'sentry', category: 'tower', name: 'Auto-Crossbow Turret', icon: '🏹',
-    desc: 'Mounts a rooftop clockwork ballista that automatically targets & snipes oncoming zombies!', cost: 50,
+    desc: 'Mounts a rooftop clockwork ballista that automatically targets & snipes oncoming zombies!', cost: 450,
     statLabel: 'Auto-Turret: 1.1s Rapid Sniper',
     apply: () => { tower.sentryLevel = (tower.sentryLevel || 0) + 1; },
     maxLevel: 3, level: 0,

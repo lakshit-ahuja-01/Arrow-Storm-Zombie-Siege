@@ -51,11 +51,39 @@ export function isMobileDevice(): boolean {
   return false;
 }
 
+export function isPortraitMode(): boolean {
+  const w = window.innerWidth || document.documentElement.clientWidth || 0;
+  const h = window.innerHeight || document.documentElement.clientHeight || 0;
+  if (typeof window.matchMedia === 'function' && window.matchMedia('(orientation: portrait)').matches) {
+    return true;
+  }
+  return h > w;
+}
+
+export function isLandscapeMode(): boolean {
+  return !isPortraitMode();
+}
+
 /**
- * Synchronizes `.is-mobile` class on document.body and document.documentElement.
+ * Attempts to lock screen orientation to landscape using modern ScreenOrientation API.
+ */
+export async function requestLandscapeOrientation(): Promise<void> {
+  try {
+    const orientation = (screen as any).orientation;
+    if (orientation && typeof orientation.lock === 'function') {
+      await orientation.lock('landscape').catch(() => {});
+    }
+  } catch {}
+}
+
+/**
+ * Synchronizes `.is-mobile`, `.is-portrait`, and `.is-landscape` classes
+ * and manages `#orientation-overlay` visibility.
  */
 export function syncMobileMode(): boolean {
   const mobile = isMobileDevice();
+  const portrait = mobile && isPortraitMode();
+
   if (mobile) {
     document.body.classList.add('is-mobile');
     document.documentElement.classList.add('is-mobile');
@@ -63,5 +91,23 @@ export function syncMobileMode(): boolean {
     document.body.classList.remove('is-mobile');
     document.documentElement.classList.remove('is-mobile');
   }
+
+  const overlay = document.getElementById('orientation-overlay');
+  if (overlay) {
+    if (portrait) {
+      overlay.classList.add('active');
+      document.body.classList.add('is-portrait');
+      document.body.classList.remove('is-landscape');
+    } else {
+      overlay.classList.remove('active');
+      document.body.classList.remove('is-portrait');
+      if (mobile) {
+        document.body.classList.add('is-landscape');
+      } else {
+        document.body.classList.remove('is-landscape');
+      }
+    }
+  }
+
   return mobile;
 }

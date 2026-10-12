@@ -7,6 +7,7 @@ export class UIManager {
   public currentCategory: string = 'all';
   public currentSort: string = 'default';
   public shopOpenedFromMenu: boolean = false;
+  public shopOpenedFromGameOver: boolean = false;
 
   public setState(s: GameState): void {
     document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -227,6 +228,14 @@ export class UIManager {
     const baseMultiplier = isEndless ? 1.25 : 2.2;
     const levelScaling = isEndless ? 0.45 : 0.75;
 
+    // Dedicated high-tier auto-turret pricing: 450 skulls base
+    if (up.id === 'sentry') {
+      const baseCost = 450;
+      const levelScaling = isEndless ? 0.45 : 0.75;
+      const finalCost = up.level && up.level > 0 ? baseCost * (1 + up.level * levelScaling) : baseCost;
+      return Math.round(finalCost / 5) * 5;
+    }
+
     let baseCost = up.cost * baseMultiplier;
 
     if (up.maxLevel && up.level && up.level > 0) {
@@ -254,7 +263,9 @@ export class UIManager {
         ? `<span class="hud-mode-tag endless">ENDLESS RUN • 2X DOUBLE SKULLS 💀</span>`
         : `<span class="hud-mode-tag" style="background:rgba(231,76,60,0.18);color:#ff6b6b;border-color:rgba(231,76,60,0.4)">HARDCORE CAMPAIGN • ELITE COSTS</span>`;
 
-      if (this.shopOpenedFromMenu) {
+      if (this.shopOpenedFromGameOver) {
+        subTitleEl.innerHTML = `Defeat Recovery: Invest gathered skulls into bows, ballistas & fortress HP to conquer Night <span id="shop-wave-prev">${Math.max(1, wave)}</span>! ${modeTag}`;
+      } else if (this.shopOpenedFromMenu) {
         subTitleEl.innerHTML = `Fortify your hero archer and tower defenses with your gathered skulls. ${modeTag}`;
       } else {
         subTitleEl.innerHTML = `Night <span id="shop-wave-prev">${Math.max(1, wave)}</span> Cleared! Fortify your archer and tower defenses. ${modeTag}`;
@@ -266,7 +277,29 @@ export class UIManager {
     const nextBtnText = document.getElementById('btn-next-wave-text');
     const nextBtnKey = document.getElementById('btn-next-wave-key');
 
-    if (this.shopOpenedFromMenu) {
+    if (this.shopOpenedFromGameOver) {
+      if (returnBtn) {
+        returnBtn.style.display = 'inline-flex';
+        returnBtn.onclick = () => {
+          this.setState('gameover');
+          const gemsEl = document.getElementById('go-gems');
+          if (gemsEl) gemsEl.textContent = `${player.skulls}`;
+          const skullsHint = document.getElementById('go-alert-skulls');
+          if (skullsHint) skullsHint.textContent = `💀 ${player.skulls} SKULLS READY`;
+        };
+      }
+      if (nextBtn) {
+        if (nextBtnText) nextBtnText.textContent = 'RETRY DEFENSE';
+        if (nextBtnKey) nextBtnKey.style.display = 'inline-block';
+        nextBtn.onclick = () => {
+          this.shopOpenedFromGameOver = false;
+          const s = (window as any).game?.scene?.getScene('MainScene');
+          if (s) {
+            s.startGame(s.gameMode);
+          }
+        };
+      }
+    } else if (this.shopOpenedFromMenu) {
       if (returnBtn) {
         returnBtn.style.display = 'inline-flex';
         returnBtn.onclick = () => {
@@ -278,6 +311,7 @@ export class UIManager {
         if (nextBtnText) nextBtnText.textContent = 'START DEFENSE';
         if (nextBtnKey) nextBtnKey.style.display = 'inline-block';
         nextBtn.onclick = () => {
+          this.shopOpenedFromMenu = false;
           const s = (window as any).game?.scene?.getScene('MainScene');
           if (s) {
             s.startGame(s.gameMode);
@@ -285,7 +319,17 @@ export class UIManager {
         };
       }
     } else {
-      if (returnBtn) returnBtn.style.display = 'none';
+      if (returnBtn) {
+        returnBtn.style.display = 'inline-flex';
+        returnBtn.onclick = () => {
+          const s = (window as any).game?.scene?.getScene('MainScene');
+          if (s) {
+            s.returnToMenu();
+          } else {
+            this.setState('menu');
+          }
+        };
+      }
       if (nextBtn) {
         const mainScene = (window as any).game?.scene?.getScene('MainScene');
         const isEndless = mainScene?.gameMode === 'endless' || player.isEndless;
@@ -359,7 +403,9 @@ export class UIManager {
       const isEquippedBarrels = up.id === 'gunpowderBarrels' && tower.hasGunpowderBarrels;
       const isEquippedSmoke = up.id === 'smokeScreen' && tower.hasSmokeScreen;
       const isFortressDefense = isEquippedSpikes || isEquippedCaltrops || isEquippedTar || isEquippedPitchPits || isEquippedBarrels || isEquippedSmoke;
-      const isOneTimeBought = !!up.oneTime && !!up.bought;
+      const isVolleyUnlocked = up.id === 'unlockVolley' && (!!up.bought || !!(player?.scene as any)?.hasVolleyUnlocked);
+      const isFrostUnlocked = up.id === 'unlockFrostNova' && (!!up.bought || !!(player?.scene as any)?.hasFrostNovaUnlocked);
+      const isOneTimeBought = !!up.oneTime && (!!up.bought || isVolleyUnlocked || isFrostUnlocked);
       const isEquipped = isEquippedBow || isFortressDefense || isOneTimeBought;
       const isMaxed = up.maxLevel ? (up.level || 0) >= up.maxLevel : false;
       const isChargeSkill = up.id === 'nukeStrike' || up.id === 'lightningStorm' || up.id === 'timeStop' || up.id === 'godMode';
@@ -381,22 +427,22 @@ export class UIManager {
         actionHtml = `
           <div class="shop-equip-slots">
             <button class="shop-slot-btn slot-1 ${isSlot1 ? 'equipped active' : ''}" type="button" title="Equip to Slot [1] Primary">
-              ${isSlot1 ? '✓ [1] PRIMARY' : 'SET [1]'}
+              ${isSlot1 ? '[1] PRIMARY' : 'SET [1]'}
             </button>
             <button class="shop-slot-btn slot-2 ${isSlot2 ? 'equipped active' : ''}" type="button" title="Equip to Slot [2] Secondary">
-              ${isSlot2 ? '✓ [2] SECONDARY' : 'SET [2]'}
+              ${isSlot2 ? '[2] SECONDARY' : 'SET [2]'}
             </button>
           </div>
         `;
       } else if (isFortressDefense) {
-        actionHtml = `<button class="shop-buy-btn btn-equipped">✓ DEPLOYED</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-equipped">DEPLOYED</button>`;
       } else if (isOneTimeBought) {
-        actionHtml = `<button class="shop-buy-btn btn-equipped">✓ UNLOCKED</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-equipped">UNLOCKED</button>`;
       } else if (isChargeSkill) {
         canAfford = player.skulls >= currentCost;
         actionHtml = `<button class="shop-buy-btn" ${!canAfford ? 'disabled' : ''}>+1 CHARGE (💀 ${currentCost})</button>`;
       } else if (isEquipped) {
-        actionHtml = `<button class="shop-buy-btn btn-equipped">✓ DEPLOYED</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-equipped">DEPLOYED</button>`;
       } else if (isMaxed) {
         actionHtml = `<button class="shop-buy-btn" disabled>MAX LEVEL</button>`;
       } else if (isMasteryLocked) {
@@ -474,11 +520,11 @@ export class UIManager {
           return;
         }
         if (isEquipped) {
-          this.showShopNotice('✓ Already equipped and active!');
+          this.showShopNotice('Already equipped and active!');
           return;
         }
         if (isMaxed) {
-          this.showShopNotice('✓ Max level reached!');
+          this.showShopNotice('Max level reached!');
           return;
         }
         if (isMasteryLocked) {
@@ -493,6 +539,13 @@ export class UIManager {
           player.skulls -= currentCost;
           up.apply(player, tower);
           up.bought = true;
+          if (up.id === 'unlockVolley' && player?.scene) {
+            (player.scene as any).hasVolleyUnlocked = true;
+            (player.scene as any).updateSkillsHUD?.();
+          } else if (up.id === 'unlockFrostNova' && player?.scene) {
+            (player.scene as any).hasFrostNovaUnlocked = true;
+            (player.scene as any).updateSkillsHUD?.();
+          }
           if (isBowCategory) {
             const targetSlot: 1 | 2 = (player.primaryBow === 'normal' ? 1 : (player.secondaryBow === 'normal' ? 2 : (player.activeSlot || 1)));
             if (player.equipToSlot) {
@@ -502,12 +555,12 @@ export class UIManager {
               else player.secondaryBow = bowId;
               player.bowType = bowId;
             }
-            this.showShopNotice(`✨ Unlocked ${up.name} (Assigned to Slot [${targetSlot}])!`);
+            this.showShopNotice(`Unlocked ${up.name} (Assigned to Slot [${targetSlot}])!`);
           } else if (isChargeSkill) {
             const count = up.id === 'nukeStrike' ? player.nukeCharges : (up.id === 'lightningStorm' || up.id === 'timeStop') ? (player.lightningCharges || player.timeFreezeCharges || 0) : player.divineAegisCharges;
-            this.showShopNotice(`✨ Acquired ${up.name}! (x${count} Charges Ready)`);
+            this.showShopNotice(`Acquired ${up.name}! (x${count} Charges Ready)`);
           } else {
-            this.showShopNotice(`✨ Acquired ${up.name}!`);
+            this.showShopNotice(`Acquired ${up.name}!`);
           }
           if (up.maxLevel) up.level = (up.level || 0) + 1;
           soundFX.playGemCollect();
@@ -552,10 +605,10 @@ export class UIManager {
       // Default: By Criteria Groups
       if (this.currentCategory === 'all') {
         const groups = [
-          { id: 'bows', title: '🏹 Weapon Arsenal' },
-          { id: 'archer', title: '⚔️ Hero Archer Perks' },
-          { id: 'tower', title: '🏰 Fortress Defenses & Traps' },
-          { id: 'special', title: '💎 Elite Special Abilities' },
+          { id: 'bows', title: 'Weapon Arsenal' },
+          { id: 'archer', title: 'Hero Archer Perks' },
+          { id: 'tower', title: 'Fortress Defenses & Traps' },
+          { id: 'special', title: 'Elite Special Abilities' },
         ];
         groups.forEach(g => {
           const groupItems = itemsToShow.filter(u => u.category === g.id).sort((a, b) => this.getUpgradeCost(a) - this.getUpgradeCost(b));
@@ -610,14 +663,14 @@ export class UIManager {
 
       let actionHtml = '';
       if (isEquipped) {
-        actionHtml = `<button class="wardrobe-action-btn btn-equipped" type="button">✓ EQUIPPED</button>`;
+        actionHtml = `<button class="wardrobe-action-btn btn-equipped" type="button">EQUIPPED</button>`;
       } else if (isUnlocked) {
         actionHtml = `<button class="wardrobe-action-btn btn-equip" type="button">EQUIP SKIN</button>`;
       } else {
         actionHtml = `<button class="wardrobe-action-btn btn-unlock ${!canAfford ? 'disabled' : ''}" type="button" ${!canAfford ? 'disabled' : ''}>💀 ${skin.cost} SKULLS</button>`;
       }
 
-      const tagsHtml = skin.tags.map(t => `<span class="wardrobe-tag">✦ ${t}</span>`).join('');
+      const tagsHtml = skin.tags.map(t => `<span class="wardrobe-tag">${t}</span>`).join('');
 
       card.innerHTML = `
         <div class="wardrobe-card-header">
@@ -638,7 +691,7 @@ export class UIManager {
 
       const handleAction = () => {
         if (isEquipped) {
-          this.showWardrobeNotice(`✓ ${skin.name} is already equipped!`);
+          this.showWardrobeNotice(`${skin.name} is already equipped!`);
           return;
         }
         if (isUnlocked) {
@@ -652,7 +705,7 @@ export class UIManager {
             scene.saveGameData?.();
           }
           soundFX.playBowDraw();
-          this.showWardrobeNotice(`🥋 Equipped ${skin.name}!`);
+          this.showWardrobeNotice(`Equipped ${skin.name}!`);
           this.buildWardrobe(player, scene);
           return;
         }
@@ -673,7 +726,7 @@ export class UIManager {
             scene.updateMenuSkullsUI?.();
           }
           soundFX.playGemCollect();
-          this.showWardrobeNotice(`✨ Unlocked and Equipped ${skin.name}!`);
+          this.showWardrobeNotice(`Unlocked and Equipped ${skin.name}!`);
           this.buildWardrobe(player, scene);
         } else {
           soundFX.playArmorHit();

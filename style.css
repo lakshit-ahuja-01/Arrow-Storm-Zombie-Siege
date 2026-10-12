@@ -270,35 +270,36 @@ html, body {
   position: relative;
   z-index: 10;
   height: 100vh;
-  padding: 0 0 0 clamp(64px, 8.5vw, 160px);
+  padding: clamp(16px, 3vh, 32px) 0 clamp(72px, 9vh, 96px) clamp(48px, 6.5vw, 120px);
   width: 100%;
-  max-width: 860px;
+  max-width: 800px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 32px;
+  gap: clamp(12px, 2.2vh, 24px);
   text-align: left;
+  box-sizing: border-box;
 }
 
 /* ── Game Title Branding ───────────────────────────── */
 .zombie-title-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(4px, 0.8vh, 8px);
 }
 
 .zombie-subhead-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  font-size: 16px;
+  gap: 12px;
+  font-size: 14px;
   font-weight: 900;
-  letter-spacing: 3.5px;
+  letter-spacing: 3px;
   text-transform: uppercase;
   color: #94a3b8;
 }
 
-.zombie-tag-icon { font-size: 22px; }
+.zombie-tag-icon { font-size: 18px; }
 
 .zombie-subhead-text {
   color: #e2e8f0;
@@ -308,10 +309,10 @@ html, body {
 .zombie-subhead-badge {
   background: rgba(229, 9, 20, 0.35);
   border: 1.5px solid rgba(229, 9, 20, 0.85);
-  padding: 4px 14px;
+  padding: 3px 12px;
   border-radius: 6px;
   color: #ff4d4d;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: 1.5px;
   box-shadow: 0 0 14px rgba(229, 9, 20, 0.65);
@@ -326,28 +327,28 @@ html, body {
 
 .zombie-blood-text {
   font-family: 'Creepster', cursive;
-  font-size: clamp(104px, 12vw, 168px);
+  font-size: clamp(72px, 8.5vw, 132px);
   font-weight: 400;
   color: #e50914;
-  letter-spacing: 6px;
+  letter-spacing: 4px;
   text-shadow:
     0 4px 0 #7f0000,
     0 8px 0 #450a0a,
-    0 0 45px rgba(229, 9, 20, 0.95),
+    0 0 35px rgba(229, 9, 20, 0.95),
     0 16px 32px rgba(0, 0, 0, 0.95);
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.95));
 }
 
 .zombie-siege-text {
   font-family: 'Black Ops One', 'Outfit', sans-serif;
-  font-size: clamp(40px, 4.5vw, 68px);
+  font-size: clamp(30px, 3.6vw, 54px);
   font-weight: 900;
   color: #ffffff;
-  letter-spacing: 12px;
+  letter-spacing: 10px;
   text-shadow:
     0 3px 0 #1e293b,
     0 6px 16px rgba(0, 0, 0, 0.95);
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 /* ── Mode Selector: Tactical Distressed Badges ─────── */
@@ -362,12 +363,12 @@ html, body {
   flex: 1;
   background: rgba(14, 18, 28, 0.92);
   border: 1.5px solid rgba(255, 255, 255, 0.16);
-  border-radius: 14px;
-  padding: 14px 20px;
+  border-radius: 12px;
+  padding: 10px 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   transition: all 0.15s ease;
   font-family: 'Outfit', sans-serif;
   text-align: left;
@@ -464,8 +465,8 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  width: clamp(370px, 28vw, 450px);
-  height: 74px;
+  width: clamp(380px, 28vw, 450px);
+  height: 66px;
   background: transparent;
   border: none;
   outline: none;
@@ -500,16 +501,17 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   height: 100%;
-  padding-left: clamp(24px, 2.5vw, 36px);
-  padding-right: 20px;
+  padding-left: clamp(22px, 2vw, 30px);
+  padding-right: clamp(24px, 2.2vw, 34px);
+  box-sizing: border-box;
 }
 
 .zombie-tape-btn .tape-slashes-svg {
-  width: 50px;
-  height: 38px;
+  width: 46px;
+  height: 36px;
   flex-shrink: 0;
   overflow: visible;
   filter: drop-shadow(0 0 5px #ff0a21) drop-shadow(0 0 12px rgba(229, 9, 20, 0.85));
@@ -526,10 +528,10 @@ html, body {
 
 .zombie-tape-btn .tape-btn-text {
   font-family: 'Permanent Marker', cursive, sans-serif;
-  font-size: clamp(26px, 2.2vw, 32px);
+  font-size: clamp(23px, 2vw, 28px);
   font-weight: 900;
   color: #08090d;
-  letter-spacing: 2.5px;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
@@ -715,7 +717,7 @@ html, body {
 .zombie-nav-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-start;
   margin: 0;
 }
@@ -726,12 +728,12 @@ html, body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 4px 6px;
+  gap: 12px;
+  padding: 2px 4px;
   font-family: 'Permanent Marker', 'Outfit', cursive, sans-serif;
-  font-size: clamp(26px, 2.1vw, 32px);
+  font-size: clamp(22px, 1.8vw, 28px);
   font-weight: 900;
-  letter-spacing: 2.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   transition: transform 0.15s ease, color 0.15s ease, text-shadow 0.15s ease;
   position: relative;
@@ -743,7 +745,8 @@ html, body {
   letter-spacing: 2.5px;
 }
 
-/* Nav Buttons: Clean Crisp Bone-White (Matches Zombie Theme) */
+/* Secondary Menu Nav Buttons: Clean Crisp Bone-White Default */
+.zombie-nav-btn,
 .zombie-nav-btn.nav-white,
 .zombie-nav-btn.nav-yellow,
 .zombie-nav-btn.nav-purple {
@@ -754,20 +757,40 @@ html, body {
     1.5px -1.5px 0 #000,
     -1.5px 1.5px 0 #000,
     0 4px 12px rgba(0, 0, 0, 0.95);
+  transition: transform 0.18s ease, color 0.18s ease, text-shadow 0.18s ease;
 }
 
+.zombie-nav-btn .nav-btn-text {
+  color: inherit;
+  transition: color 0.18s ease, text-shadow 0.18s ease;
+}
+
+/* On HOVER: Both button text AND pill turn vibrant glowing red */
+.zombie-nav-btn:hover,
 .zombie-nav-btn.nav-white:hover,
 .zombie-nav-btn.nav-yellow:hover,
-.zombie-nav-btn.nav-purple:hover {
-  color: #ffffff;
-  transform: translateX(10px);
+.zombie-nav-btn.nav-purple:hover,
+.zombie-nav-btn:focus-visible {
+  color: #ff2e3b !important;
+  transform: translateX(8px);
   text-shadow:
     2px 2px 0 #000,
     -1.5px -1.5px 0 #000,
     1.5px -1.5px 0 #000,
     -1.5px 1.5px 0 #000,
-    0 0 16px rgba(229, 9, 20, 0.85),
-    0 6px 14px rgba(0, 0, 0, 0.95);
+    0 0 18px rgba(229, 9, 20, 0.95),
+    0 0 32px rgba(229, 9, 20, 0.6) !important;
+}
+
+.zombie-nav-btn:hover .nav-btn-text,
+.zombie-nav-btn.nav-white:hover .nav-btn-text {
+  color: #ff2e3b !important;
+  text-shadow:
+    2px 2px 0 #000,
+    -1.5px -1.5px 0 #000,
+    1.5px -1.5px 0 #000,
+    -1.5px 1.5px 0 #000,
+    0 0 18px rgba(229, 9, 20, 0.95) !important;
 }
 
 .nav-btn-icon {
@@ -776,32 +799,51 @@ html, body {
   flex-shrink: 0;
 }
 
+/* Secondary Badges (CAMPAIGN, WARDROBE, START FRESH):
+   Identical translucent dark red with glowing outline */
 .nav-badge-pill,
-.nav-badge-pill.badge-purple {
-  background: #e50914;
-  color: #ffffff;
-  font-size: 11px;
-  font-family: 'Outfit', sans-serif;
-  font-weight: 900;
-  padding: 3px 11px;
-  border-radius: 999px;
-  letter-spacing: 1.2px;
-  box-shadow: 0 0 12px rgba(229, 9, 20, 0.85);
-  animation: badgeGlow 1.5s infinite alternate;
-  flex-shrink: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+.nav-badge-pill.badge-purple,
+.reset-pill {
+  background: rgba(220, 38, 38, 0.28) !important;
+  border: 1px solid rgba(239, 68, 68, 0.6) !important;
+  color: #fca5a5 !important;
+  font-size: 11px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 900 !important;
+  padding: 3px 11px !important;
+  border-radius: 999px !important;
+  letter-spacing: 1.2px !important;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.35) !important;
+  flex-shrink: 0 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+  transition: all 0.18s ease !important;
+  cursor: pointer !important;
+}
+
+/* Hover: Pill turns solid bright red with white text and crimson bloom */
+.zombie-nav-btn:hover .nav-badge-pill,
+.zombie-nav-btn:hover .reset-pill,
+.zombie-nav-btn.nav-reset:hover .reset-pill,
+.nav-badge-pill:hover,
+.reset-pill:hover {
+  background: linear-gradient(180deg, #ff2e3b 0%, #e50914 60%, #990008 100%) !important;
+  border-color: #ff4d4d !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(229, 9, 20, 0.95), 0 0 6px #ff4d4d !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+  transform: scale(1.06) !important;
 }
 
 /* ── Footer Controls Info Tip (Pinned to Bottom-Left) ─── */
 .zombie-cabinet-footer {
   position: absolute;
-  bottom: 34px;
-  left: clamp(64px, 8.5vw, 160px);
+  bottom: clamp(14px, 2.4vh, 26px);
+  left: clamp(48px, 6.5vw, 120px);
   z-index: 25;
   display: flex;
   align-items: center;
   font-family: 'Outfit', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 1px;
   color: #64748b;
@@ -811,24 +853,40 @@ html, body {
 .zombie-footer-tip {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 10px;
   flex-wrap: wrap;
   background: rgba(6, 8, 16, 0.88);
-  padding: 9px 24px;
+  padding: 7px 20px;
   border-radius: 999px;
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
 }
 
+.desktop-tip {
+  display: flex !important;
+}
+
+.mobile-tip {
+  display: none !important;
+}
+
+body.is-mobile .desktop-tip {
+  display: none !important;
+}
+
+body.is-mobile .mobile-tip {
+  display: flex !important;
+}
+
 .tip-kbd {
   color: #e50914;
   font-weight: 900;
-  font-size: 12.5px;
+  font-size: 12px;
 }
 
 .tip-val {
   color: #cbd5e1;
-  font-size: 13px;
+  font-size: 12.5px;
 }
 
 .tip-sep {
@@ -1063,10 +1121,10 @@ html, body {
 }
 .stamina-fill {
   position: absolute; top: 0; left: 0; height: 100%;
-  background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
+  background: linear-gradient(180deg, #f8ca7d 0%, #f6b64e 30%, #f4a92f 55%, #f29a0a 100%);
   border-radius: 7px;
   transition: width 0.15s ease-out;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.75);
+  box-shadow: 0 0 14px rgba(242, 154, 11, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.45);
   z-index: 1;
 }
 .stamina-fill::before {
@@ -1102,7 +1160,7 @@ html, body {
   align-items: center;
   gap: 8px;
   position: absolute;
-  top: 14px;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
@@ -1330,6 +1388,20 @@ html, body {
 #hud-gems {
   border-color: rgba(245, 166, 35, 0.25);
   color: #fbbf24;
+  transition: transform 0.12s ease-out, border-color 0.12s ease-out;
+}
+.hud-skull-emoji {
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.45));
+}
+#hud-gems.pulse {
+  transform: scale(1.15);
+  border-color: #ffd700;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.55);
 }
 
 .btn-icon {
@@ -1356,14 +1428,16 @@ html, body {
 }
 
 #hud-controls-tip {
-  position: absolute;
-  bottom: 12px; left: 50%;
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
   white-space: nowrap;
   pointer-events: none;
+  z-index: 15;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1755,10 +1829,10 @@ html, body {
 .charge-bar-bg {
   width: 86px;
   height: 10px;
-  background: rgba(6, 8, 16, 0.92);
+  background: rgba(6, 8, 16, 0.94);
   border-radius: 999px;
   overflow: hidden;
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border: 1.5px solid rgba(242, 154, 11, 0.45);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85), inset 0 2px 4px rgba(0, 0, 0, 0.6);
   padding: 1.5px;
 }
@@ -1766,8 +1840,8 @@ html, body {
   height: 100%;
   border-radius: 999px;
   transition: width 0.04s linear;
-  background: linear-gradient(90deg, #ff4757 0%, #ffa502 45%, #2ed573 90%, #00f2fe 100%);
-  box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+  background: linear-gradient(180deg, #f8ca7d 0%, #f6b64e 30%, #f4a92f 55%, #f29a0a 100%);
+  box-shadow: 0 0 12px rgba(242, 154, 11, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 /* Live stamina cost preview below charge bar */
@@ -2086,6 +2160,84 @@ html, body {
 }
 .stat-item span  { font-size: 10px; color: var(--clr-muted); margin-bottom: 4px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
 .stat-item strong { font-size: 24px; font-weight: 900; color: var(--clr-accent); }
+
+/* ── Game Over Tactical Upgrade Alert ─────────────────── */
+.gameover-upgrade-alert {
+  background: rgba(229, 9, 20, 0.08);
+  border: 1px solid rgba(229, 9, 20, 0.38);
+  border-radius: 12px;
+  padding: 13px 15px;
+  margin-bottom: 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04);
+}
+
+.go-alert-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.go-alert-badge {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(229, 9, 20, 0.22);
+  color: #ff4d4d;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(229, 9, 20, 0.4);
+}
+
+.go-alert-skulls-hint {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 0.5px;
+}
+
+.go-alert-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.btn-upgrade-alert {
+  width: 100%;
+  background: #e50914 !important;
+  color: #ffffff !important;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px !important;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s ease, transform 0.1s ease;
+  margin-top: 4px;
+}
+
+.btn-upgrade-alert:hover {
+  background: #c40812 !important;
+}
+
+.btn-upgrade-alert:active {
+  transform: translateY(1px);
+}
 
 .gameover-buttons {
   display: flex;
@@ -3209,29 +3361,33 @@ html, body {
   bottom: 0;
   left: 0;
   width: 4px;
-  background: var(--skin-accent, #a855f7);
-  box-shadow: 0 0 10px var(--skin-accent, #a855f7);
+  background: #e50914;
+  box-shadow: 0 0 10px rgba(229, 9, 20, 0.6);
   border-radius: 16px 0 0 16px;
   transition: all 0.2s ease;
 }
 
 .wardrobe-card-item:hover {
   transform: translateY(-2px);
-  border-color: var(--skin-accent, #a855f7);
+  border-color: #e50914;
   box-shadow:
     0 7px 0 #070910,
     0 14px 26px rgba(0, 0, 0, 0.8),
-    0 0 22px rgba(168, 85, 247, 0.35);
+    0 0 22px rgba(229, 9, 20, 0.35);
 }
 
 .wardrobe-card-item.equipped {
-  border-color: #2ecc71;
-  background: linear-gradient(160deg, rgba(20, 38, 28, 0.95) 0%, rgba(11, 24, 18, 0.98) 100%);
+  border-color: #e50914;
+  background: linear-gradient(160deg, rgba(38, 14, 18, 0.95) 0%, rgba(18, 10, 14, 0.98) 100%);
+  box-shadow:
+    0 7px 0 #070910,
+    0 14px 26px rgba(0, 0, 0, 0.8),
+    0 0 24px rgba(229, 9, 20, 0.45);
 }
 
 .wardrobe-card-item.equipped::before {
-  background: #2ecc71;
-  box-shadow: 0 0 12px #2ecc71;
+  background: #ff4d4d;
+  box-shadow: 0 0 14px #ff4d4d;
 }
 
 .wardrobe-card-item.locked {
@@ -3251,8 +3407,9 @@ html, body {
   height: 48px;
   min-height: 48px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.65);
-  border: 2px solid #a855f7;
+  background: rgba(229, 9, 20, 0.12);
+  border: 2px solid rgba(229, 9, 20, 0.6);
+  box-shadow: 0 0 14px rgba(229, 9, 20, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3278,6 +3435,7 @@ html, body {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   line-height: 1.25;
+  color: #ff4d4d;
 }
 
 .wardrobe-skin-name {
@@ -3307,9 +3465,9 @@ html, body {
 .wardrobe-tag {
   font-size: 9.5px;
   font-weight: 800;
-  color: #cbd5e1;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fca5a5;
+  background: rgba(229, 9, 20, 0.08);
+  border: 1px solid rgba(229, 9, 20, 0.25);
   border-radius: 5px;
   padding: 2.5px 7px;
   line-height: 1.2;
@@ -3340,32 +3498,36 @@ html, body {
 }
 
 .wardrobe-action-btn.btn-equipped {
-  background: linear-gradient(180deg, #2ecc71 0%, #27ae60 50%, #1e8449 100%);
+  background: linear-gradient(180deg, #e50914 0%, #b91c1c 50%, #991b1b 100%);
   color: #ffffff;
   cursor: default;
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.42), 0 4px 0 #14532d;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.42), 0 4px 0 #7f1d1d;
 }
 
 .wardrobe-action-btn.btn-equip {
-  background: linear-gradient(180deg, #a855f7 0%, #8e44ad 50%, #6c3483 100%);
+  background: linear-gradient(180deg, #7f1d1d 0%, #5c1417 50%, #450a0a 100%);
+  border: 1px solid rgba(229, 9, 20, 0.6);
   color: #ffffff;
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.42), 0 4px 0 #4a235a;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.25), 0 4px 0 #280709;
 }
 .wardrobe-action-btn.btn-equip:hover {
   filter: brightness(1.15);
   transform: translateY(-2px);
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), 0 6px 0 #4a235a, 0 8px 16px rgba(168, 85, 247, 0.6);
+  background: linear-gradient(180deg, #b91c1c 0%, #991b1b 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.4), 0 6px 0 #280709, 0 8px 18px rgba(229, 9, 20, 0.6);
 }
 
 .wardrobe-action-btn.btn-unlock {
-  background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  background: linear-gradient(180deg, #991b1b 0%, #7f1d1d 50%, #5c1417 100%);
+  border: 1px solid rgba(229, 9, 20, 0.5);
   color: #ffffff;
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.42), 0 4px 0 #78350f;
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.25), 0 4px 0 #3b0714;
 }
 .wardrobe-action-btn.btn-unlock:hover:not(:disabled) {
   filter: brightness(1.15);
   transform: translateY(-2px);
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), 0 6px 0 #78350f, 0 8px 16px rgba(245, 158, 11, 0.6);
+  background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.4), 0 6px 0 #3b0714, 0 8px 18px rgba(229, 9, 20, 0.6);
 }
 
 .wardrobe-action-btn.btn-unlock.disabled,
@@ -3396,9 +3558,9 @@ html, body {
 .wardrobe-info-tag {
   font-size: 11px;
   font-weight: 900;
-  color: #c084fc;
-  background: rgba(168, 85, 247, 0.2);
-  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #ff6b6b;
+  background: rgba(229, 9, 20, 0.2);
+  border: 1px solid rgba(229, 9, 20, 0.45);
   border-radius: 6px;
   padding: 3px 8px;
 }
@@ -3964,6 +4126,10 @@ html, body {
     padding: 2px 8px;
   }
 
+  #hud-center-group {
+    top: 4px !important;
+  }
+
   #hud-left {
     padding: 3px 6px;
     gap: 2px;
@@ -4027,6 +4193,23 @@ html, body {
   .gameover-card {
     padding: 10px 16px;
     max-height: 96vh;
+    overflow-y: auto;
+  }
+
+  .gameover-upgrade-alert {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    gap: 4px;
+  }
+
+  .go-alert-text {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .btn-upgrade-alert {
+    padding: 6px 10px;
+    font-size: 11px !important;
   }
 
   .gameover-icon {
@@ -4070,8 +4253,8 @@ html, body {
   }
 }
 
-/* ── Compact Widths (< 900px) ── */
-@media (max-width: 900px) {
+/* ── Compact Viewports & Portrait Orientation ── */
+@media (max-width: 768px) and (orientation: portrait) {
   #hud-controls-tip {
     display: none !important;
   }
@@ -4080,9 +4263,325 @@ html, body {
     min-width: 240px;
   }
 
-  .shop-card, .wardrobe-card, .pause-card, .gameover-card {
-    max-width: 95vw;
+  .pause-card, .gameover-card {
+    max-width: 92vw !important;
+    width: 92vw !important;
   }
+
+  .shop-card, .wardrobe-card {
+    max-width: 96vw !important;
+    width: 96vw !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   LANDSCAPE MODALS SUITE: PAUSE, SHOP, GAMEOVER, WARDROBE
+   Prevents over-stretching and vertical squishing in landscape viewports
+   ═══════════════════════════════════════════════════════ */
+
+/* 1. Pause Card: Always a neat, centered modal (never wide stretched) */
+.pause-card {
+  max-width: 440px !important;
+  width: min(90vw, 440px) !important;
+  margin: auto !important;
+}
+
+@media (orientation: landscape) and (max-height: 680px), (max-height: 520px) {
+  .pause-card {
+    max-width: 420px !important;
+    width: min(90vw, 420px) !important;
+    padding: 16px 24px !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+  }
+  .pause-icon {
+    font-size: 26px !important;
+    margin-bottom: 2px !important;
+  }
+  .pause-card h2 {
+    font-size: 17px !important;
+    margin-bottom: 8px !important;
+  }
+  .pause-stats {
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  .pause-stat {
+    padding: 6px 8px !important;
+  }
+  .pause-stat span {
+    font-size: 9px !important;
+  }
+  .pause-stat strong {
+    font-size: 16px !important;
+  }
+  .pause-buttons {
+    gap: 8px !important;
+  }
+  .pause-buttons .btn {
+    padding: 9px 16px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* 2. Game Over Card: Always a centered tactical card */
+.gameover-card {
+  max-width: 480px !important;
+  width: min(90vw, 480px) !important;
+  margin: auto !important;
+}
+
+/* 3. Shop & Wardrobe Cards: Prevent 1000px stretch & give room to items */
+.shop-card,
+.wardrobe-card {
+  max-width: min(92vw, 920px) !important;
+  width: min(92vw, 920px) !important;
+  margin: auto !important;
+}
+
+/* Landscape compact layout for Shop & Wardrobe (Height <= 720px) */
+@media (orientation: landscape) and (max-height: 720px), (max-height: 540px) {
+  .shop-card {
+    padding: 10px 18px 12px !important;
+    max-height: 96vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .shop-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 6px !important;
+    padding-bottom: 6px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .shop-title-area {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+
+  .shop-subhead-row {
+    font-size: 10px !important;
+    letter-spacing: 1.5px !important;
+  }
+
+  .shop-blood-text {
+    font-size: 24px !important;
+    letter-spacing: 2px !important;
+  }
+
+  .shop-siege-text {
+    font-size: 18px !important;
+    letter-spacing: 3px !important;
+  }
+
+  .shop-subtitle {
+    font-size: 11px !important;
+    margin-top: 2px !important;
+  }
+
+  .shop-top-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .shop-reset-action-btn {
+    padding: 4px 10px !important;
+    font-size: 10.5px !important;
+  }
+
+  .shop-skull-chip {
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .shop-controls-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .shop-filter-bar {
+    display: flex !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+    padding-bottom: 2px !important;
+  }
+
+  .shop-filter-btn {
+    padding: 4px 10px !important;
+    font-size: 10.5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .sort-container {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Upgrades Grid: Expands to fill available vertical space cleanly */
+  .shop-grid {
+    flex: 1 1 0% !important;
+    min-height: 160px !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+    padding-right: 6px !important;
+  }
+
+  .shop-item {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+  }
+
+  .shop-item-desc {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Footer: Action buttons spaced cleanly */
+  .shop-footer {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding-top: 6px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .shop-footer .shop-red-btn {
+    max-width: 360px !important;
+    width: auto !important;
+    margin: 0 !important;
+    margin-left: auto !important;
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+  }
+
+  .shop-footer .shop-return-btn {
+    max-width: 160px !important;
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   MOBILE LANDSCAPE ORIENTATION OVERLAY
+   ═══════════════════════════════════════════════════════ */
+.orientation-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 10, 16, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.orientation-overlay.active {
+  display: flex !important;
+}
+
+.orientation-box {
+  background: linear-gradient(160deg, #151824 0%, #0c0f18 100%);
+  border: 1.5px solid rgba(229, 9, 20, 0.45);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(229, 9, 20, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.orientation-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(229, 9, 20, 0.12);
+  border: 1px solid rgba(229, 9, 20, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.orientation-phone-svg {
+  width: 38px;
+  height: 38px;
+  color: #e2e8f0;
+  animation: phoneRotate 2.4s ease-in-out infinite;
+}
+
+@keyframes phoneRotate {
+  0%, 15% {
+    transform: rotate(0deg);
+  }
+  45%, 70% {
+    transform: rotate(-90deg);
+  }
+  85%, 100% {
+    transform: rotate(0deg);
+  }
+}
+
+.orientation-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.orientation-desc {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.orientation-badge {
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(229, 9, 20, 0.2);
+  color: #ff4d4d;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(229, 9, 20, 0.35);
+  margin-top: 4px;
 }
 
 /* ── Global Default for Mobile Controls ────────────── */
@@ -4090,27 +4589,30 @@ html, body {
   display: none;
 }
 
-/* ── Mobile Widths (< 640px) ────────────────────────── */
-@media (max-width: 640px) {
-  /* ── 1. HUD & In-Game Placement (Screenshot 1 Fix) ── */
+/* ── Mobile Widths, Mobile Landscape Mode (<= 540px high), or Mobile Class ── */
+@media (max-width: 640px), (max-height: 540px) and (orientation: landscape), (max-width: 768px) and (orientation: portrait) {
+  /* ── 1. HUD & In-Game Placement (Mobile Version Fix) ── */
   #hud {
     padding: 6px 8px !important;
     display: flex !important;
     align-items: flex-start !important;
     justify-content: space-between !important;
+    box-sizing: border-box !important;
   }
 
   #hud-left {
-    padding: 3.5px 6px !important;
+    padding: 4px 7px !important;
     gap: 2px !important;
-    max-width: 128px !important;
-    width: 128px !important;
+    max-width: 130px !important;
+    width: 130px !important;
     border-radius: 9px !important;
     background: rgba(10, 16, 28, 0.94) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     overflow: visible !important;
+    flex-shrink: 0 !important;
   }
 
   .hud-health {
@@ -4118,13 +4620,14 @@ html, body {
   }
 
   .hud-label-row {
-    font-size: 7.5px !important;
+    font-size: 8px !important;
   }
 
   .hud-label {
-    font-size: 7.5px !important;
-    gap: 2px !important;
+    font-size: 8px !important;
+    gap: 3px !important;
     letter-spacing: 0.4px !important;
+    font-weight: 800 !important;
   }
 
   .hud-mini-svg {
@@ -4133,7 +4636,8 @@ html, body {
   }
 
   .hud-val {
-    font-size: 8px !important;
+    font-size: 8.5px !important;
+    font-weight: 900 !important;
     letter-spacing: 0.2px !important;
   }
 
@@ -4144,29 +4648,50 @@ html, body {
     border-radius: 3px !important;
   }
 
-  /* Center Group cleanly positioned between Left and Right with zero overlap */
+  /* Center Group positioned cleanly at the TOP of the screen (aligned with top HUD) */
   #hud-center-group {
-    top: 6px !important;
+    position: absolute !important;
+    top: 8px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    gap: 2.5px !important;
+    gap: 3px !important;
     z-index: 25 !important;
+    pointer-events: none !important;
+    width: auto !important;
+    max-width: 94vw !important;
   }
 
   #hud-center {
-    padding: 2.5px 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 3px 10px !important;
     border-radius: 999px !important;
-    gap: 2px !important;
+    gap: 6px !important;
+    background: rgba(10, 16, 28, 0.94) !important;
+    border: 1px solid rgba(255, 71, 87, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+    pointer-events: auto !important;
+    white-space: nowrap !important;
   }
 
   #hud-wave {
-    font-size: 9.5px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
     letter-spacing: 0.4px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
   }
 
   #hud-enemies {
-    font-size: 8px !important;
-    gap: 2.5px !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    gap: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding-left: 6px !important;
   }
 
   .hud-mode-tag {
@@ -4174,29 +4699,63 @@ html, body {
     padding: 1px 4px !important;
   }
 
+  .boss-hud-bar {
+    min-width: min(290px, 92vw) !important;
+    max-width: 92vw !important;
+    padding: 4px 8px !important;
+  }
+
   #hud-right {
-    gap: 3.5px !important;
+    gap: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
   }
 
   #hud-gems, #hud-kills {
-    padding: 2.5px 5px !important;
-    font-size: 9.5px !important;
-    gap: 2px !important;
-    border-radius: 6px !important;
+    padding: 2.5px 6px !important;
+    font-size: 10.5px !important;
+    font-weight: 900 !important;
+    gap: 3px !important;
+    border-radius: 7px !important;
+    height: 30px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  #hud-gems .hud-mini-svg, #hud-kills .hud-mini-svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+
+  .hud-skull-emoji {
+    font-size: 13px !important;
   }
 
   #btn-hud-pause, #btn-hud-sound {
-    width: 26px !important;
-    height: 26px !important;
-    padding: 3.5px !important;
-    border-radius: 6px !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    padding: 4px !important;
+    border-radius: 7px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
-  /* Weapons & Skills: Docked at Bottom-Left for thumb controls */
+  #btn-hud-pause .hud-svg, #btn-hud-sound .hud-svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Weapons & Skills: Docked on Bottom-Right Side */
   #hud-weapons-dock {
     position: fixed !important;
     bottom: 18px !important;
-    left: 14px !important;
+    right: 16px !important;
+    left: auto !important;
     margin: 0 !important;
     z-index: 45 !important;
     display: flex !important;
@@ -4207,12 +4766,14 @@ html, body {
   }
 
   .hud-weapon-btn {
-    padding: 5px 8px !important;
+    padding: 6px 10px !important;
     background: rgba(10, 16, 28, 0.94) !important;
     border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
     border-radius: 9px !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7) !important;
-    gap: 4px !important;
+    gap: 5px !important;
+    min-height: 38px !important;
+    box-sizing: border-box !important;
   }
 
   .hud-weapon-btn .weapon-slot-name {
@@ -4220,12 +4781,12 @@ html, body {
   }
 
   .hud-weapon-btn .weapon-slot-num {
-    font-size: 9.5px !important;
-    padding: 1.5px 3.5px !important;
+    font-size: 10px !important;
+    padding: 2px 4px !important;
   }
 
   .hud-weapon-btn .weapon-slot-icon {
-    font-size: 15px !important;
+    font-size: 17px !important;
   }
 
   .hud-weapon-btn.active {
@@ -4236,20 +4797,21 @@ html, body {
   #hud-skills-dock {
     position: fixed !important;
     bottom: 64px !important;
-    left: 14px !important;
+    right: 16px !important;
+    left: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     z-index: 45 !important;
     display: flex !important;
     flex-direction: row !important;
-    gap: 6px !important;
+    gap: 7px !important;
     pointer-events: auto !important;
     width: auto !important;
   }
 
   .hud-skill-btn {
-    padding: 3px 5px !important;
+    padding: 4px 6px !important;
     background: rgba(10, 16, 28, 0.94) !important;
     border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
     border-radius: 9px !important;
@@ -4261,14 +4823,19 @@ html, body {
   }
 
   .hud-skill-btn .skill-icon-wrap {
-    width: 26px !important;
-    height: 26px !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .hud-skill-btn .skill-icon {
+    font-size: 18px !important;
   }
 
   #hud-tactical-dock {
     position: fixed !important;
     bottom: 110px !important;
-    left: 14px !important;
+    right: 16px !important;
+    left: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
@@ -4280,21 +4847,22 @@ html, body {
     width: auto !important;
   }
 
-  /* Tactile Mobile Jump & Dodge Button (Bottom-Right) */
+  /* Tactile Mobile Jump & Dodge Button - Positioned Below / Slightly Left of Tower */
   .mobile-jump-btn {
     display: flex !important;
     position: fixed !important;
     bottom: 18px !important;
-    right: 16px !important;
+    left: clamp(32px, 7.5vw, 125px) !important;
+    right: auto !important;
     width: 64px !important;
     height: 64px !important;
     border-radius: 50% !important;
-    background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%) !important;
-    border: 2.5px solid #7dd3fc !important;
+    background: linear-gradient(180deg, #ff2e3b 0%, #e50914 50%, #990008 100%) !important;
+    border: 2.5px solid rgba(255, 120, 130, 0.9) !important;
     color: #ffffff !important;
     box-shadow:
-      0 4px 0 #075985,
-      0 8px 24px rgba(2, 132, 199, 0.6),
+      0 4px 0 #5c0005,
+      0 8px 22px rgba(229, 9, 20, 0.65),
       inset 0 1.5px 0 rgba(255, 255, 255, 0.6) !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -4310,8 +4878,8 @@ html, body {
   .mobile-jump-btn:active {
     transform: translateY(3px) !important;
     box-shadow:
-      0 1px 0 #075985,
-      0 4px 10px rgba(2, 132, 199, 0.4),
+      0 1px 0 #5c0005,
+      0 4px 10px rgba(229, 9, 20, 0.45),
       inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   }
 
@@ -4319,7 +4887,7 @@ html, body {
     width: 22px !important;
     height: 22px !important;
     stroke-width: 2.5 !important;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)) !important;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 10px rgba(229, 9, 20, 0.8)) !important;
   }
 
   .mobile-jump-btn .jump-text {
@@ -4339,14 +4907,53 @@ html, body {
   }
 
   .shop-header {
+    display: flex !important;
     flex-direction: column !important;
-    align-items: flex-start !important;
+    align-items: stretch !important;
     gap: 8px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .shop-title-area {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 100% !important;
   }
 
   .shop-top-actions {
-    align-self: flex-end !important;
-    margin-top: -30px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-top: 2px !important;
+    gap: 10px !important;
+    padding-top: 6px !important;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12) !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-reset-action-btn {
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+    letter-spacing: 0.5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-top-actions .shop-skull-chip {
+    padding: 5px 14px !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-top-actions .shop-skull-chip .zombie-skull-num {
+    font-size: 13.5px !important;
+  }
+
+  .shop-top-actions .shop-skull-chip .shop-skull-label {
+    font-size: 9.5px !important;
   }
 
   .shop-main-title {
@@ -4366,6 +4973,17 @@ html, body {
 
   .shop-subtitle {
     font-size: 11px !important;
+    line-height: 1.4 !important;
+    color: #94a3b8 !important;
+    margin-top: 2px !important;
+  }
+
+  .shop-subtitle .hud-mode-tag {
+    display: inline-block !important;
+    margin-top: 4px !important;
+    margin-left: 0 !important;
+    font-size: 9.5px !important;
+    padding: 2px 6px !important;
   }
 
   .shop-controls-row {
@@ -4403,11 +5021,33 @@ html, body {
   }
 
   .shop-item-name {
-    font-size: 13.5px !important;
+    font-size: 13px !important;
+    white-space: normal !important;
+    line-height: 1.25 !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
 
   .shop-item-desc {
     font-size: 11px !important;
+  }
+
+  .shop-equip-slots {
+    min-width: 96px !important;
+    gap: 4px !important;
+  }
+
+  .shop-slot-btn {
+    padding: 5px 8px !important;
+    font-size: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  .shop-buy-btn {
+    min-width: 96px !important;
+    padding: 6px 12px !important;
+    font-size: 12px !important;
   }
 
   .shop-footer {
@@ -4487,14 +5127,18 @@ html, body {
   }
 
   .wardrobe-top-actions {
-    align-self: flex-end !important;
-    margin-top: -36px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    width: 100% !important;
+    margin-top: 2px !important;
+    padding-top: 4px !important;
+    border-top: 1px dashed rgba(255, 255, 255, 0.12) !important;
   }
 
   .wardrobe-top-actions .shop-skull-chip {
-    padding: 3px 8px !important;
+    padding: 4px 12px !important;
     font-size: 11px !important;
-    gap: 4px !important;
+    gap: 6px !important;
   }
 
   /* Fix Wardrobe Grid Horizontal Scrollbar Bug */
@@ -4611,4 +5255,1023 @@ html, body {
     width: 100% !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   RESET PROGRESS CONFIRMATION MODAL & BUTTONS
+   ═══════════════════════════════════════════════════════ */
+.reset-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 4, 8, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.reset-confirm-card {
+  background: linear-gradient(160deg, #1b0c0c 0%, #0d0e17 100%);
+  border: 2px solid rgba(239, 68, 68, 0.6);
+  border-radius: 20px;
+  padding: 32px 34px;
+  text-align: center;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 35px rgba(239, 68, 68, 0.35);
+  animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPopIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.reset-confirm-icon {
+  font-size: 46px;
+  line-height: 1;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.65));
+}
+
+.reset-confirm-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 1.5px;
+  color: #f87171;
+  text-transform: uppercase;
+  margin: 0 0 12px;
+}
+
+.reset-confirm-desc {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  margin: 0 0 14px;
+}
+
+.reset-confirm-desc strong {
+  color: #fef08a;
+}
+
+.reset-confirm-warning {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px dashed rgba(239, 68, 68, 0.45);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 22px;
+  letter-spacing: 0.5px;
+}
+
+.reset-confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.reset-confirm-buttons .btn {
+  flex: 1;
+  min-height: 44px;
+}
+
+.btn-confirm-reset {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.5) !important;
+}
+
+.btn-confirm-reset:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.7) !important;
+}
+
+.btn-pause-reset {
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+.btn-pause-reset:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.shop-reset-action-btn {
+  background: rgba(220, 38, 38, 0.16);
+  border: 1.5px solid rgba(239, 68, 68, 0.5);
+  border-radius: 9999px;
+  color: #fca5a5;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-reset-action-btn:hover {
+  background: rgba(220, 38, 38, 0.35);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+}
+
+.reset-pill,
+.nav-badge-pill {
+  background: rgba(220, 38, 38, 0.28) !important;
+  border: 1px solid rgba(239, 68, 68, 0.6) !important;
+  color: #fca5a5 !important;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.35) !important;
+  transition: all 0.18s ease !important;
+}
+
+#btn-menu-upgrades:hover,
+#btn-menu-wardrobe:hover,
+#btn-menu-reset:hover,
+#btn-menu-upgrades.is-hovered,
+#btn-menu-wardrobe.is-hovered,
+#btn-menu-reset.is-hovered,
+.zombie-nav-btn:hover,
+.zombie-nav-btn.is-hovered,
+.zombie-nav-btn:active,
+.zombie-nav-btn:focus-visible {
+  color: #ff2e3b !important;
+  transform: translateX(8px);
+}
+
+#btn-menu-upgrades:hover .nav-btn-text,
+#btn-menu-wardrobe:hover .nav-btn-text,
+#btn-menu-reset:hover .nav-btn-text,
+#btn-menu-upgrades.is-hovered .nav-btn-text,
+#btn-menu-wardrobe.is-hovered .nav-btn-text,
+#btn-menu-reset.is-hovered .nav-btn-text,
+.zombie-nav-btn:hover .nav-btn-text,
+.zombie-nav-btn.is-hovered .nav-btn-text,
+.zombie-nav-btn:active .nav-btn-text {
+  color: #ff2e3b !important;
+  text-shadow:
+    2px 2px 0 #000,
+    -1.5px -1.5px 0 #000,
+    1.5px -1.5px 0 #000,
+    -1.5px 1.5px 0 #000,
+    0 0 18px rgba(229, 9, 20, 0.95),
+    0 0 32px rgba(229, 9, 20, 0.6) !important;
+}
+
+#btn-menu-upgrades:hover .nav-badge-pill,
+#btn-menu-wardrobe:hover .nav-badge-pill,
+#btn-menu-reset:hover .reset-pill,
+#btn-menu-reset:hover .nav-badge-pill,
+#btn-menu-upgrades.is-hovered .nav-badge-pill,
+#btn-menu-wardrobe.is-hovered .nav-badge-pill,
+#btn-menu-reset.is-hovered .reset-pill,
+#btn-menu-reset.is-hovered .nav-badge-pill,
+.zombie-nav-btn:hover .nav-badge-pill,
+.zombie-nav-btn:hover .reset-pill,
+.zombie-nav-btn.is-hovered .nav-badge-pill,
+.zombie-nav-btn.is-hovered .reset-pill,
+.zombie-nav-btn:active .nav-badge-pill,
+.zombie-nav-btn:active .reset-pill,
+.nav-badge-pill:hover,
+.reset-pill:hover {
+  background: linear-gradient(180deg, #ff2e3b 0%, #e50914 60%, #990008 100%) !important;
+  border-color: #ff4d4d !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(229, 9, 20, 0.95), 0 0 6px #ff4d4d !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+  transform: scale(1.06) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   LANDSCAPE MODALS REFINEMENT (TIGHTER WIDTH & PINNED FOOTERS)
+   Enforces sleek, compact centered dialogs (680px max) with
+   guaranteed visible footer buttons (START DEFENSE & MAIN MENU)
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 1. Pause Card: Always a sleek, compact, centered dialog (Max 380px) ── */
+.pause-card {
+  max-width: 380px !important;
+  width: min(85vw, 380px) !important;
+  margin: auto !important;
+  box-sizing: border-box !important;
+}
+
+.pause-buttons .btn {
+  max-width: 340px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+@media (orientation: landscape), (max-height: 680px) {
+  .pause-card {
+    max-width: 380px !important;
+    width: min(85vw, 380px) !important;
+    padding: 14px 20px !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+  }
+  .pause-icon {
+    font-size: 24px !important;
+    margin-bottom: 2px !important;
+  }
+  .pause-card h2 {
+    font-size: 16px !important;
+    margin-bottom: 8px !important;
+    letter-spacing: 1.5px !important;
+  }
+  .pause-stats {
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+  .pause-stat {
+    padding: 5px 8px !important;
+  }
+  .pause-stat span {
+    font-size: 9px !important;
+    margin-bottom: 2px !important;
+  }
+  .pause-stat strong {
+    font-size: 15px !important;
+  }
+  .pause-buttons {
+    gap: 6px !important;
+  }
+  .pause-buttons .btn {
+    padding: 8px 16px !important;
+    font-size: 12.5px !important;
+    max-width: 320px !important;
+  }
+}
+
+/* ── 2. Game Over Card: Always compact & centered (Max 440px) ── */
+.gameover-card {
+  max-width: 440px !important;
+  width: min(88vw, 440px) !important;
+  margin: auto !important;
+}
+
+/* ── 3. Upgrade Shop & Wardrobe: Stretched Desktop Mode Base Styles ── */
+.shop-card {
+  width: min(94vw, 1140px) !important;
+  max-width: 1140px !important;
+  height: min(90vh, 760px) !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  margin: auto !important;
+  padding: 18px 26px 14px !important;
+}
+
+.wardrobe-card {
+  width: min(94vw, 1040px) !important;
+  max-width: 1040px !important;
+  height: min(90vh, 760px) !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  margin: auto !important;
+  padding: 18px 26px 14px !important;
+}
+
+/* Guaranteed visible footer bar with Start and Menu buttons */
+.shop-footer {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  padding: 8px 0 0 !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+}
+
+.shop-footer-spacer {
+  flex: 1 !important;
+}
+
+.shop-footer .shop-return-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 999px !important;
+  color: #f1f5f9 !important;
+  padding: 8px 16px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+  max-width: 180px !important;
+  transition: all 0.15s ease !important;
+}
+
+.shop-footer .shop-return-btn:hover {
+  background: rgba(229, 9, 20, 0.25) !important;
+  border-color: #e50914 !important;
+  color: #ffffff !important;
+}
+
+.shop-footer .shop-red-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: linear-gradient(180deg, #ff2e3b 0%, #e50914 50%, #990008 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: 999px !important;
+  color: #ffffff !important;
+  padding: 8px 24px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.2px !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+  flex: 0 0 auto !important;
+  max-width: 250px !important;
+}
+
+.shop-footer .red-key-pill {
+  background: rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 4px !important;
+  padding: 1px 6px !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  margin-left: 6px !important;
+}
+
+/* Upgrades Grid on Desktop: 2-Column Stretched Layout */
+.shop-grid {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-bottom: 8px !important;
+  padding-right: 8px !important;
+  align-content: start !important;
+}
+
+/* Wardrobe Grid on Desktop: 2-Column Stretched Layout */
+.wardrobe-grid {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  margin-bottom: 8px !important;
+  padding-right: 8px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  align-content: start !important;
+}
+
+.wardrobe-card-item {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 16px 18px !important;
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
+
+.wardrobe-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  padding: 8px 0 0 !important;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  box-sizing: border-box !important;
+}
+
+#btn-wardrobe-back {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 999px !important;
+  color: #f1f5f9 !important;
+  padding: 8px 18px !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex: 0 0 auto !important;
+  transition: all 0.15s ease !important;
+}
+
+#btn-wardrobe-back:hover {
+  background: rgba(229, 9, 20, 0.22) !important;
+  border-color: #e50914 !important;
+  color: #ffffff !important;
+}
+
+.wardrobe-footer-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.wardrobe-info-desc {
+  display: inline-block !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMPACT MODALS SUITE: ONLY FOR REAL MOBILE LANDSCAPE
+   Applies only when the viewport height is very short (<= 520px)
+   or explicitly on mobile devices in landscape.
+   NEVER applies to standard desktop monitors!
+   ═══════════════════════════════════════════════════════ */
+@media (max-height: 520px) and (orientation: landscape), (max-width: 950px) and (max-height: 550px) and (orientation: landscape) {
+  .shop-card,
+  .wardrobe-card {
+    max-width: min(94vw, 700px) !important;
+    width: min(94vw, 700px) !important;
+    height: min(95vh, 460px) !important;
+    max-height: 95vh !important;
+    padding: 8px 16px 4px !important;
+    margin: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
+  .shop-grid,
+  .wardrobe-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    display: grid !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+
+  .shop-header, .wardrobe-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 3px !important;
+    padding-bottom: 3px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-title-area, .wardrobe-title-area {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1px !important;
+    width: auto !important;
+  }
+
+  .shop-blood-text, .wardrobe-purple-text {
+    font-size: 16px !important;
+    letter-spacing: 1px !important;
+    line-height: 1.1 !important;
+  }
+
+  .shop-siege-text, .wardrobe-siege-text {
+    font-size: 13px !important;
+    letter-spacing: 1.5px !important;
+    line-height: 1.1 !important;
+  }
+
+  .shop-subtitle, .wardrobe-subtitle {
+    display: none !important; /* Hide verbose subtitle in landscape to conserve vertical height */
+  }
+
+  .shop-subhead-row, .wardrobe-subhead-row {
+    font-size: 8.5px !important;
+    letter-spacing: 1px !important;
+    gap: 4px !important;
+  }
+
+  .shop-subhead-badge, .wardrobe-subhead-badge {
+    padding: 1.5px 6px !important;
+    font-size: 8.5px !important;
+    border-radius: 4px !important;
+  }
+
+  .shop-top-actions, .wardrobe-top-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-reset-action-btn {
+    padding: 3px 8px !important;
+    font-size: 9px !important;
+    border-radius: 6px !important;
+  }
+
+  .shop-skull-chip, .wardrobe-skull-chip {
+    padding: 3px 8px !important;
+    font-size: 10px !important;
+    border-radius: 999px !important;
+  }
+
+  /* Single-row controls with touch-scrollable filter tabs and compact sort */
+  .shop-controls-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    margin-bottom: 3px !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-filter-bar {
+    display: flex !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .shop-filter-bar::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .shop-filter-btn {
+    padding: 2.5px 7px !important;
+    font-size: 9px !important;
+    border-radius: 999px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    gap: 5px !important;
+  }
+
+  .shop-filter-btn .filter-indicator {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .shop-sort-box {
+    display: flex !important;
+    align-items: center !important;
+    padding: 2px 6px !important;
+    gap: 3px !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    border-radius: 6px !important;
+  }
+
+  .shop-sort-label {
+    font-size: 8px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .shop-sort-select {
+    font-size: 8.5px !important;
+    padding: 0 !important;
+  }
+
+  .shop-section-title {
+    font-size: 9.5px !important;
+    letter-spacing: 1px !important;
+    padding: 2px 0 1px 2px !important;
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Upgrades Grid (Single column, fits content cleanly) */
+  .shop-grid {
+    flex: 1 1 0px !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    margin-bottom: 3px !important;
+    padding-right: 4px !important;
+  }
+
+  .shop-item {
+    padding: 5px 8px !important;
+    gap: 7px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .shop-item-icon {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 15px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .shop-item-info {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+  }
+
+  .shop-item-name {
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+    margin-bottom: 1px !important;
+  }
+
+  .shop-item-desc {
+    font-size: 9px !important;
+    line-height: 1.15 !important;
+    display: -webkit-box !important;
+    line-clamp: 2 !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .shop-equip-slots {
+    flex-shrink: 0 !important;
+    gap: 3px !important;
+  }
+
+  .shop-slot-btn {
+    padding: 3px 5px !important;
+    font-size: 8px !important;
+    white-space: nowrap !important;
+  }
+
+  .shop-buy-btn {
+    padding: 3.5px 8px !important;
+    font-size: 9.5px !important;
+    min-width: 62px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ── Hero Wardrobe Skin Card: Compact & completely in view ── */
+  .wardrobe-grid {
+    flex: 1 1 0px !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    margin-bottom: 3px !important;
+    padding-right: 4px !important;
+    gap: 6px !important;
+  }
+
+  .wardrobe-card-item {
+    padding: 6px 10px !important;
+    gap: 4px !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .wardrobe-card-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .wardrobe-badge {
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+  }
+
+  .wardrobe-title-box {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .wardrobe-theme-title {
+    font-size: 8px !important;
+    letter-spacing: 1px !important;
+    line-height: 1 !important;
+    font-weight: 800 !important;
+  }
+
+  .wardrobe-skin-name {
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+    font-weight: 900 !important;
+    margin: 1px 0 0 !important;
+  }
+
+  .wardrobe-desc {
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    color: #94a3b8 !important;
+    display: -webkit-box !important;
+    line-clamp: 2 !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .wardrobe-tags-row {
+    display: flex !important;
+    gap: 3px !important;
+    margin: 3px 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  .wardrobe-tag {
+    font-size: 7.5px !important;
+    padding: 1.5px 5px !important;
+    border-radius: 4px !important;
+  }
+
+  .wardrobe-action-box {
+    margin-top: 2px !important;
+    width: 100% !important;
+  }
+
+  .wardrobe-action-btn {
+    padding: 5px 12px !important;
+    font-size: 10.5px !important;
+    border-radius: 6px !important;
+    width: 100% !important;
+    font-weight: 900 !important;
+    letter-spacing: 1px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Pinned Footers: Exactly matching reference photo with single row left-aligned elements */
+  .shop-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding: 8px 0 14px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .wardrobe-footer {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding: 8px 0 14px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .wardrobe-footer-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .wardrobe-info-tag {
+    font-size: 10.5px !important;
+    font-weight: 900 !important;
+    color: #ff4d4d !important;
+    background: rgba(229, 9, 20, 0.22) !important;
+    border: 1.5px solid rgba(229, 9, 20, 0.55) !important;
+    border-radius: 6px !important;
+    padding: 3px 8px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+  }
+
+  .wardrobe-info-desc {
+    display: inline-block !important;
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex-shrink: 1 !important;
+    max-width: clamp(200px, 42vw, 440px) !important;
+  }
+
+  .shop-footer .shop-return-btn,
+  #btn-shop-return,
+  #btn-wardrobe-back {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 5px 14px !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    max-width: 140px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .shop-footer .shop-red-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 5px 18px !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    max-width: 180px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    margin-left: auto !important;
+  }
+
+  .shop-footer-spacer {
+    flex: 1 1 auto !important;
+  }
+
+  .shop-footer .red-key-pill {
+    display: none !important;
+  }
+}
+
+/* Also support body.is-mobile.is-landscape specific overrides */
+body.is-mobile.is-landscape .shop-card,
+body.is-mobile.is-landscape .wardrobe-card {
+  max-width: min(94vw, 700px) !important;
+  width: min(94vw, 700px) !important;
+  height: min(95vh, 460px) !important;
+  max-height: 95vh !important;
+  padding: 8px 16px 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+}
+
+body.is-mobile.is-landscape .shop-grid,
+body.is-mobile.is-landscape .wardrobe-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  display: grid !important;
+  gap: 8px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  margin-bottom: 4px !important;
+}
+
+body.is-mobile.is-landscape .shop-footer {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  padding: 8px 0 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-mobile.is-landscape .shop-footer .shop-red-btn {
+  margin: 0 !important;
+  margin-left: auto !important;
+}
+
+body.is-mobile.is-landscape .wardrobe-footer {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  padding: 8px 0 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+body.is-mobile.is-landscape .wardrobe-footer-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+body.is-mobile.is-landscape .wardrobe-info-desc {
+  display: inline-block !important;
+  font-size: 11px !important;
+  color: #94a3b8 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 440px !important;
+}
+
+body.is-mobile.is-landscape .shop-subtitle,
+body.is-mobile.is-landscape .wardrobe-subtitle {
+  display: none !important;
+}
+
+body.is-mobile .mobile-jump-btn {
+  display: flex !important;
+  left: clamp(32px, 7.5vw, 125px) !important;
+  right: auto !important;
+  bottom: 18px !important;
+}
+
+body.is-mobile #hud-center-group {
+  top: 8px !important;
+}
+
+body.is-mobile #hud-weapons-dock {
+  position: fixed !important;
+  bottom: 18px !important;
+  right: 16px !important;
+  left: auto !important;
+}
+
+body.is-mobile #hud-skills-dock {
+  position: fixed !important;
+  bottom: 64px !important;
+  right: 16px !important;
+  left: auto !important;
+}
+
+body.is-mobile #hud-tactical-dock {
+  position: fixed !important;
+  bottom: 110px !important;
+  right: 16px !important;
+  left: auto !important;
+}
+
+
 

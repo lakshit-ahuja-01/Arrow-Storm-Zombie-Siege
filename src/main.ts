@@ -3,10 +3,15 @@ import { MainScene } from './scenes/MainScene';
 import { soundFX } from './systems/SoundFX';
 import { uiManager } from './systems/UIManager';
 import { crazyGames } from './systems/CrazyGamesSDK';
-import { syncMobileMode } from './utils/DeviceDetection';
+import { syncMobileMode, requestLandscapeOrientation } from './utils/DeviceDetection';
 
 // Apply initial device detection immediately
 syncMobileMode();
+
+// Attempt landscape orientation lock on first user touch/click
+window.addEventListener('pointerdown', () => {
+  requestLandscapeOrientation();
+}, { once: true });
 
 // Signal loading start to CrazyGames immediately
 crazyGames.loadingStart();
@@ -99,6 +104,7 @@ window.addEventListener('orientationchange', () => {
 
 function startGameWithScene() {
   try { soundFX.ensure(); } catch {}
+  requestLandscapeOrientation();
   crazyGames.gameplayStart();
   const s = getScene();
   if (s && s.scene.isActive()) {
@@ -230,6 +236,16 @@ function initUI() {
   }
 
 
+  const btnGameOverShop = document.getElementById('btn-gameover-shop');
+  if (btnGameOverShop) {
+    btnGameOverShop.onclick = () => {
+      const s = getScene();
+      if (s) {
+        s.openShopFromGameOver();
+      }
+    };
+  }
+
   const btnRetry = document.getElementById('btn-retry');
   if (btnRetry) {
     btnRetry.onclick = () => startGameWithScene();
@@ -238,19 +254,15 @@ function initUI() {
   const btnRewardedRevive = document.getElementById('btn-rewarded-revive');
   if (btnRewardedRevive) {
     btnRewardedRevive.onclick = () => {
+      btnRewardedRevive.setAttribute('disabled', 'true');
       crazyGames.requestRewardedAd(() => {
+        btnRewardedRevive.removeAttribute('disabled');
         const s = getScene();
-        if (s && s.player) {
-          s.player.hp = Math.round(s.player.maxHP * 0.5);
-          s.player.dead = false;
-          if (s.tower && s.tower.hp <= 0) {
-            s.tower.hp = Math.round(s.tower.maxHP * 0.4);
-          }
-          s.state = 'playing';
-          uiManager.setState('playing');
-          crazyGames.gameplayStart();
-          s.spawnFloatingText('✨ HERO REVIVED (+50% HP)!', s.player.x, s.player.y - 40, '#2ecc71', 28);
+        if (s) {
+          s.reviveHero();
         }
+      }, () => {
+        btnRewardedRevive.removeAttribute('disabled');
       });
     };
   }
@@ -339,6 +351,17 @@ function initUI() {
     };
   }
 
+  const btnPauseShop = document.getElementById('btn-pause-shop');
+  if (btnPauseShop) {
+    btnPauseShop.onclick = () => {
+      const s = getScene();
+      if (s) {
+        soundFX.playBowDraw();
+        s.openShopFromMenu();
+      }
+    };
+  }
+
   const btnPauseRestart = document.getElementById('btn-pause-restart');
   if (btnPauseRestart) {
     btnPauseRestart.onclick = () => {
@@ -355,6 +378,47 @@ function initUI() {
       else uiManager.setState('menu');
     };
   }
+
+  // ── Reset Progress & Confirmation Modal ──
+  const modalReset = document.getElementById('modal-reset-confirm');
+  const btnResetCancel = document.getElementById('btn-reset-cancel');
+  const btnResetConfirm = document.getElementById('btn-reset-confirm');
+
+  const openResetConfirmModal = () => {
+    soundFX.playBowDraw();
+    if (modalReset) modalReset.classList.remove('hidden');
+  };
+  const closeResetConfirmModal = () => {
+    if (modalReset) modalReset.classList.add('hidden');
+  };
+
+  const btnMenuReset = document.getElementById('btn-menu-reset');
+  if (btnMenuReset) btnMenuReset.onclick = openResetConfirmModal;
+
+  const btnShopReset = document.getElementById('btn-shop-reset');
+  if (btnShopReset) btnShopReset.onclick = openResetConfirmModal;
+
+  if (btnResetCancel) btnResetCancel.onclick = closeResetConfirmModal;
+  if (btnResetConfirm) {
+    btnResetConfirm.onclick = () => {
+      closeResetConfirmModal();
+      const s = getScene();
+      if (s) {
+        s.resetAllProgress();
+      }
+    };
+  }
+
+  // Ensure hover glow activates reliably across all environments
+  ['btn-menu-upgrades', 'btn-menu-wardrobe', 'btn-menu-reset'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('mouseenter', () => el.classList.add('is-hovered'));
+      el.addEventListener('mouseleave', () => el.classList.remove('is-hovered'));
+      el.addEventListener('focus', () => el.classList.add('is-hovered'));
+      el.addEventListener('blur', () => el.classList.remove('is-hovered'));
+    }
+  });
 
   const updateSoundUI = (on: boolean) => {
     const btnSound = document.getElementById('btn-sound');
@@ -401,20 +465,6 @@ function initUI() {
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
       if (e.target === document.body || e.target === canvas) {
         e.preventDefault();
-      }
-    }
-    if (e.code === 'KeyP' || e.code === 'Escape') {
-      const s = getScene();
-      if (s && (s.state === 'playing' || s.state === 'pause')) {
-        e.preventDefault();
-        s.togglePause();
-      }
-    }
-    if (e.code === 'Space' || e.code === 'Enter') {
-      const s = getScene();
-      if (s && s.state === 'shop') {
-        e.preventDefault();
-        document.getElementById('btn-next-wave')?.click();
       }
     }
   }, { passive: false });

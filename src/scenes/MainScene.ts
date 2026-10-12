@@ -282,6 +282,7 @@ export class MainScene extends Phaser.Scene {
     this.upgrades = createUpgradeCatalog();
     this.tower = new Tower(this);
     this.player = new Player(this, 'player1', this.tower.x, this.tower.topY);
+    this.updateCameraView();
     this.loadGameData(true);
     if (this.player) {
       this.player.setEndlessMode(this.gameMode === 'endless');
@@ -315,21 +316,21 @@ export class MainScene extends Phaser.Scene {
     // Pointer events for bow aim & charge (Canvas events)
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
       if (this.player && !this.player.dead) {
-        this.player.setAim(pointer.x, pointer.y);
+        this.player.setAim(pointer.worldX, pointer.worldY);
       }
     });
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       try { soundFX.ensure(); } catch {}
       if (this.state === 'playing' && (pointer.leftButtonDown() || pointer.isDown) && this.player && !this.player.dead) {
-        this.player.setAim(pointer.x, pointer.y);
+        this.player.setAim(pointer.worldX, pointer.worldY);
         this.player.startCharge();
       }
     });
 
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
       if (this.state === 'playing' && this.player && this.player.isCharging) {
-        this.player.setAim(pointer.x, pointer.y);
+        this.player.setAim(pointer.worldX, pointer.worldY);
         const released = this.player.releaseArrow();
         if (released) {
           const spawnPos = this.player.getBowTipPosition();
@@ -349,21 +350,28 @@ export class MainScene extends Phaser.Scene {
 
     // Global window listeners: guarantees bow ALWAYS aims and ALWAYS releases even during fast mouse or touch drags
     const getAimCoords = (clientX: number, clientY: number) => {
+      let screenX = clientX;
+      let screenY = clientY;
       const canvasEl = this.game.canvas;
       if (canvasEl) {
         const rect = canvasEl.getBoundingClientRect();
         if (rect && rect.width > 0 && rect.height > 0) {
           const normX = (clientX - rect.left) / rect.width;
           const normY = (clientY - rect.top) / rect.height;
-          return {
-            x: normX * this.scale.width,
-            y: normY * this.scale.height
-          };
+          screenX = normX * this.scale.width;
+          screenY = normY * this.scale.height;
         }
+      } else {
+        const scaleX = this.scale.width / (window.innerWidth || 1);
+        const scaleY = this.scale.height / (window.innerHeight || 1);
+        screenX = clientX * scaleX;
+        screenY = clientY * scaleY;
       }
-      const scaleX = this.scale.width / (window.innerWidth || 1);
-      const scaleY = this.scale.height / (window.innerHeight || 1);
-      return { x: clientX * scaleX, y: clientY * scaleY };
+      if (this.cameras && this.cameras.main) {
+        const worldPoint = this.cameras.main.getWorldPoint(screenX, screenY);
+        return { x: worldPoint.x, y: worldPoint.y };
+      }
+      return { x: screenX, y: screenY };
     };
 
     window.addEventListener('mousemove', (e: MouseEvent) => {
@@ -560,6 +568,14 @@ export class MainScene extends Phaser.Scene {
     const btnPauseResume = document.getElementById('btn-pause-resume');
     if (btnPauseResume) btnPauseResume.onclick = () => this.togglePause();
 
+    const btnPauseShop = document.getElementById('btn-pause-shop');
+    if (btnPauseShop) {
+      btnPauseShop.onclick = () => {
+        soundFX.playBowDraw();
+        this.openShopFromMenu();
+      };
+    }
+
     const btnPauseRestart = document.getElementById('btn-pause-restart');
     if (btnPauseRestart) {
       btnPauseRestart.onclick = () => this.restartWave();
@@ -680,40 +696,50 @@ export class MainScene extends Phaser.Scene {
     }
 
     window.addEventListener('keydown', e => {
-      if (e.code === 'KeyP' || e.code === 'Escape') {
+      // Don't trigger game shortcuts if typing inside text inputs or selects
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (targetTag === 'INPUT' || targetTag === 'TEXTAREA' || targetTag === 'SELECT') return;
+
+      const code = e.code;
+      const key = e.key ? e.key.toLowerCase() : '';
+
+      if (code === 'KeyP' || key === 'p' || code === 'Escape' || key === 'escape') {
         if (this.state === 'playing' || this.state === 'pause') {
           e.preventDefault();
           this.togglePause();
+          return;
         }
       }
+
       if (this.state === 'playing' && this.player && !this.player.dead) {
-        if (e.code === 'Digit1') {
+        if (code === 'Digit1' || key === '1') {
           e.preventDefault();
           this.player.switchWeapon(1);
-        } else if (e.code === 'Digit2') {
+        } else if (code === 'Digit2' || key === '2') {
           e.preventDefault();
           this.player.switchWeapon(2);
-        } else if (e.code === 'KeyQ') {
+        } else if (code === 'KeyQ' || key === 'q') {
           e.preventDefault();
           this.player.switchWeapon(); // Quick-swap between Primary and Secondary
-        } else if (e.code === 'KeyF') {
+        } else if (code === 'KeyF' || key === 'f') {
           e.preventDefault();
           this.triggerArrowVolley();
-        } else if (e.code === 'KeyE') {
+        } else if (code === 'KeyE' || key === 'e') {
           e.preventDefault();
           this.triggerFrostNova();
-        } else if (e.code === 'KeyR') {
+        } else if (code === 'KeyR' || key === 'r') {
           e.preventDefault();
           this.triggerNukeStrike();
-        } else if (e.code === 'KeyT') {
+        } else if (code === 'KeyT' || key === 't') {
           e.preventDefault();
           this.triggerChainLightning();
-        } else if (e.code === 'KeyG') {
+        } else if (code === 'KeyG' || key === 'g') {
           e.preventDefault();
           this.triggerDivineAegis();
         }
       }
-      if (this.state === 'shop' && (e.code === 'Space' || e.code === 'Enter')) {
+
+      if (this.state === 'shop' && (code === 'Space' || code === 'Enter' || key === ' ' || key === 'enter')) {
         e.preventDefault();
         document.getElementById('btn-next-wave')?.click();
       }
@@ -731,9 +757,13 @@ export class MainScene extends Phaser.Scene {
     this.bodyGibs = [];
     this.groundStains = [];
     this.bloodMists = [];
-    this.player.hp = this.player.maxHP;
-    this.player.dead = false;
-    this.tower.hp = this.tower.maxHP;
+    if (this.player) {
+      this.player.revive(this.tower.topY, this.tower.x);
+      this.player.hp = this.player.maxHP;
+    }
+    if (this.tower) {
+      this.tower.hp = this.tower.maxHP;
+    }
     this.state = 'playing';
     uiManager.setState('playing');
     this.wave = Math.max(0, this.wave - 1);
@@ -810,7 +840,7 @@ export class MainScene extends Phaser.Scene {
       }
       // ── Campaign Mode: Load persistent upgrades and equipped gear ──
       this.loadGameData();
-      const currentSkulls = this.player ? this.player.skulls : 50;
+      const currentSkulls = (this.player && typeof this.player.skulls === 'number' && this.player.skulls > 0) ? this.player.skulls : 40;
       this.player.skulls = currentSkulls;
       this.player.primaryBow = this.primaryBow || 'normal';
       this.player.secondaryBow = this.secondaryBow || 'normal';
@@ -1033,17 +1063,30 @@ export class MainScene extends Phaser.Scene {
     if (this.gameMode === 'endless') {
       this.endlessRunSkullsEarned += val;
     }
+    const gemCount = document.getElementById('gem-count');
+    if (gemCount && this.player) {
+      gemCount.textContent = `${this.player.skulls}`;
+    }
+    const mCount = document.getElementById('menu-skulls-count');
+    if (mCount && this.player) {
+      mCount.textContent = `${this.player.skulls}`;
+    }
+    const hudGems = document.getElementById('hud-gems');
+    if (hudGems) {
+      hudGems.classList.add('pulse');
+      setTimeout(() => hudGems.classList.remove('pulse'), 150);
+    }
   }
 
   public bankEndlessSkulls(): void {
     if (this.gameMode !== 'endless') return;
     try {
-      const dataStr = localStorage.getItem('ragdoll_archers_save_v1');
+      const dataStr = crazyGames.getItem('ragdoll_archers_save_v1');
       const existingData = dataStr ? JSON.parse(dataStr) : {};
 
       const unbanked = Math.max(0, this.endlessRunSkullsEarned - this.endlessRunSkullsBanked);
       if (unbanked > 0) {
-        const curSkulls = typeof existingData.skulls === 'number' ? existingData.skulls : 50;
+        const curSkulls = typeof existingData.skulls === 'number' ? existingData.skulls : 40;
         existingData.skulls = curSkulls + unbanked;
         this.endlessRunSkullsBanked = this.endlessRunSkullsEarned;
       }
@@ -1053,7 +1096,7 @@ export class MainScene extends Phaser.Scene {
       }
       existingData.soundMuted = soundFX.muted;
       existingData.gameMode = this.gameMode;
-      localStorage.setItem('ragdoll_archers_save_v1', JSON.stringify(existingData));
+      crazyGames.setItem('ragdoll_archers_save_v1', JSON.stringify(existingData));
     } catch (e) {}
   }
 
@@ -1128,7 +1171,7 @@ export class MainScene extends Phaser.Scene {
   public loadGameData(restoreMode: boolean = false): void {
     let dataStr: string | null = null;
     try {
-      dataStr = localStorage.getItem('ragdoll_archers_save_v1');
+      dataStr = crazyGames.getItem('ragdoll_archers_save_v1');
       if (dataStr) {
         const data = JSON.parse(dataStr);
         if (typeof data.skulls === 'number' && !isNaN(data.skulls) && this.player) {
@@ -1155,7 +1198,7 @@ export class MainScene extends Phaser.Scene {
           this.gameMode = data.gameMode;
         }
 
-        const soundStorage = localStorage.getItem('ragdoll_archers_sound_muted');
+        const soundStorage = crazyGames.getItem('ragdoll_archers_sound_muted');
         if (soundStorage !== null) {
           soundFX.muted = soundStorage === 'true';
         } else if (typeof data.soundMuted === 'boolean') {
@@ -1229,15 +1272,22 @@ export class MainScene extends Phaser.Scene {
         if (typeof data.hasFrostNovaUnlocked === 'boolean') {
           this.hasFrostNovaUnlocked = data.hasFrostNovaUnlocked;
         }
+        if (this.upgrades) {
+          const vu = this.upgrades.find(u => u.id === 'unlockVolley');
+          if (vu && this.hasVolleyUnlocked) vu.bought = true;
+          const fu = this.upgrades.find(u => u.id === 'unlockFrostNova');
+          if (fu && this.hasFrostNovaUnlocked) fu.bought = true;
+        }
       }
     } catch (e) {}
 
-    // Starter Bounty: ONLY initialize for brand-new saves (when no localStorage save exists)
+    // Starter Bounty: 40 Skulls for new players (or if save has no skulls)
     if (!dataStr && this.player) {
-      this.player.skulls = 50;
+      this.player.skulls = 40;
       this.saveGameData();
-    } else if (this.player && this.player.skulls === undefined) {
-      this.player.skulls = 50;
+    } else if (this.player && (this.player.skulls === undefined || this.player.skulls === 0)) {
+      this.player.skulls = 40;
+      this.saveGameData();
     }
 
     this.updateMenuSkullsUI();
@@ -1246,7 +1296,7 @@ export class MainScene extends Phaser.Scene {
 
   public saveGameData(): void {
     try {
-      const dataStr = localStorage.getItem('ragdoll_archers_save_v1');
+      const dataStr = crazyGames.getItem('ragdoll_archers_save_v1');
       const existingData = dataStr ? JSON.parse(dataStr) : {};
 
       // In endless mode during active gameplay/shop/gameover:
@@ -1274,7 +1324,7 @@ export class MainScene extends Phaser.Scene {
       } else if (typeof existingData.skulls === 'number') {
         savedSkulls = Math.max(0, existingData.skulls);
       } else {
-        savedSkulls = 50;
+        savedSkulls = 40;
       }
 
       // Safeguard campaign upgrades: never overwrite with blank endless upgrades
@@ -1309,9 +1359,120 @@ export class MainScene extends Phaser.Scene {
         upgrades: upgradesToSave || []
       };
 
-      localStorage.setItem('ragdoll_archers_save_v1', JSON.stringify(data));
+      crazyGames.setItem('ragdoll_archers_save_v1', JSON.stringify(data));
       this.updateMenuSkullsUI();
     } catch (e) {}
+  }
+
+  public resetAllProgress(): void {
+    try {
+      crazyGames.removeItem('ragdoll_archers_save_v1');
+    } catch (e) {}
+
+    // 1. Reset Upgrades to baseline
+    this.upgrades = createUpgradeCatalog();
+
+    // 2. Reset Player Stats & Gear
+    if (this.player) {
+      this.player.skulls = 40;
+      this.player.primaryBow = 'normal';
+      this.player.secondaryBow = 'normal';
+      this.player.bowType = 'normal';
+      this.player.activeSlot = 1;
+      this.player.currentSkin = 'default';
+      this.player.arrowDamage = this.player.getBowBaseDamage('normal');
+      this.player.maxHP = 115;
+      this.player.hp = 115;
+      this.player.stamina = 100;
+      this.player.maxStamina = 100;
+      this.player.arrowSpeed = 1250;
+      this.player.damageMul = 1;
+      this.player.chargeSpeedMul = 1;
+      this.player.nukeCharges = 0;
+      this.player.lightningCharges = 0;
+      this.player.divineAegisCharges = 0;
+      this.player.invincible = false;
+    }
+
+    // 3. Reset Scene State
+    this.primaryBow = 'normal';
+    this.secondaryBow = 'normal';
+    this.equippedBow = 'normal';
+    this.currentSkin = 'default';
+    this.unlockedSkins = ['default'];
+    this.hasVolleyUnlocked = false;
+    this.hasFrostNovaUnlocked = false;
+    this.campaignWave = 1;
+    this.wave = 1;
+    this.highestCampaignWave = 1;
+    this.endlessBestWave = 0;
+    this.campaignCompleted = false;
+
+    // 4. Reset Tower
+    if (this.tower) {
+      this.tower.maxHP = 360;
+      this.tower.hp = 360;
+      this.tower.hasSpikes = false;
+      this.tower.hasCaltrops = false;
+      this.tower.hasTarMoat = false;
+      this.tower.hasPitchPits = false;
+      this.tower.hasGunpowderBarrels = false;
+      this.tower.sentryLevel = 0;
+      this.tower.hasBanner = false;
+      this.tower.damageReduction = 0;
+      this.tower.hpRegen = 0;
+    }
+
+    // 5. Persist clean baseline data
+    this.saveGameData();
+
+    // 6. Refresh UI Counters & Labels
+    this.updateMenuSkullsUI();
+    this.updateWeaponHUD();
+    this.updateHomeUpgradesBtn();
+
+    const btnPlayText = document.getElementById('btn-play-text');
+    if (btnPlayText) btnPlayText.textContent = 'NEW GAME';
+    const btnPlayBadge = document.getElementById('btn-play-badge');
+    if (btnPlayBadge) {
+      btnPlayBadge.textContent = 'NIGHT 1';
+      btnPlayBadge.classList.add('hidden');
+    }
+    const btnRestartCamp = document.getElementById('btn-restart-campaign');
+    if (btnRestartCamp) btnRestartCamp.classList.add('hidden');
+    const campSub = document.getElementById('campaign-mode-sub');
+    if (campSub) campSub.textContent = '20 Escalating Nights';
+
+    // 7. Refresh View if inside Shop, Wardrobe or Paused
+    if (this.state === 'shop') {
+      uiManager.buildShop(this.upgrades, this.player, this.tower, this.wave, () => {
+        this.saveGameData();
+        this.updateMenuSkullsUI();
+      });
+    } else if (this.state === 'wardrobe') {
+      uiManager.buildWardrobe(this.player, this);
+    } else if (this.state === 'pause') {
+      this.returnToMenu();
+    }
+
+    soundFX.playArmorHit();
+    this.showResetSuccessToast();
+  }
+
+  public showResetSuccessToast(): void {
+    const existing = document.getElementById('reset-toast-banner');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'reset-toast-banner';
+    toast.className = 'endless-toast-banner';
+    toast.style.borderColor = '#10b981';
+    toast.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
+    toast.innerHTML = '<b>ALL PROGRESS RESET:</b> Started completely fresh with 40 starter skulls!';
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 400);
+    }, 3200);
   }
 
   public updateMenuSkullsUI(): void {
@@ -1410,9 +1571,16 @@ export class MainScene extends Phaser.Scene {
       }
     }
     const volleyUp = this.upgrades.find(u => u.id === 'unlockVolley');
-    if (volleyUp?.bought) this.hasVolleyUnlocked = true;
+    if (volleyUp?.bought || this.hasVolleyUnlocked) {
+      this.hasVolleyUnlocked = true;
+      if (volleyUp) volleyUp.bought = true;
+    }
     const frostUp = this.upgrades.find(u => u.id === 'unlockFrostNova');
-    if (frostUp?.bought) this.hasFrostNovaUnlocked = true;
+    if (frostUp?.bought || this.hasFrostNovaUnlocked) {
+      this.hasFrostNovaUnlocked = true;
+      if (frostUp) frostUp.bought = true;
+    }
+    this.updateSkillsHUD();
 
     // Re-apply player's active equipped bow & skin
     if (this.player) {
@@ -1750,8 +1918,11 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  private gameOverTimeout: any = null;
+
   public onPlayerDeath(): void {
-    setTimeout(() => {
+    if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
+    this.gameOverTimeout = setTimeout(() => {
       this.showGameOver('Archer Slain by Undead!');
     }, 1000);
   }
@@ -1855,6 +2026,77 @@ export class MainScene extends Phaser.Scene {
     if (killsEl) killsEl.textContent = `${this.kills}`;
     const gemsEl = document.getElementById('go-gems');
     if (gemsEl) gemsEl.textContent = `${this.player.skulls}`;
+
+    // Update Tactical Upgrade Alert Callout
+    const skulls = this.player.skulls || 0;
+    const skullsHint = document.getElementById('go-alert-skulls');
+    if (skullsHint) skullsHint.textContent = `💀 ${skulls} SKULLS READY`;
+    const alertMsg = document.getElementById('go-alert-msg');
+    if (alertMsg) {
+      if (skulls >= 35) {
+        alertMsg.textContent = `You have ${skulls} unspent Skulls! Fortify your bow damage, turret ballistas, or fortress armor in the Armory before retrying.`;
+      } else {
+        alertMsg.textContent = `The horde breached your defenses! Upgrade bow kinetic pierce, passive health regeneration, or deploy rooftop ballistas to survive Night ${this.wave}.`;
+      }
+    }
+  }
+
+  public openShopFromGameOver(): void {
+    this.state = 'shop';
+    uiManager.shopOpenedFromMenu = false;
+    uiManager.shopOpenedFromGameOver = true;
+    uiManager.setState('shop');
+    uiManager.buildShop(this.upgrades, this.player, this.tower, this.wave, () => {
+      this.saveGameData();
+      this.updateMenuSkullsUI();
+    });
+  }
+
+  public reviveHero(): void {
+    if (!this.player || !this.tower) return;
+    if (this.gameOverTimeout) {
+      clearTimeout(this.gameOverTimeout);
+      this.gameOverTimeout = null;
+    }
+
+    // Revive player entity and reset ragdoll physics upright on tower
+    this.player.revive(this.tower.topY, this.tower.x);
+
+    // Restore tower health to at least 50%
+    if (this.tower.hp <= 0) {
+      this.tower.hp = Math.round(this.tower.maxHP * 0.5);
+    } else {
+      this.tower.hp = Math.max(this.tower.hp, Math.round(this.tower.maxHP * 0.5));
+    }
+
+    // Divine shockwave: push back and stun nearby melee zombies
+    for (const z of this.zombies) {
+      if (!z.dead) {
+        const distToTower = Math.abs(z.x - this.tower.x);
+        if (distToTower < 450) {
+          z.x += 240;
+          z.isFrozen = true;
+          z.frozenTimer = 2.5;
+        }
+      }
+    }
+
+    // Grant 3.5 seconds of Divine Aegis invulnerability
+    this.divineAegisTimer = 3.5;
+    this.player.invincible = true;
+    this.tower.invincible = true;
+
+    // Reset game state
+    this.state = 'playing';
+    uiManager.setState('playing');
+    uiManager.updateHUD(this.player, this.tower, this.wave, this.enemiesToSpawn + this.zombies.filter(z => !z.dead).length, this.kills, this.gameMode);
+
+    soundFX.playGemCollect();
+    this.cameras.main.flash(350, 46, 204, 113, true);
+    this.shakeScreen(8, 0.25);
+    this.spawnFloatingText('HERO REVIVED (+50% HP & DIVINE SHIELD)!', this.player.x, this.player.y - 50, '#2ecc71', 26);
+
+    crazyGames.gameplayStart();
   }
 
   // ═══════════════════════════════════════════════════════
@@ -1863,9 +2105,25 @@ export class MainScene extends Phaser.Scene {
 
   public triggerArrowVolley(): void {
     if (!this.hasVolleyUnlocked) {
-      soundFX.playArmorHit();
-      this.spawnFloatingText('🔒 ARROW VOLLEY LOCKED! (Unlock in Shop for 300 💀)', this.player?.x || 200, (this.player?.y || 200) - 60, '#ff4757', 20);
-      return;
+      const cost = 300;
+      if (this.player && this.player.skulls >= cost) {
+        this.player.skulls -= cost;
+        this.hasVolleyUnlocked = true;
+        const volleyUp = this.upgrades?.find(u => u.id === 'unlockVolley');
+        if (volleyUp) volleyUp.bought = true;
+        this.saveGameData();
+        soundFX.playGemCollect();
+        this.cameras.main.flash(350, 255, 100, 50, true);
+        this.shakeScreen(10, 0.3);
+        this.spawnFloatingText('🔥 UNLOCKED RAIN OF FIRE VOLLEY! (-300 💀) 🔥', this.player.x, this.player.y - 70, '#ff4757', 24);
+        uiManager.updateHUD(this.player, this.tower, this.wave, this.enemiesToSpawn + this.zombies.filter(z => !z.dead).length, this.kills, this.gameMode);
+        this.updateSkillsHUD();
+      } else {
+        soundFX.playArmorHit();
+        const current = this.player?.skulls || 0;
+        this.spawnFloatingText(`🔒 NEED 300 💀 TO UNLOCK VOLLEY! (${current}/300)`, this.player?.x || 200, (this.player?.y || 200) - 60, '#ff4757', 20);
+        return;
+      }
     }
     if (this.volleyCooldown > 0 || this.state !== 'playing' || !this.player || this.player.dead) return;
     this.volleyCooldown = this.volleyMaxCooldown;
@@ -1880,9 +2138,25 @@ export class MainScene extends Phaser.Scene {
 
   public triggerFrostNova(): void {
     if (!this.hasFrostNovaUnlocked) {
-      soundFX.playArmorHit();
-      this.spawnFloatingText('🔒 FROST NOVA LOCKED! (Unlock in Shop for 500 💀)', this.player?.x || 200, (this.player?.y || 200) - 60, '#00d2d3', 20);
-      return;
+      const cost = 500;
+      if (this.player && this.player.skulls >= cost) {
+        this.player.skulls -= cost;
+        this.hasFrostNovaUnlocked = true;
+        const frostUp = this.upgrades?.find(u => u.id === 'unlockFrostNova');
+        if (frostUp) frostUp.bought = true;
+        this.saveGameData();
+        soundFX.playIceFreeze();
+        this.cameras.main.flash(350, 0, 210, 255, true);
+        this.shakeScreen(10, 0.3);
+        this.spawnFloatingText('❄️ UNLOCKED GLACIAL FROST NOVA! (-500 💀) ❄️', this.player.x, this.player.y - 70, '#00d2d3', 24);
+        uiManager.updateHUD(this.player, this.tower, this.wave, this.enemiesToSpawn + this.zombies.filter(z => !z.dead).length, this.kills, this.gameMode);
+        this.updateSkillsHUD();
+      } else {
+        soundFX.playArmorHit();
+        const current = this.player?.skulls || 0;
+        this.spawnFloatingText(`🔒 NEED 500 💀 TO UNLOCK FROST NOVA! (${current}/500)`, this.player?.x || 200, (this.player?.y || 200) - 60, '#00d2d3', 20);
+        return;
+      }
     }
     if (this.frostNovaCooldown > 0 || this.state !== 'playing' || !this.player || this.player.dead) return;
     this.frostNovaCooldown = this.frostNovaMaxCooldown;
@@ -2033,7 +2307,7 @@ export class MainScene extends Phaser.Scene {
     soundFX.playIceFreeze();
     this.cameras.main.flash(450, 255, 240, 140, true);
     this.shakeScreen(12, 0.35);
-    this.spawnFloatingText('✨ DIVINE AEGIS SHIELD! INVULNERABLE! [G] ✨', this.cameras.main.width * 0.5, 100, '#ffd700', 30);
+    this.spawnFloatingText('DIVINE AEGIS SHIELD! INVULNERABLE! [G]', this.cameras.main.width * 0.5, 100, '#ffd700', 30);
 
     this.player.invincible = true;
     if (this.tower) this.tower.invincible = true;
@@ -2847,7 +3121,7 @@ export class MainScene extends Phaser.Scene {
     soundFX.playGemCollect();
     this.shakeScreen(10, 0.25);
     this.cameras.main.flash(110, 255, 240, 180, true);
-    this.spawnFloatingText('✨ CELESTIAL SMITE! ☀️', x, targetY - 60, '#f1c40f', 26);
+    this.spawnFloatingText('CELESTIAL SMITE!', x, targetY - 60, '#f1c40f', 26);
 
     targetZombie.isHolySmitten = true;
     targetZombie.holySmiteTimer = 3.5;
@@ -3665,6 +3939,30 @@ export class MainScene extends Phaser.Scene {
     }
   }
 
+  public updateCameraView(): void {
+    if (!this.cameras || !this.cameras.main) return;
+    const isPortrait = window.innerWidth < window.innerHeight;
+    const w = this.cameras.main.width;
+    const h = this.cameras.main.height;
+
+    if (isPortrait) {
+      // In mobile portrait mode, zoom in dynamically so hero, tower, and zombies are clear and well-sized
+      const zoom = 1.35;
+      this.cameras.main.setZoom(zoom);
+
+      const towerX = this.tower ? this.tower.x : (w * 0.16);
+      const gy = this.tower ? this.tower.groundY : (h * 0.72);
+
+      // Origin-compensated camera scroll: guarantees tower is at 16% of screen width and ground is at 72% of screen height
+      const scrollX = towerX - w * 0.5 + (0.34 * w) / zoom;
+      const scrollY = gy - h * 0.5 - (0.22 * h) / zoom;
+      this.cameras.main.setScroll(scrollX, scrollY);
+    } else {
+      this.cameras.main.setZoom(1.0);
+      this.cameras.main.setScroll(0, 0);
+    }
+  }
+
   public handleResize(_gameSize?: Phaser.Structs.Size): void {
     const res = getGameResolution();
     const w = res.width;
@@ -3672,6 +3970,7 @@ export class MainScene extends Phaser.Scene {
     this.scale.resize(w, h);
     this.cameras.main.setSize(w, h);
     this.matter.world.setBounds(0, 0, w, h * 0.72 + 20);
+    this.updateCameraView();
 
     if (this.tower && this.player && !this.player.dead) {
       this.player.x = this.tower.x;
@@ -3707,7 +4006,7 @@ export class MainScene extends Phaser.Scene {
     // Aim Pointer
     const pointer = this.input.activePointer;
     if (this.player && !this.player.dead) {
-      this.player.setAim(pointer.x, pointer.y);
+      this.player.setAim(pointer.worldX, pointer.worldY);
     }
 
     if (this.state === 'playing') {
@@ -4034,7 +4333,7 @@ export class MainScene extends Phaser.Scene {
                 } else if (h.subType === 'shadow_skull') {
                   // 💀 Shadow skull banished!
                   soundFX.playArmorHit();
-                  this.spawnFloatingText('💀 SHADOW MAGIC PURGED! ✨', h.x, h.y - 30, '#a855f7', 20);
+                  this.spawnFloatingText('SHADOW MAGIC PURGED!', h.x, h.y - 30, '#a855f7', 20);
                 } else if (isBomb) {
                   // Early mid-air detonation: bomb damage and effect are completely neutralized/diminished!
                   this.spawnExplosion(h.x, h.y, 65);
@@ -4502,12 +4801,12 @@ export class MainScene extends Phaser.Scene {
         return true;
       });
 
-      // Check Wave Completion (1.5s gap after last kill before showing upgrade shop)
+      // Check Wave Completion (Fast, snappy transition after last kill before showing upgrade shop)
       if (this.enemiesToSpawn <= 0 && this.zombies.filter(z => !z.dead).length === 0) {
         if (!this.waveCompleting) {
-          // Last enemy just died! Start the 1.5s cinematic breather gap
+          // Last enemy just died! Fast 0.4s transition
           this.waveCompleting = true;
-          this.waveCompleteDelay = 1.5;
+          this.waveCompleteDelay = 0.4;
 
           // Wave clear rewards: Stamina and Health recovery
           if (this.player && !this.player.dead) {
@@ -4752,21 +5051,7 @@ export class MainScene extends Phaser.Scene {
     if (this.player) this.player.render(this.graphicsLayer);
     for (const a of this.arrows) a.render(this.graphicsLayer);
 
-    // 🛡️ Divine Aegis Golden Barrier FX
-    if (this.divineAegisTimer > 0 && this.player && !this.player.dead) {
-      const pulse = Math.sin(this.time.now * 0.008) * 4;
-      const g = this.graphicsLayer;
-      g.lineStyle(3.5, 0xffd700, 0.9);
-      g.fillStyle(0xfff200, 0.16);
-      g.strokeCircle(this.player.x, this.player.y - 30, 48 + pulse);
-      g.fillCircle(this.player.x, this.player.y - 30, 48 + pulse);
-      if (this.tower) {
-        g.lineStyle(3, 0xffd700, 0.7);
-        g.fillStyle(0xfff200, 0.10);
-        g.strokeRect(this.tower.x - 8, this.tower.topY - 8, this.tower.width + 16, this.tower.height + 16);
-        g.fillRect(this.tower.x - 8, this.tower.topY - 8, this.tower.width + 16, this.tower.height + 16);
-      }
-    }
+    // Divine Aegis invulnerability is active via player.invincible & tower.invincible without geometric overlays
 
     // 🎯 Ballistic Trajectory Guide (Active only when clicking/charging the bow)
     if (this.player && !this.player.dead && this.state === 'playing' && this.player.isCharging) {
@@ -5491,9 +5776,10 @@ export class MainScene extends Phaser.Scene {
     }
 
     // ── 3. The Moon: Red Lunar Eclipse (Blood Moon) vs Pearlescent Full Moon (Normal) ──
-    const moonX = w * 0.82;
-    const moonY = h * 0.18;
-    const moonR = 50;
+    const isPortrait = window.innerWidth < window.innerHeight;
+    const moonX = isPortrait ? (this.cameras.main.scrollX + (this.cameras.main.width / this.cameras.main.zoom) * 0.78) : (w * 0.82);
+    const moonY = isPortrait ? (this.cameras.main.scrollY + (this.cameras.main.height / this.cameras.main.zoom) * 0.16) : (h * 0.18);
+    const moonR = isPortrait ? 40 : 50;
 
     if (isBloodMoon) {
       // 🩸 RED LUNAR ECLIPSE 🩸

@@ -435,7 +435,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
     name: 'Auto-Crossbow Turret',
     icon: '🏹',
     desc: 'Mounts a rooftop clockwork ballista that automatically targets & snipes oncoming zombies!',
-    cost: 65,
+    cost: 450,
     statLabel: 'Auto-Turret: 1.1s Rapid Sniper',
     apply: (_p: any, tower: any) => { if (tower) tower.sentryLevel = (tower.sentryLevel || 0) + 1; },
     maxLevel: 3,
@@ -565,7 +565,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'nukeStrike',
     category: 'special',
-    name: '☢️ Orbital Nuclear Strike',
+    name: 'Orbital Nuclear Strike',
     icon: '💥',
     desc: 'Calls down an orbital nuclear bombardment wiping out every undead on screen for 450 AoE damage! Press [R] in combat.',
     cost: 95,
@@ -580,7 +580,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'lightningStorm',
     category: 'special',
-    name: '⚡ Chain Lightning Tempest',
+    name: 'Chain Lightning Tempest',
     icon: '⚡',
     desc: 'Summons a cataclysmic 100,000-volt hyper-lightning storm! Towering thunderbolts strike from the heavens and chain across every undead on screen for 260 shock damage & paralysis! Press [T] in combat.',
     cost: 75,
@@ -595,7 +595,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'godMode',
     category: 'special',
-    name: '✨ Divine Aegis Shield',
+    name: 'Divine Aegis Shield',
     icon: '🌟',
     desc: 'Holy aegis grants 6s total invulnerability & +60 HP recovery to hero and barricade! Press [G] in combat.',
     cost: 80,
@@ -610,7 +610,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'unlockVolley',
     category: 'special',
-    name: '🔥 Rain of Fire Volley [F]',
+    name: 'Rain of Fire Volley [F]',
     icon: '🔥',
     desc: 'Starting one-time unlock: Unleashes catastrophic barrages of 28+ flaming arrows to incinerate the undead horde! Press [F] in combat.',
     cost: 300,
@@ -627,7 +627,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'volleyMastery',
     category: 'special',
-    name: '🔥 Rain of Fire Volley Mastery',
+    name: 'Rain of Fire Volley Mastery',
     icon: '🏹',
     desc: 'Upgrades your [F] Volley skill: -4s cooldown & +10 flaming arrows per tier for catastrophic barrages!',
     cost: 35,
@@ -646,7 +646,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'unlockFrostNova',
     category: 'special',
-    name: '❄️ Glacial Frost Nova [E]',
+    name: 'Glacial Frost Nova [E]',
     icon: '❄️',
     desc: 'Starting one-time unlock: Instantly flash-freezes ALL active zombies solid in cryogenic ice for 4.5 seconds! Press [E] in combat.',
     cost: 500,
@@ -663,7 +663,7 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'frostMastery',
     category: 'special',
-    name: '❄️ Glacial Frost Nova Mastery',
+    name: 'Glacial Frost Nova Mastery',
     icon: '🧊',
     desc: 'Upgrades your [E] Frost Nova skill: -5s cooldown, +1.2s freeze duration, and inflicts 60 shatter AoE damage to all frozen foes!',
     cost: 40,

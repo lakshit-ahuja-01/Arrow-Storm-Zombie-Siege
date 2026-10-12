@@ -1242,11 +1242,11 @@ export function renderArrowGraphic(
   }
 
   // ══════════════════════════════════════════════════════════════════
-  // 12B. TRIPLE MULTISHOT ARROW (Gilded Trident Broadhead)
+  // 12B. TRIPLE MULTISHOT ARROW (Sleek Gilded Swift Broadhead)
   // ══════════════════════════════════════════════════════════════════
   else if (type === 'triple') {
-    const headLen = 14 * s;
-    const halfW = 8 * s;
+    const headLen = isStuck ? 6 * s : 8.5 * s;
+    const halfW = isStuck ? 2.8 * s : 3.8 * s;
     const baseX = tipX - cos * headLen;
     const baseY = tipY - sin * headLen;
     const topBarbX = baseX + perpX * halfW;
@@ -1254,36 +1254,35 @@ export function renderArrowGraphic(
     const botBarbX = baseX - perpX * halfW;
     const botBarbY = baseY - perpY * halfW;
 
-    // Gilded Mahogany Shaft
-    g.lineStyle(3.4 * s, 0x4a121a, 1);
+    // Sleek Mahogany Shaft with Golden Trim
+    g.lineStyle(2.6 * s, 0x3d141a, 1);
     g.lineBetween(tailX, tailY, baseX, baseY);
 
-    // Gold core line
-    g.lineStyle(1.5 * s, 0xffd700, 0.9);
-    g.lineBetween(tailX + cos * 5 * s, tailY + sin * 5 * s, baseX - cos * 3 * s, baseY - sin * 3 * s);
+    // Fine Gold Spine Pinstripe
+    g.lineStyle(1.2 * s, 0xffd700, 0.85);
+    g.lineBetween(tailX + cos * 4 * s, tailY + sin * 4 * s, baseX - cos * 2 * s, baseY - sin * 2 * s);
 
-    // 3-Prong Trident Head (Central Spear + 2 Flanking Barbs)
+    // Sleek Faceted Golden Needle Broadhead (2-tone facet)
     g.fillStyle(0xfff8c4, 1);
-    g.fillTriangle(tipX + cos * 4 * s, tipY + sin * 4 * s, baseX, baseY, topBarbX, topBarbY);
+    g.fillTriangle(tipX + cos * 2 * s, tipY + sin * 2 * s, baseX, baseY, topBarbX, topBarbY);
     g.fillStyle(0xd4ac0d, 1);
-    g.fillTriangle(tipX + cos * 4 * s, tipY + sin * 4 * s, baseX, baseY, botBarbX, botBarbY);
+    g.fillTriangle(tipX + cos * 2 * s, tipY + sin * 2 * s, baseX, baseY, botBarbX, botBarbY);
 
-    // Twin Flanking Trident Tips
-    g.fillStyle(0xffd700, 1);
-    g.fillTriangle(topBarbX + cos * 4 * s, topBarbY + sin * 4 * s, topBarbX - cos * 3 * s, topBarbY - sin * 3 * s, topBarbX + perpX * 3 * s, topBarbY + perpY * 3 * s);
-    g.fillTriangle(botBarbX + cos * 4 * s, botBarbY + sin * 4 * s, botBarbX - cos * 3 * s, botBarbY - sin * 3 * s, botBarbX - perpX * 3 * s, botBarbY - perpY * 3 * s);
+    // Razor-sharp Central Spine
+    g.lineStyle(1.0 * s, 0xffffff, 0.9);
+    g.lineBetween(tipX + cos * 2 * s, tipY + sin * 2 * s, baseX, baseY);
 
-    // Golden Chevron Vanes
-    const fFrontX = tailX + cos * 11 * s;
-    const fFrontY = tailY + sin * 11 * s;
+    // Aerodynamic Golden Chevron Vanes
+    const fFrontX = tailX + cos * 9 * s;
+    const fFrontY = tailY + sin * 9 * s;
     g.fillStyle(0xffd700, 1);
-    g.fillTriangle(tailX, tailY, fFrontX, fFrontY, tailX + perpX * 6.5 * s, tailY + perpY * 6.5 * s);
+    g.fillTriangle(tailX, tailY, fFrontX, fFrontY, tailX + perpX * 4.2 * s, tailY + perpY * 4.2 * s);
     g.fillStyle(0xb7791f, 1);
-    g.fillTriangle(tailX, tailY, fFrontX, fFrontY, tailX - perpX * 6.5 * s, tailY - perpY * 6.5 * s);
+    g.fillTriangle(tailX, tailY, fFrontX, fFrontY, tailX - perpX * 4.2 * s, tailY - perpY * 4.2 * s);
 
-    // Twin energy streaks
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(tipX + cos * 4 * s, tipY + sin * 4 * s, 2.2 * s);
+    // Subtle Swift Gleam at Tip
+    g.fillStyle(0xffffff, 0.9);
+    g.fillCircle(tipX + cos * 1.5 * s, tipY + sin * 1.5 * s, 1.4 * s);
   }
 
   // ══════════════════════════════════════════════════════════════════
