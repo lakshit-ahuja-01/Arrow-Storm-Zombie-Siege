@@ -63,6 +63,7 @@ export class MatterRagdoll {
   public isAttacking: boolean = false;
   public attackPhase: number = 0;
   public isQueued: boolean = false;
+  public isStationary: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number, opts: RagdollOptions = {}) {
     this.scene = scene;
@@ -183,7 +184,7 @@ export class MatterRagdoll {
     matter.world.add(this.composite);
   }
 
-  public setPosition(x: number, y: number, state?: { isAttacking?: boolean; attackPhase?: number; isQueued?: boolean; speedMult?: number }): void {
+  public setPosition(x: number, y: number, state?: { isAttacking?: boolean; attackPhase?: number; isQueued?: boolean; isStationary?: boolean; speedMult?: number }): void {
     const s = this.scale;
     const matter = this.scene.matter;
 
@@ -193,6 +194,7 @@ export class MatterRagdoll {
       if (state.isAttacking !== undefined) this.isAttacking = state.isAttacking;
       if (state.attackPhase !== undefined) this.attackPhase = state.attackPhase;
       if (state.isQueued !== undefined) this.isQueued = state.isQueued;
+      if (state.isStationary !== undefined) this.isStationary = state.isStationary;
     }
 
     if (this.isZombie) {
@@ -447,6 +449,58 @@ export class MatterRagdoll {
           matter.body.setPosition(this.leftCalf, { x: x - 5 * s + shuffle, y: y + 14 * s });
           matter.body.setPosition(this.rightThigh, { x: x + 5 * s - shuffle * 0.5, y: y - 8 * s });
           matter.body.setPosition(this.rightCalf, { x: x + 5 * s - shuffle, y: y + 14 * s });
+        } else if (this.isStationary) {
+          // ── Stationary Standoff Stance (Feet firmly planted / loose ethereal hover; ZERO leg movement) ──
+          const isPhantom = this.zombieType === 'phantom';
+          const idleBreath = Math.sin(Date.now() * 0.003) * 1.0 * s;
+
+          // Upright, menacing stance
+          const torsoX = x + this.faceDir * 4 * s;
+          const torsoY = y - 31 * s + idleBreath;
+          matter.body.setPosition(this.torso, { x: torsoX, y: torsoY });
+
+          // Glaring forward
+          matter.body.setPosition(this.head, {
+            x: torsoX + this.faceDir * 6 * s,
+            y: torsoY - 26 * s + idleBreath * 0.5
+          });
+
+          // Planted feet / hanging hover: LEGS DO NOT MOVE AT ALL!
+          if (isPhantom) {
+            // Ethereal floating: legs hang loosely and quietly beneath torso
+            matter.body.setPosition(this.leftThigh, { x: x - this.faceDir * 2 * s, y: y - 8 * s });
+            matter.body.setPosition(this.leftCalf, { x: x - this.faceDir * 3 * s, y: y + 14 * s });
+            matter.body.setPosition(this.rightThigh, { x: x + this.faceDir * 2 * s, y: y - 8 * s });
+            matter.body.setPosition(this.rightCalf, { x: x + this.faceDir * 3 * s, y: y + 14 * s });
+          } else {
+            // Grounded ranged undead: firm planted combat stance
+            matter.body.setPosition(this.leftThigh, { x: x - this.faceDir * 4 * s, y: y - 8 * s });
+            matter.body.setPosition(this.leftCalf, { x: x - this.faceDir * 5 * s, y: y + 14 * s });
+            matter.body.setPosition(this.rightThigh, { x: x + this.faceDir * 4 * s, y: y - 8 * s });
+            matter.body.setPosition(this.rightCalf, { x: x + this.faceDir * 5 * s, y: y + 14 * s });
+          }
+
+          // Arms: Raised in ready/casting pose toward the player/tower
+          const sShoulderLX = torsoX - this.faceDir * 2 * s;
+          const sShoulderLY = torsoY - 11 * s;
+          const sShoulderRX = torsoX + this.faceDir * 3 * s;
+          const sShoulderRY = torsoY - 12 * s;
+
+          const armPose = Math.sin(Date.now() * 0.004) * 2.0 * s;
+          rightElbowX = sShoulderRX + this.faceDir * (8 * s);
+          rightElbowY = sShoulderRY + 6 * s + armPose;
+          handRX = rightElbowX + this.faceDir * (10 * s);
+          handRY = rightElbowY + 2 * s + armPose;
+
+          leftElbowX = sShoulderLX + this.faceDir * (6 * s);
+          leftElbowY = sShoulderLY + 8 * s - armPose;
+          handLX = leftElbowX + this.faceDir * (8 * s);
+          handLY = leftElbowY + 3 * s - armPose;
+
+          matter.body.setPosition(this.leftUpperArm, { x: leftElbowX, y: leftElbowY });
+          matter.body.setPosition(this.leftForearm, { x: handLX, y: handLY });
+          matter.body.setPosition(this.rightUpperArm, { x: rightElbowX, y: rightElbowY });
+          matter.body.setPosition(this.rightForearm, { x: handRX, y: handRY });
         } else {
           // ── Authentic Shambling Undead Walk (Hunched Spine, Lurching Drag, Heavy Trailing Arms) ──
           const speedFactor = (state?.speedMult !== undefined) ? Math.max(0.2, state.speedMult) : 1.0;
@@ -598,6 +652,14 @@ export class MatterRagdoll {
         }
         this.constraints = [];
       }
+      this.leftShoulderJoint = null;
+      this.leftElbowJoint = null;
+      this.rightShoulderJoint = null;
+      this.rightElbowJoint = null;
+      this.leftHipJoint = null;
+      this.leftKneeJoint = null;
+      this.rightHipJoint = null;
+      this.rightKneeJoint = null;
       const parts = [
         this.head,
         this.torso,
@@ -994,7 +1056,11 @@ export class MatterRagdoll {
     let outlineCol = isFlash ? 0xffffff : (this.isZombie ? 0x0f1a09 : 0x0a1408);
 
     if (opts.isHero) {
-      if (heroSkin === 'shadow_assassin') {
+      if (heroSkin === 'default') {
+        skinCol = isFlash ? 0xffffff : 0xe8b88a; // Warm heroic ranger skin tone
+        clothCol = isFlash ? 0xffffff : 0x163820; // Deep emerald forest tunic
+        outlineCol = isFlash ? 0xffffff : 0x091408;
+      } else if (heroSkin === 'shadow_assassin') {
         skinCol = isFlash ? 0xffffff : 0x2c2c3e; // Shadow stealth tone
         clothCol = isFlash ? 0xffffff : 0x12121a; // Midnight obsidian
         outlineCol = isFlash ? 0xffffff : 0x08080c;
@@ -1190,33 +1256,38 @@ export class MatterRagdoll {
           );
         }
       } else {
-        // Classic Forest Warden Emerald Cloak
-        g.fillStyle(0x0c2413, 0.9 * globalAlpha);
+        // 🏹 FRONTIER EMERALD RANGER: Layered Flowing Mantle & Carved Quiver
+        // Deep shadow undertone
+        g.fillStyle(0x0c2413, 0.95 * globalAlpha);
         g.fillTriangle(
           tp.x - 4 * s, tp.y - 18 * s,
-          tp.x - 34 * s + capeWave, tp.y + 46 * s,
-          tp.x - 8 * s + capeWave * 0.8, tp.y + 42 * s
+          tp.x - 36 * s + capeWave, tp.y + 48 * s,
+          tp.x - 8 * s + capeWave * 0.8, tp.y + 44 * s
         );
+        // Vibrant emerald top drape with subtle wind fold
         g.fillStyle(0x1e4d2b, 1 * globalAlpha);
         g.fillTriangle(
           tp.x - 4 * s, tp.y - 18 * s,
-          tp.x - 26 * s + capeWave * 0.7, tp.y + 36 * s,
-          tp.x - 4 * s, tp.y + 32 * s
+          tp.x - 28 * s + capeWave * 0.7, tp.y + 38 * s,
+          tp.x - 4 * s, tp.y + 34 * s
         );
-        g.lineStyle(1.8 * s, 0xf1c40f, 0.8 * globalAlpha);
-        g.lineBetween(tp.x - 4 * s, tp.y - 18 * s, tp.x - 26 * s + capeWave * 0.7, tp.y + 36 * s);
+        // Golden hem filigree line
+        g.lineStyle(2.0 * s, 0xd4af37, 0.9 * globalAlpha);
+        g.lineBetween(tp.x - 4 * s, tp.y - 18 * s, tp.x - 28 * s + capeWave * 0.7, tp.y + 38 * s);
 
-        g.fillStyle(0x4a2e18, 1 * globalAlpha);
+        // Polished Leather Quiver with Gold Bracing
+        g.fillStyle(0x3e2723, 1 * globalAlpha);
         g.fillRoundedRect(tp.x - 17 * s, tp.y - 24 * s, 10 * s, 30 * s, 3);
-        g.lineStyle(1.5, 0x2d1b0e, 0.9 * globalAlpha);
+        g.lineStyle(1.6 * s, 0xd4af37, 0.95 * globalAlpha);
         g.strokeRoundedRect(tp.x - 17 * s, tp.y - 24 * s, 10 * s, 30 * s, 3);
 
-        g.fillStyle(0xf1c40f, 1 * globalAlpha);
+        // Gold and Emerald Fletched Arrows
         for (let qi = -1; qi <= 1; qi++) {
+          g.fillStyle(qi === 0 ? 0xf1c40f : 0x2ecc71, 1 * globalAlpha);
           g.fillTriangle(
             tp.x + qi * 3.5 * s - 12 * s, tp.y - 24 * s,
-            tp.x + qi * 3.5 * s - 15 * s, tp.y - 33 * s,
-            tp.x + qi * 3.5 * s - 9 * s, tp.y - 33 * s
+            tp.x + qi * 3.5 * s - 15 * s, tp.y - 34 * s,
+            tp.x + qi * 3.5 * s - 9 * s, tp.y - 34 * s
           );
         }
       }
@@ -1228,13 +1299,43 @@ export class MatterRagdoll {
     const legW = (this.zombieType === 'boss' || this.zombieType === 'reaper' || this.zombieType === 'juggernaut') ? 14 * s : (this.zombieType === 'bloater' || this.zombieType === 'centurion' || this.zombieType === 'berserker' || this.zombieType === 'pyro') ? 11 * s : (this.zombieType === 'skeleton' || this.zombieType === 'stalker') ? 6 * s : 8.5 * s;
 
     if (opts.isHero) {
-      if (this.hasLeftLeg && this.hasTorso) {
-        drawLimb(this.torso, this.leftThigh, legW, clothCol);
-        drawLimb(this.leftThigh, this.leftCalf, legW - 1, skinCol);
+      // Rugged leather combat boots / greaves for heroes (No more bare stick legs!)
+      let bootCol = 0x27190c; // Deep oiled leather ranger boot
+      let bootTrim = 0xd4af37; // Polished brass eyelets & knee cuffs
+      if (heroSkin === 'shadow_assassin') {
+        bootCol = 0x12121a;
+        bootTrim = 0xa855f7;
+      } else if (heroSkin === 'cyberpunk') {
+        bootCol = 0x0f172a;
+        bootTrim = 0x00f2fe;
+      } else if (heroSkin === 'valkyrie') {
+        bootCol = 0xd4af37;
+        bootTrim = 0xffffff;
+      } else if (heroSkin === 'skeleton') {
+        bootCol = 0xecf0f1;
+        bootTrim = 0x111116;
       }
-      if (this.hasRightLeg && this.hasTorso) {
+
+      if (this.hasLeftLeg && this.hasTorso && this.leftThigh && this.leftCalf) {
+        drawLimb(this.torso, this.leftThigh, legW, clothCol);
+        drawLimb(this.leftThigh, this.leftCalf, legW, bootCol);
+        // Knee guard / boot cuff
+        const kx = (this.leftThigh.position.x + this.leftCalf.position.x) * 0.5;
+        const ky = (this.leftThigh.position.y + this.leftCalf.position.y) * 0.5;
+        g.fillStyle(bootCol, 1 * globalAlpha);
+        g.fillCircle(kx, ky, legW * 0.62);
+        g.lineStyle(1.6 * s, bootTrim, 0.9 * globalAlpha);
+        g.strokeCircle(kx, ky, legW * 0.62);
+      }
+      if (this.hasRightLeg && this.hasTorso && this.rightThigh && this.rightCalf) {
         drawLimb(this.torso, this.rightThigh, legW, clothCol);
-        drawLimb(this.rightThigh, this.rightCalf, legW - 1, skinCol);
+        drawLimb(this.rightThigh, this.rightCalf, legW, bootCol);
+        const kx = (this.rightThigh.position.x + this.rightCalf.position.x) * 0.5;
+        const ky = (this.rightThigh.position.y + this.rightCalf.position.y) * 0.5;
+        g.fillStyle(bootCol, 1 * globalAlpha);
+        g.fillCircle(kx, ky, legW * 0.62);
+        g.lineStyle(1.6 * s, bootTrim, 0.9 * globalAlpha);
+        g.strokeCircle(kx, ky, legW * 0.62);
       }
     } else {
       // Zombie Left Leg
@@ -1444,25 +1545,58 @@ export class MatterRagdoll {
           g.lineStyle(2.4 * s, 0xdfe6e9, 1 * globalAlpha);
           g.lineBetween(tp.x, tp.y - 8 * s, tp.x, tp.y + 8 * s);
         } else {
-          // Classic Hero: Forest-Green Tunic & Reinforced Leather Cuirass
-          g.fillStyle(0x1e392a, 0.95 * globalAlpha); // Forest tunic
-          g.fillRect(tp.x - torsoW / 2 + 1 * s, tp.y - torsoH / 2 + 3 * s, torsoW - 2 * s, 18 * s);
-          g.fillStyle(0x3e2723, 1 * globalAlpha); // Hardened leather cuirass
-          g.fillRect(tp.x - torsoW / 2 + 2.5 * s, tp.y - torsoH / 2 + 5 * s, torsoW - 5 * s, 14 * s);
-          // Diagonal leather quiver baldric strap with gleaming brass buckle
-          g.lineStyle(2.6 * s, 0x27190c, 1 * globalAlpha);
-          g.lineBetween(tp.x - 6 * s, tp.y - 12 * s, tp.x + 6 * s, tp.y + 6 * s);
-          g.fillStyle(0xf1c40f, 1 * globalAlpha);
-          g.fillCircle(tp.x, tp.y - 3 * s, 2.2 * s); // Polished brass buckle
-          g.fillStyle(0xffffff, 0.8 * globalAlpha);
-          g.fillCircle(tp.x - 0.7 * s, tp.y - 3.7 * s, 0.9 * s); // Metallic gleam
-          // Gold chevron hero crest
+          // 🏹 FRONTIER EMERALD RANGER: Layered Hunter Tunic, Leather Brigandine & Pauldrons
+          // Rich forest green tunic base
+          g.fillStyle(0x163820, 1 * globalAlpha);
+          g.fillRoundedRect(tp.x - torsoW / 2 + 1 * s, tp.y - torsoH / 2 + 2 * s, torsoW - 2 * s, torsoH - 4 * s, 3);
+
+          // Hardened brown leather cuirass / chestplate
+          g.fillStyle(0x3e2723, 1 * globalAlpha);
+          g.fillRoundedRect(tp.x - torsoW / 2 + 2 * s, tp.y - torsoH / 2 + 4 * s, torsoW - 4 * s, 16 * s, 2);
+          g.lineStyle(1.4 * s, 0x27190c, 0.9 * globalAlpha);
+          g.strokeRoundedRect(tp.x - torsoW / 2 + 2 * s, tp.y - torsoH / 2 + 4 * s, torsoW - 4 * s, 16 * s, 2);
+
+          // Diagonal leather baldric quiver strap
+          g.lineStyle(2.8 * s, 0x241408, 1 * globalAlpha);
+          g.lineBetween(tp.x - 6 * s, tp.y - 13 * s, tp.x + 6 * s, tp.y + 5 * s);
+
+          // Polished brass ring buckle with inner metallic gleam
           g.fillStyle(0xd4af37, 1 * globalAlpha);
+          g.fillCircle(tp.x, tp.y - 4 * s, 2.6 * s);
+          g.fillStyle(0x27190c, 1 * globalAlpha);
+          g.fillCircle(tp.x, tp.y - 4 * s, 1.2 * s);
+          g.fillStyle(0xffffff, 0.9 * globalAlpha);
+          g.fillCircle(tp.x - 0.7 * s, tp.y - 4.7 * s, 0.8 * s);
+
+          // Golden leaf ranger crest insignia
+          g.fillStyle(0xf1c40f, 1 * globalAlpha);
           g.fillTriangle(
-            tp.x, tp.y - 10 * s,
-            tp.x - 3.5 * s, tp.y - 5 * s,
-            tp.x + 3.5 * s, tp.y - 5 * s
+            tp.x, tp.y - 12 * s,
+            tp.x - 3.2 * s, tp.y - 7 * s,
+            tp.x + 3.2 * s, tp.y - 7 * s
           );
+          g.fillStyle(0x27ae60, 1 * globalAlpha);
+          g.fillCircle(tp.x, tp.y - 8 * s, 1.2 * s);
+
+          // Leather waist belt with gold buckle
+          g.fillStyle(0x27190c, 1 * globalAlpha);
+          g.fillRect(tp.x - torsoW / 2 + 1 * s, tp.y + 6 * s, torsoW - 2 * s, 4 * s);
+          g.fillStyle(0xd4af37, 1 * globalAlpha);
+          g.fillRect(tp.x - 2.5 * s, tp.y + 5.5 * s, 5 * s, 5 * s);
+          g.fillStyle(0x27190c, 1 * globalAlpha);
+          g.fillRect(tp.x - 1.2 * s, tp.y + 6.8 * s, 2.4 * s, 2.4 * s);
+
+          // Studded leather shoulder pauldrons (spaulders) on both shoulders
+          for (const pDir of [-1, 1]) {
+            const px = tp.x + pDir * 6 * s;
+            const py = tp.y - 12 * s;
+            g.fillStyle(0x3e2723, 1 * globalAlpha);
+            g.fillCircle(px, py, 4.8 * s);
+            g.lineStyle(1.8 * s, 0xd4af37, 0.95 * globalAlpha);
+            g.strokeCircle(px, py, 4.8 * s);
+            g.fillStyle(0xf1c40f, 1 * globalAlpha);
+            g.fillCircle(px, py, 1.4 * s);
+          }
         }
       }
     }
@@ -1677,15 +1811,42 @@ export class MatterRagdoll {
       };
 
       // For Hero: Left arm holds bow forward; Right arm draws string back
-      if (this.hasLeftArm && this.hasTorso) {
-        drawArmSegment(shoulderLX, shoulderLY, this.leftUpperArm.position.x, this.leftUpperArm.position.y, armW, skinCol);
-        drawArmSegment(this.leftUpperArm.position.x, this.leftUpperArm.position.y, this.leftForearm.position.x, this.leftForearm.position.y, armW - 1, skinCol);
+      let sleeveCol = clothCol;
+      let bracerCol = 0x3e2723; // Rugged leather archer vambrace
+      let bracerTrim = 0xd4af37;
+      if (heroSkin === 'shadow_assassin') {
+        sleeveCol = 0x12121a;
+        bracerCol = 0x1a1a26;
+        bracerTrim = 0xa855f7;
+      } else if (heroSkin === 'cyberpunk') {
+        sleeveCol = 0x0f172a;
+        bracerCol = 0x1e293b;
+        bracerTrim = 0x00f2fe;
+      } else if (heroSkin === 'valkyrie') {
+        sleeveCol = 0xffffff;
+        bracerCol = 0xd4af37;
+        bracerTrim = 0xffffff;
+      } else if (heroSkin === 'skeleton') {
+        sleeveCol = 0xecf0f1;
+        bracerCol = 0xecf0f1;
+        bracerTrim = 0x111116;
+      }
+
+      if (this.hasLeftArm && this.hasTorso && this.leftUpperArm && this.leftForearm) {
+        drawArmSegment(shoulderLX, shoulderLY, this.leftUpperArm.position.x, this.leftUpperArm.position.y, armW, sleeveCol);
+        drawArmSegment(this.leftUpperArm.position.x, this.leftUpperArm.position.y, this.leftForearm.position.x, this.leftForearm.position.y, armW, bracerCol);
+        // Vambrace strap detail on forearm
+        g.lineStyle(1.6 * s, bracerTrim, 0.9 * globalAlpha);
+        g.lineBetween(this.leftForearm.position.x - 2 * s, this.leftForearm.position.y - 3 * s, this.leftForearm.position.x + 2 * s, this.leftForearm.position.y + 1 * s);
         drawHeroHand(this.leftForearm.position.x, this.leftForearm.position.y, this.leftUpperArm.position.x, this.leftUpperArm.position.y, true);
       }
 
-      if (this.hasRightArm && this.hasTorso) {
-        drawArmSegment(shoulderRX, shoulderRY, this.rightUpperArm.position.x, this.rightUpperArm.position.y, armW, skinCol);
-        drawArmSegment(this.rightUpperArm.position.x, this.rightUpperArm.position.y, this.rightForearm.position.x, this.rightForearm.position.y, armW - 1, skinCol);
+      if (this.hasRightArm && this.hasTorso && this.rightUpperArm && this.rightForearm) {
+        drawArmSegment(shoulderRX, shoulderRY, this.rightUpperArm.position.x, this.rightUpperArm.position.y, armW, sleeveCol);
+        drawArmSegment(this.rightUpperArm.position.x, this.rightUpperArm.position.y, this.rightForearm.position.x, this.rightForearm.position.y, armW, bracerCol);
+        // Vambrace strap detail on forearm
+        g.lineStyle(1.6 * s, bracerTrim, 0.9 * globalAlpha);
+        g.lineBetween(this.rightForearm.position.x - 2 * s, this.rightForearm.position.y - 3 * s, this.rightForearm.position.x + 2 * s, this.rightForearm.position.y + 1 * s);
         drawHeroHand(this.rightForearm.position.x, this.rightForearm.position.y, this.rightUpperArm.position.x, this.rightUpperArm.position.y, false);
       }
     }
@@ -1877,51 +2038,116 @@ export class MatterRagdoll {
               g.lineBetween(mouthX + ti * 2 * s, mouthY - 2.5 * s, mouthX + ti * 2 * s, mouthY + 2.5 * s);
             }
           } else {
-            // Classic Hero Ranger Hood & Feathered Archer Cap
-            const eyeX = hp.x + this.faceDir * 5 * s;
-            const eyeY = hp.y - 2 * s;
+            // 🏹 FRONTIER EMERALD RANGER: Clean Heroic Face, Big Focused Tracking Eye & Archer Cowl
+            // 1. Back Hood Drape (Framing skull cleanly behind the head)
+            g.fillStyle(0x13341b, 1 * globalAlpha);
+            g.fillCircle(hp.x - this.faceDir * 2.5 * s, hp.y - 1.5 * s, headR + 2.0 * s);
+            g.lineStyle(2.0 * s, 0x0a1c0f, 0.95 * globalAlpha);
+            g.strokeCircle(hp.x - this.faceDir * 2.5 * s, hp.y - 1.5 * s, headR + 2.0 * s);
 
-            // Eye Sclera (Almond-shaped archer eye with draw squint)
-            const isAiming = this.bowDrawFrac > 0.2;
-            const eyeH = isAiming ? 3.0 * s : 4.5 * s; // Squints when drawing bow!
+            // 2. Hood Top & Brow (Drawn BEHIND face/eye so it never overlaps or obscures the eyes)
+            g.fillStyle(0x1b432a, 1 * globalAlpha);
+            g.beginPath();
+            g.fillTriangle(
+              hp.x - this.faceDir * 10 * s, hp.y - 11 * s,
+              hp.x + this.faceDir * 9 * s, hp.y - 6.5 * s,
+              hp.x - this.faceDir * 3 * s, hp.y - 16 * s
+            );
+            g.fillCircle(hp.x - this.faceDir * 2 * s, hp.y - 7 * s, headR * 0.9);
+
+            // Golden Embroidered Trim along Hood Brow
+            g.lineStyle(2.0 * s, 0xd4af37, 1 * globalAlpha);
+            g.lineBetween(
+              hp.x - this.faceDir * 9 * s, hp.y - 11 * s,
+              hp.x + this.faceDir * 9 * s, hp.y - 6.5 * s
+            );
+
+            // 3. Clear Hero Face Profile (Skin Tone - NO big green patch covering the face!)
+            const faceCenterX = hp.x + this.faceDir * 2.2 * s;
+            const faceCenterY = hp.y + 0.5 * s;
+            g.fillStyle(skinCol, 1 * globalAlpha);
+            g.fillCircle(faceCenterX, faceCenterY, headR * 0.82);
+            g.lineStyle(1.2 * s, 0x241408, 0.35 * globalAlpha);
+            g.strokeCircle(faceCenterX, faceCenterY, headR * 0.82);
+
+            // 4. BIG, CLEAR, CRYSTAL-SHARP ARCHER EYE (Drawn on top so it is 100% visible!)
+            const eyeX = hp.x + this.faceDir * 5.2 * s;
+            const eyeY = hp.y - 1.2 * s;
+
+            // Fierce Arching Eyebrow
+            g.lineStyle(2.4 * s, 0x1f140a, 1 * globalAlpha);
+            g.lineBetween(
+              eyeX - this.faceDir * 4.8 * s, eyeY - 4.5 * s,
+              eyeX + this.faceDir * 5.0 * s, eyeY - 3.0 * s
+            );
+
+            // Large Crisp White Sclera
+            const isAiming = this.bowDrawFrac > 0.15;
+            const eyeW = 5.6 * s;
+            const eyeH = isAiming ? 4.0 * s : 5.4 * s;
             g.fillStyle(0xffffff, 1 * globalAlpha);
-            g.fillEllipse(eyeX, eyeY, 4.4 * s, eyeH);
+            g.fillEllipse(eyeX, eyeY, eyeW, eyeH);
+            g.lineStyle(1.5 * s, 0x1a2e1d, 1 * globalAlpha);
+            g.strokeEllipse(eyeX, eyeY, eyeW, eyeH);
 
-            // Pupil dynamically tracks along aim line (aimAngle)
+            // Dynamic Aiming Pupil & Glowing Emerald Iris
             const cosAim = Math.cos(this.aimAngle);
             const sinAim = Math.sin(this.aimAngle);
-            const pupilX = eyeX + cosAim * (1.6 * s);
-            const pupilY = eyeY + sinAim * (1.0 * s);
+            const pupilX = eyeX + cosAim * (1.8 * s);
+            const pupilY = eyeY + sinAim * (1.1 * s);
 
-            // Emerald Iris
-            g.fillStyle(0x27ae60, 1 * globalAlpha);
-            g.fillCircle(pupilX, pupilY, 2.4 * s);
-            // Crisp Black Pupil
-            g.fillStyle(0x0a1408, 1 * globalAlpha);
-            g.fillCircle(pupilX + cosAim * 0.5 * s, pupilY + sinAim * 0.5 * s, 1.3 * s);
-            // Catchlight gleam
-            g.fillStyle(0xffffff, 0.9 * globalAlpha);
-            g.fillCircle(pupilX - 0.7 * s, pupilY - 0.7 * s, 0.8 * s);
+            // Piercing Vibrant Emerald Iris
+            g.fillStyle(0x00b894, 1 * globalAlpha);
+            g.fillCircle(pupilX, pupilY, 2.7 * s);
+            g.fillStyle(0x55efc4, 0.85 * globalAlpha);
+            g.fillCircle(pupilX, pupilY, 1.7 * s);
 
-            // Archer Cap (Forest-green with golden trim band)
-            g.fillStyle(0x194d29, 1 * globalAlpha);
-            g.fillCircle(hp.x - 2 * s, hp.y - 5 * s, 16.5 * s);
-            g.lineStyle(2.5 * s, 0xf1c40f, 0.95 * globalAlpha);
-            g.lineBetween(hp.x - 14 * s, hp.y + 2 * s, hp.x + 8 * s, hp.y - 9 * s);
+            // Sharp Black Pupil
+            g.fillStyle(0x081008, 1 * globalAlpha);
+            g.fillCircle(pupilX + cosAim * 0.4 * s, pupilY + sinAim * 0.4 * s, 1.3 * s);
 
-            // Flowing Emerald Archer Feather (ripples in the wind)
-            const featherWave = Math.sin(Date.now() * 0.007) * 2.5 * s;
+            // Sparkling White Specular Catchlight (Ensures eye is sparkling and clearly seen)
+            g.fillStyle(0xffffff, 1 * globalAlpha);
+            g.fillCircle(pupilX - 1.0 * s, pupilY - 1.0 * s, 1.1 * s);
+
+            // 5. Clean Heroic Mouth & Jawline (Natural line, NO big green patch!)
+            const mouthX = hp.x + this.faceDir * 4.2 * s;
+            const mouthY = hp.y + 6.0 * s;
+            g.lineStyle(2.0 * s, 0x3d2314, 0.9 * globalAlpha);
+            g.lineBetween(mouthX - 3.5 * s, mouthY + 0.5 * s, mouthX + 3.8 * s, mouthY - 0.5 * s);
+
+            // 6. Sleek Neck Cowl Collar (Restricted strictly below the chin at neck level)
+            g.fillStyle(0x13341b, 1 * globalAlpha);
+            g.fillRoundedRect(
+              hp.x - 4 * s,
+              hp.y + headR * 0.78,
+              9 * s,
+              5 * s,
+              2
+            );
+
+            // 7. Sleek Ranger Feather Quill & Brooch Pin
+            const featherWave = Math.sin(Date.now() * 0.007) * 2.0 * s;
+            const featherRootX = hp.x - this.faceDir * 5 * s;
+            const featherRootY = hp.y - 10 * s;
+            const featherTipX = hp.x - this.faceDir * 20 * s;
+            const featherTipY = hp.y - 20 * s + featherWave;
+
             g.fillStyle(0x2ecc71, 1 * globalAlpha);
             g.fillTriangle(
-              hp.x - 5 * s, hp.y - 14 * s,
-              hp.x - 22 * s, hp.y - 26 * s + featherWave,
-              hp.x - 9 * s, hp.y - 12 * s
+              featherRootX, featherRootY,
+              featherTipX, featherTipY,
+              featherRootX - this.faceDir * 3 * s, featherRootY + 4 * s
             );
-            g.lineStyle(1.6 * s, 0xd4af37, 0.95 * globalAlpha);
-            g.lineBetween(hp.x - 7 * s, hp.y - 13 * s, hp.x - 22 * s, hp.y - 26 * s + featherWave);
-            // Golden Cap Brooch Pin
+            // Golden quill spine
+            g.lineStyle(1.6 * s, 0xd4af37, 1 * globalAlpha);
+            g.lineBetween(featherRootX, featherRootY, featherTipX, featherTipY);
+
+            // Polished Round Gold Brooch Pin
             g.fillStyle(0xf1c40f, 1 * globalAlpha);
-            g.fillCircle(hp.x - 7 * s, hp.y - 13 * s, 2 * s);
+            g.fillCircle(featherRootX, featherRootY, 2.8 * s);
+            g.fillStyle(0x27ae60, 1 * globalAlpha);
+            g.fillCircle(featherRootX, featherRootY, 1.2 * s);
           }
         }
       } else {

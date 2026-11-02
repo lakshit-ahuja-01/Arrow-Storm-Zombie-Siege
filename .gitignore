@@ -5,6 +5,14 @@ dist/
 scratch/
 *.zip
 crazygames-upload/
+fbinstant-upload/
+poki-upload/
+playgama-upload/
 *.mp4
 chrome-zombie-siege*
 Screen_Recording*
+Screenshot*
+src/ChatGPT Image*
+*.avif
+src/arrow-storm-zombie-siege-cover-1920x1080-muted.png
+arrow-storm-zombie-siege-cover-1920x1080.png

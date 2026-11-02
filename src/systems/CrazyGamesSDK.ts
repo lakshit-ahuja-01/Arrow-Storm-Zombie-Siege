@@ -8,6 +8,9 @@
  */
 
 import { soundFX } from './SoundFX';
+import { fbInstant } from './FBInstantSDK';
+import { pokiSDK } from './PokiSDK';
+import { playgamaSDK } from './PlaygamaSDK';
 
 declare global {
   interface Window {
@@ -60,6 +63,24 @@ class CrazyGamesManager {
   public async init(): Promise<void> {
     if (this.isInitialized) return;
 
+    if (playgamaSDK.isAvailable()) {
+      await playgamaSDK.init();
+      this.isInitialized = true;
+      return;
+    }
+
+    if (pokiSDK.isAvailable()) {
+      await pokiSDK.init();
+      this.isInitialized = true;
+      return;
+    }
+
+    if (fbInstant.isAvailable()) {
+      await fbInstant.init();
+      this.isInitialized = true;
+      return;
+    }
+
     try {
       if (window.CrazyGames?.SDK) {
         await window.CrazyGames.SDK.init();
@@ -86,15 +107,21 @@ class CrazyGamesManager {
           console.warn('[CrazyGames Data] Sync migration fallback:', e);
         }
       } else {
-        console.info('ℹ️ [CrazyGames SDK] Standalone/Offline mode active');
+        console.info('ℹ️ [Platform SDK] Standalone/Offline mode active');
       }
     } catch (err) {
       console.warn('⚠️ [CrazyGames SDK] Initialization fallback:', err);
     }
   }
 
-  // ── CrazyGames Data Storage Module (Cross-Device Cloud Sync + Local Fallback) ──
+  // ── Universal Data Storage Module (Cross-Device Cloud Sync + Local Fallback) ──
   public getItem(key: string): string | null {
+    if (playgamaSDK.isAvailable()) {
+      return playgamaSDK.getItem(key);
+    }
+    if (fbInstant.isAvailable()) {
+      return fbInstant.getItem(key);
+    }
     try {
       if (window.CrazyGames?.SDK?.data?.getItem) {
         const cloudVal = window.CrazyGames.SDK.data.getItem(key);
@@ -111,6 +138,14 @@ class CrazyGamesManager {
   }
 
   public setItem(key: string, value: string): void {
+    if (playgamaSDK.isAvailable()) {
+      playgamaSDK.setItem(key, value);
+      return;
+    }
+    if (fbInstant.isAvailable()) {
+      fbInstant.setItem(key, value);
+      return;
+    }
     // 1. Save to CrazyGames SDK Data Module (Syncs across devices for logged-in players)
     try {
       if (window.CrazyGames?.SDK?.data?.setItem) {
@@ -126,6 +161,14 @@ class CrazyGamesManager {
   }
 
   public removeItem(key: string): void {
+    if (playgamaSDK.isAvailable()) {
+      playgamaSDK.removeItem(key);
+      return;
+    }
+    if (fbInstant.isAvailable()) {
+      fbInstant.removeItem(key);
+      return;
+    }
     try {
       if (window.CrazyGames?.SDK?.data?.removeItem) {
         window.CrazyGames.SDK.data.removeItem(key);
@@ -137,6 +180,14 @@ class CrazyGamesManager {
   }
 
   public clear(): void {
+    if (playgamaSDK.isAvailable()) {
+      playgamaSDK.clear();
+      return;
+    }
+    if (fbInstant.isAvailable()) {
+      fbInstant.clear();
+      return;
+    }
     try {
       if (window.CrazyGames?.SDK?.data?.clear) {
         window.CrazyGames.SDK.data.clear();
@@ -168,16 +219,39 @@ class CrazyGamesManager {
   }
 
   public isMobile(): boolean {
+    if (playgamaSDK.isAvailable()) {
+      return playgamaSDK.isMobile();
+    }
+    if (fbInstant.isAvailable()) {
+      return fbInstant.isMobile();
+    }
     return this.deviceType === 'mobile' || this.deviceType === 'tablet';
   }
 
   public loadingStart(): void {
+    if (pokiSDK.isAvailable()) {
+      pokiSDK.loadingStart();
+      return;
+    }
+    if (fbInstant.isAvailable()) {
+      fbInstant.setLoadingProgress(10);
+      return;
+    }
     try {
       window.CrazyGames?.SDK?.game?.loadingStart();
     } catch {}
   }
 
   public loadingStop(): void {
+    if (pokiSDK.isAvailable()) {
+      pokiSDK.loadingStop();
+      return;
+    }
+    if (fbInstant.isAvailable()) {
+      fbInstant.setLoadingProgress(100);
+      fbInstant.startGameAsync();
+      return;
+    }
     try {
       window.CrazyGames?.SDK?.game?.loadingStop();
     } catch {}
@@ -186,6 +260,10 @@ class CrazyGamesManager {
   public gameplayStart(): void {
     if (this.isGameplayActive) return;
     this.isGameplayActive = true;
+    if (pokiSDK.isAvailable()) {
+      pokiSDK.gameplayStart();
+      return;
+    }
     try {
       window.CrazyGames?.SDK?.game?.gameplayStart();
       console.log('▶️ [CrazyGames] gameplayStart');
@@ -195,6 +273,10 @@ class CrazyGamesManager {
   public gameplayStop(): void {
     if (!this.isGameplayActive) return;
     this.isGameplayActive = false;
+    if (pokiSDK.isAvailable()) {
+      pokiSDK.gameplayStop();
+      return;
+    }
     try {
       window.CrazyGames?.SDK?.game?.gameplayStop();
       console.log('⏹️ [CrazyGames] gameplayStop');
@@ -236,6 +318,21 @@ class CrazyGamesManager {
    * Automatically pauses physics/scene and mutes sound, then restores them.
    */
   public requestMidgameAd(onComplete?: () => void): void {
+    if (playgamaSDK.isAvailable()) {
+      playgamaSDK.requestMidgameAd(onComplete);
+      return;
+    }
+
+    if (pokiSDK.isAvailable()) {
+      pokiSDK.requestMidgameAd(onComplete);
+      return;
+    }
+
+    if (fbInstant.isAvailable()) {
+      fbInstant.requestMidgameAd(onComplete);
+      return;
+    }
+
     if (!window.CrazyGames?.SDK?.ad?.requestAd) {
       onComplete?.();
       return;
@@ -293,6 +390,21 @@ class CrazyGamesManager {
    * Request a Rewarded Ad (watch for Revive or Double Skulls).
    */
   public requestRewardedAd(onRewarded: () => void, onFailed?: () => void): void {
+    if (playgamaSDK.isAvailable()) {
+      playgamaSDK.requestRewardedAd(onRewarded, onFailed);
+      return;
+    }
+
+    if (pokiSDK.isAvailable()) {
+      pokiSDK.requestRewardedAd(onRewarded, onFailed);
+      return;
+    }
+
+    if (fbInstant.isAvailable()) {
+      fbInstant.requestRewardedAd(onRewarded, onFailed);
+      return;
+    }
+
     if (!window.CrazyGames?.SDK?.ad?.requestAd) {
       // Local/offline test environment: grant reward directly
       onRewarded();
@@ -347,6 +459,19 @@ class CrazyGamesManager {
       onRewarded();
     }
   }
+
+  public async hasAdblock(): Promise<boolean> {
+    try {
+      if (window.CrazyGames?.SDK?.ad?.hasAdblock) {
+        return await window.CrazyGames.SDK.ad.hasAdblock();
+      }
+    } catch (e) {
+      console.warn('[CrazyGames] hasAdblock check error:', e);
+    }
+    return false;
+  }
 }
 
 export const crazyGames = new CrazyGamesManager();
+export const platform = crazyGames;
+export { fbInstant, pokiSDK, playgamaSDK };

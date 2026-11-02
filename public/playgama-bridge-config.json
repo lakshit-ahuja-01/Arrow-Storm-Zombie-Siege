@@ -1,0 +1,18 @@
+{
+  "platform": {
+    "id": "playgama"
+  },
+  "advertisement": {
+    "interstitial": {
+      "autoShow": []
+    },
+    "rewarded": {}
+  },
+  "payments": [],
+  "leaderboards": [],
+  "social": {
+    "shares": {},
+    "invites": {},
+    "posts": {}
+  }
+}

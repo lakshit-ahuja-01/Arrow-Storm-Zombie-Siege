@@ -10,6 +10,8 @@ import { soundFX } from '../systems/SoundFX';
 import { uiManager } from '../systems/UIManager';
 import { crazyGames } from '../systems/CrazyGamesSDK';
 import { getGameResolution } from '../main';
+import { isMobileDevice } from '../utils/DeviceDetection';
+import { applyJumpButtonPosition } from '../utils/MobileControls';
 
 interface ActiveVortex {
   x: number;
@@ -96,12 +98,15 @@ export class MainScene extends Phaser.Scene {
   public highestCampaignWave: number = 1;
   public endlessBestWave: number = 0;
   public campaignCompleted: boolean = false;
+  public currentRunSkullsEarned: number = 0;
   public endlessRunSkullsEarned: number = 0;
   public endlessRunSkullsBanked: number = 0;
   public get endlessSkullsBanked(): number { return this.endlessRunSkullsBanked; }
   public set endlessSkullsBanked(v: number) { this.endlessRunSkullsBanked = v; }
   public waveCompleting: boolean = false;
   public waveCompleteDelay: number = 0;
+  public isDirectionTutorialActive: boolean = false;
+  public tutorialShotsFired: number = 0;
 
   public timeScale: number = 1.0;
   public slowMoTimer: number = 0;
@@ -311,7 +316,34 @@ export class MainScene extends Phaser.Scene {
     if (this.input.keyboard) {
       this.cursors = this.input.keyboard.createCursorKeys();
       this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+      this.input.keyboard.on('keydown', (event: KeyboardEvent) => {
+        const digitMatch = event.code.match(/^Digit([1-5])$/);
+        if (digitMatch && (event.shiftKey || event.altKey || event.ctrlKey)) {
+          const t = parseInt(digitMatch[1]);
+          this.tower.tier = t;
+          this.tower.hasSpikes = true;
+          this.tower.sentryLevel = 1;
+          this.tower.triggerUpgradeEffect();
+        }
+      });
     }
+
+    (window as any).setTier = (t: number) => {
+      uiManager.setState('playing');
+      if (this.tower) {
+        this.tower.isDestroyed = false;
+        this.tower.collapseProgress = 0;
+        this.tower.hp = this.tower.maxHP;
+        this.tower.invincible = true;
+        this.tower.tier = t;
+        this.tower.hasSpikes = true;
+        this.tower.sentryLevel = 1;
+        this.zombies.forEach(z => z.destroy && z.destroy());
+        this.zombies = [];
+        this.tower.triggerUpgradeEffect();
+      }
+    };
 
     // Pointer events for bow aim & charge (Canvas events)
     this.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
@@ -322,6 +354,7 @@ export class MainScene extends Phaser.Scene {
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       try { soundFX.ensure(); } catch {}
+      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && (pointer.leftButtonDown() || pointer.isDown) && this.player && !this.player.dead) {
         this.player.setAim(pointer.worldX, pointer.worldY);
         this.player.startCharge();
@@ -329,6 +362,7 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && this.player.isCharging) {
         this.player.setAim(pointer.worldX, pointer.worldY);
         const released = this.player.releaseArrow();
@@ -382,6 +416,7 @@ export class MainScene extends Phaser.Scene {
     });
 
     window.addEventListener('mouseup', (e: MouseEvent) => {
+      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && this.player.isCharging) {
         const coords = getAimCoords(e.clientX, e.clientY);
         this.player.setAim(coords.x, coords.y);
@@ -408,6 +443,7 @@ export class MainScene extends Phaser.Scene {
         return;
       }
       try { soundFX.ensure(); } catch {}
+      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && !this.player.dead && e.touches.length > 0) {
         const coords = getAimCoords(e.touches[0].clientX, e.touches[0].clientY);
         this.player.setAim(coords.x, coords.y);
@@ -423,6 +459,7 @@ export class MainScene extends Phaser.Scene {
     }, { passive: true });
 
     window.addEventListener('touchend', (e: TouchEvent) => {
+      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && this.player.isCharging) {
         if (e.changedTouches && e.changedTouches.length > 0) {
           const coords = getAimCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
@@ -510,16 +547,26 @@ export class MainScene extends Phaser.Scene {
     const btnRestartCamp = document.getElementById('btn-restart-campaign');
     if (btnRestartCamp) {
       btnRestartCamp.onclick = () => {
-        soundFX.playBowDraw();
-        this.campaignWave = 1;
-        this.saveGameData();
-        this.startGame('campaign');
+        const modalRestart = document.getElementById('modal-restart-confirm');
+        if (modalRestart) {
+          soundFX.playBowDraw();
+          modalRestart.classList.remove('hidden');
+        } else {
+          this.restartCampaignFromNight1();
+        }
       };
     }
 
 
     const btnRetry = document.getElementById('btn-retry');
     if (btnRetry) btnRetry.onclick = () => this.startGame(this.gameMode);
+
+    document.querySelectorAll('.btn-tutorial-dismiss').forEach(btn => {
+      (btn as HTMLElement).onclick = (e) => {
+        e.stopPropagation();
+        this.completeDirectionTutorial();
+      };
+    });
 
     const btnContinueEndless = document.getElementById('btn-continue-endless');
     if (btnContinueEndless) {
@@ -711,6 +758,14 @@ export class MainScene extends Phaser.Scene {
         }
       }
 
+      if (this.isDirectionTutorialActive) {
+        if (code === 'Space' || code === 'Enter') {
+          e.preventDefault();
+          this.completeDirectionTutorial();
+        }
+        return;
+      }
+
       if (this.state === 'playing' && this.player && !this.player.dead) {
         if (code === 'Digit1' || key === '1') {
           e.preventDefault();
@@ -757,12 +812,17 @@ export class MainScene extends Phaser.Scene {
     this.bodyGibs = [];
     this.groundStains = [];
     this.bloodMists = [];
+    if (this.gameOverTimeout) {
+      clearTimeout(this.gameOverTimeout);
+      this.gameOverTimeout = null;
+    }
+    if (this.tower) {
+      this.tower.restore();
+      this.tower.hp = this.tower.maxHP;
+    }
     if (this.player) {
       this.player.revive(this.tower.topY, this.tower.x);
       this.player.hp = this.player.maxHP;
-    }
-    if (this.tower) {
-      this.tower.hp = this.tower.maxHP;
     }
     this.state = 'playing';
     uiManager.setState('playing');
@@ -772,10 +832,17 @@ export class MainScene extends Phaser.Scene {
 
   public startGame(mode?: GameMode): void {
     if (mode) this.gameMode = mode;
+    if (this.gameOverTimeout) {
+      clearTimeout(this.gameOverTimeout);
+      this.gameOverTimeout = null;
+    }
     this.tower = new Tower(this);
+    this.tower.restore();
+    this.tower.tier = 1;
     this.tower.hp = this.tower.maxHP;
     this.wave = 0;
     this.kills = 0;
+    this.currentRunSkullsEarned = 0;
     this.combo = 0;
     this.comboTimer = 0;
     this.waveFeaturedSpawned = false;
@@ -869,7 +936,34 @@ export class MainScene extends Phaser.Scene {
     this.updateWeaponHUD();
     uiManager.updateHUD(this.player, this.tower, this.wave, 0, this.kills, this.gameMode);
 
-    this.startNextWave();
+    // First-Time Player Direction & Aiming Tutorial Check
+    let isFirstTime = false;
+    try {
+      const tutorialSeen = localStorage.getItem('ragdoll_archers_tutorial_seen');
+      isFirstTime = !tutorialSeen && this.wave <= 1;
+    } catch {
+      isFirstTime = false;
+    }
+
+    if (isFirstTime) {
+      this.isDirectionTutorialActive = true;
+      this.tutorialShotsFired = 0;
+
+      // Spawn a stationary practice Walker Zombie right at the aim lane target so player sees what to aim at
+      const targetX = Math.min((this.player?.getBowTipPosition().x || 200) + 400, this.cameras.main.width - 120);
+      const targetZombie = new Zombie(this, targetX, 1, 'walker');
+      targetZombie.speed = 0; // 🛑 100% Frozen/Stopped in place
+      this.zombies = [targetZombie];
+
+      this.showDirectionTutorialUI();
+      try { this.matter.world.pause(); } catch {}
+      try { crazyGames.gameplayStop(); } catch {}
+      // 🛑 Game & Zombie are 100% stopped! The zombie is frozen in place until player clicks "GOT IT! START DEFENDING"
+    } else {
+      this.isDirectionTutorialActive = false;
+      this.hideDirectionTutorialUI();
+      this.startNextWave();
+    }
   }
 
   public showVictoryScreen(): void {
@@ -888,6 +982,21 @@ export class MainScene extends Phaser.Scene {
     if (vGems) vGems.textContent = `${this.player.skulls}`;
     const vWave = document.getElementById('vic-wave');
     if (vWave) vWave.textContent = `20 / 20`;
+
+    // Reset 2X Skulls rewarded ad button state
+    const bonusSkulls = Math.max(100, this.currentRunSkullsEarned > 0 ? this.currentRunSkullsEarned : Math.max(100, this.kills * 3));
+    const btnVic2x = document.getElementById('btn-double-skulls');
+    if (btnVic2x) {
+      btnVic2x.removeAttribute('disabled');
+      btnVic2x.classList.remove('claimed');
+      (btnVic2x as any)._calculatedBonus = bonusSkulls;
+      const title = btnVic2x.querySelector('.double-skulls-title');
+      const sub = btnVic2x.querySelector('.double-skulls-sub');
+      const badge = btnVic2x.querySelector('.double-skulls-badge');
+      if (title) title.textContent = 'CLAIM 2X SKULLS';
+      if (sub) sub.textContent = `WATCH AD TO CLAIM +${bonusSkulls} BONUS SKULLS`;
+      if (badge) badge.textContent = `+${bonusSkulls} (2X)`;
+    }
   }
 
   public startNextWave(): void {
@@ -901,6 +1010,10 @@ export class MainScene extends Phaser.Scene {
       } catch (e) {}
     }
     this.zombies = this.zombies.filter(z => !z.dead);
+    // Unfreeze any practice zombie that was stopped during the tutorial
+    for (const z of this.zombies) {
+      if (z.speed <= 0) z.speed = 72;
+    }
 
     for (const a of this.arrows) {
       try {
@@ -922,10 +1035,17 @@ export class MainScene extends Phaser.Scene {
       this.spawnTimer = 0;
       this.spawnInterval = Math.max(0.40, 1.2 - this.wave * 0.055);
     } else {
-      // Calibrated easier Campaign Mode swarm sizes and spawn pacing
-      this.enemiesToSpawn = 3 + Math.floor(this.wave * 2.1);
+      // Calibrated Campaign Mode: slightly reduced horde counts from Night 3 onwards without over-nerfing
+      if (this.wave === 1) {
+        this.enemiesToSpawn = 4;
+      } else if (this.wave === 2) {
+        this.enemiesToSpawn = 6;
+      } else {
+        // Night 3: 7 (was 9), Night 4: 9 (was 11), Night 5: 10 (was 13), Night 6: 12 (was 15)...
+        this.enemiesToSpawn = 3 + Math.floor(this.wave * 1.55);
+      }
       this.spawnTimer = 0;
-      this.spawnInterval = Math.max(0.60, 1.35 - this.wave * 0.040);
+      this.spawnInterval = Math.max(0.70, 1.48 - this.wave * 0.035);
     }
     this.totalEnemiesThisWave = this.enemiesToSpawn;
     this.bigZombiesSpawnedThisWave = 0;
@@ -1060,6 +1180,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   public onSkullCollected(val: number): void {
+    this.currentRunSkullsEarned += val;
     if (this.gameMode === 'endless') {
       this.endlessRunSkullsEarned += val;
     }
@@ -1125,6 +1246,7 @@ export class MainScene extends Phaser.Scene {
 
     // 3. Switch state
     this.state = 'menu';
+    this.wave = 0;
     uiManager.setState('menu');
 
     // 4. Reload persistent campaign data (skulls, equipment, upgrades)
@@ -1312,7 +1434,7 @@ export class MainScene extends Phaser.Scene {
       const sBow = this.player ? this.player.secondaryBow : (this.secondaryBow || 'normal');
       const currentBow = this.player ? this.player.bowType : (this.equippedBow || pBow);
 
-      if (this.gameMode === 'campaign' && this.wave > 0 && !this.campaignCompleted) {
+      if (this.state === 'playing' && this.gameMode === 'campaign' && this.wave > 0 && !this.campaignCompleted) {
         this.campaignWave = Math.min(20, this.wave);
         this.highestCampaignWave = Math.max(this.highestCampaignWave || 1, this.wave);
       }
@@ -1350,7 +1472,7 @@ export class MainScene extends Phaser.Scene {
         divineAegisCharges: this.player ? (this.player.divineAegisCharges || 0) : (existingData.divineAegisCharges || 0),
         hasVolleyUnlocked: this.hasVolleyUnlocked || (existingData.hasVolleyUnlocked ?? false),
         hasFrostNovaUnlocked: this.hasFrostNovaUnlocked || (existingData.hasFrostNovaUnlocked ?? false),
-        campaignWave: this.campaignWave || existingData.campaignWave || 1,
+        campaignWave: (typeof this.campaignWave === 'number' && this.campaignWave >= 1) ? this.campaignWave : (existingData.campaignWave || 1),
         highestCampaignWave: this.highestCampaignWave || existingData.highestCampaignWave || 1,
         endlessBestWave: Math.max(this.endlessBestWave || 0, existingData.endlessBestWave || 0),
         campaignCompleted: this.campaignCompleted || existingData.campaignCompleted || false,
@@ -1364,9 +1486,22 @@ export class MainScene extends Phaser.Scene {
     } catch (e) {}
   }
 
+  public restartCampaignFromNight1(): void {
+    soundFX.playBowDraw();
+    this.campaignWave = 1;
+    this.wave = 0;
+    this.state = 'menu';
+    this.saveGameData();
+    this.updateMenuSkullsUI();
+    this.startGame('campaign');
+  }
+
   public resetAllProgress(): void {
     try {
       crazyGames.removeItem('ragdoll_archers_save_v1');
+    } catch (e) {}
+    try {
+      localStorage.removeItem('ragdoll_archers_tutorial_seen');
     } catch (e) {}
 
     // 1. Reset Upgrades to baseline
@@ -1410,6 +1545,7 @@ export class MainScene extends Phaser.Scene {
 
     // 4. Reset Tower
     if (this.tower) {
+      this.tower.tier = 1;
       this.tower.maxHP = 360;
       this.tower.hp = 360;
       this.tower.hasSpikes = false;
@@ -1551,6 +1687,11 @@ export class MainScene extends Phaser.Scene {
     this.frostNovaMaxCooldown = 28;
     this.frostNovaDuration = 4.5;
     this.frostNovaDamage = 0;
+    if (this.tower) {
+      this.tower.tier = 1;
+      this.tower.maxHP = 360;
+      this.tower.hp = 360;
+    }
     for (const up of this.upgrades) {
       if (up.bought) {
         if (up.category === 'bows') {
@@ -1914,17 +2055,36 @@ export class MainScene extends Phaser.Scene {
     this.shakeScreen(6, 0.2);
     uiManager.updateHUD(this.player, this.tower, this.wave, this.zombies.length, this.kills, this.gameMode);
     if (this.tower.hp <= 0) {
-      this.showGameOver('Tower Barricade Overrun!');
+      if (!this.tower.isDestroyed) {
+        this.tower.triggerDestruction();
+      }
+      if (this.player && !this.player.dead) {
+        this.player.dead = true;
+        this.player.hp = 0;
+        this.player.ragdoll.dead = true;
+        this.player.ragdoll.relaxForDeath(-130, -160);
+      }
+      this.enemyHazards = []; // Clear in-flight hazards
+      if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
+      this.gameOverTimeout = setTimeout(() => {
+        this.gameOverTimeout = null;
+        this.showGameOver('Tower Barricade Overrun!');
+      }, 1500); // 1.5 seconds cinematic delay
     }
   }
 
   private gameOverTimeout: any = null;
 
   public onPlayerDeath(): void {
+    // If the tower is already collapsing or destroyed, do not cut short the tower destruction animation
+    if (this.tower && (this.tower.hp <= 0 || this.tower.isDestroyed)) {
+      return;
+    }
     if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
     this.gameOverTimeout = setTimeout(() => {
+      this.gameOverTimeout = null;
       this.showGameOver('Archer Slain by Undead!');
-    }, 1000);
+    }, 1200);
   }
 
   public onZombieKilled(z: Zombie): void {
@@ -1993,6 +2153,7 @@ export class MainScene extends Phaser.Scene {
     const bountyColor = isBlood ? '#ff4757' : '#ffd700';
 
     if (isBoss) {
+      crazyGames.happyTime();
       const modeText = isBlood ? ' (3x BLOOD MOON 🩸)' : (isEndless ? ' (2x ENDLESS)' : '');
       this.spawnFloatingText(`BOSS BOUNTY! 💀 +${finalBounty}${modeText}`, z.x, z.y - 50, bountyColor, 22);
     } else if (z.killedByHeadshot) {
@@ -2039,6 +2200,34 @@ export class MainScene extends Phaser.Scene {
         alertMsg.textContent = `The horde breached your defenses! Upgrade bow kinetic pierce, passive health regeneration, or deploy rooftop ballistas to survive Night ${this.wave}.`;
       }
     }
+
+    // Reset 2X Skulls rewarded ad button state
+    const bonusSkulls = Math.max(50, this.currentRunSkullsEarned > 0 ? this.currentRunSkullsEarned : Math.max(50, this.kills * 3));
+    const btnGo2x = document.getElementById('btn-gameover-double-skulls');
+    if (btnGo2x) {
+      btnGo2x.removeAttribute('disabled');
+      btnGo2x.classList.remove('claimed');
+      (btnGo2x as any)._calculatedBonus = bonusSkulls;
+      const title = btnGo2x.querySelector('.double-skulls-title');
+      const sub = btnGo2x.querySelector('.double-skulls-sub');
+      const badge = btnGo2x.querySelector('.double-skulls-badge');
+      if (title) title.textContent = 'CLAIM 2X SKULLS';
+      if (sub) sub.textContent = `WATCH AD TO CLAIM +${bonusSkulls} BONUS SKULLS`;
+      if (badge) badge.textContent = `+${bonusSkulls} (2X)`;
+    }
+
+    // Reset Revive Hero rewarded ad button state
+    const btnRevive = document.getElementById('btn-rewarded-revive');
+    if (btnRevive) {
+      btnRevive.removeAttribute('disabled');
+      btnRevive.classList.remove('claimed');
+      const title = btnRevive.querySelector('.revive-title');
+      const sub = btnRevive.querySelector('.revive-sub');
+      const badge = btnRevive.querySelector('.revive-badge');
+      if (title) title.textContent = 'REVIVE HERO';
+      if (sub) sub.textContent = 'WATCH AD TO RESTORE 50% HP & FORTRESS';
+      if (badge) badge.textContent = '+50% HP';
+    }
   }
 
   public openShopFromGameOver(): void {
@@ -2059,15 +2248,16 @@ export class MainScene extends Phaser.Scene {
       this.gameOverTimeout = null;
     }
 
-    // Revive player entity and reset ragdoll physics upright on tower
-    this.player.revive(this.tower.topY, this.tower.x);
-
-    // Restore tower health to at least 50%
+    // 1. Restore tower structure and health to at least 50% first
+    this.tower.restore();
     if (this.tower.hp <= 0) {
       this.tower.hp = Math.round(this.tower.maxHP * 0.5);
     } else {
       this.tower.hp = Math.max(this.tower.hp, Math.round(this.tower.maxHP * 0.5));
     }
+
+    // 2. Revive player entity and reset ragdoll physics upright on tower deck
+    this.player.revive(this.tower.topY, this.tower.x);
 
     // Divine shockwave: push back and stun nearby melee zombies
     for (const z of this.zombies) {
@@ -2413,12 +2603,14 @@ export class MainScene extends Phaser.Scene {
     const badgeNuke = document.getElementById('skill-charge-nuke');
     if (btnNuke && badgeNuke) {
       if (nukeCount > 0) {
-        btnNuke.style.display = 'flex';
+        btnNuke.classList.remove('hidden');
+        btnNuke.style.setProperty('display', 'flex', 'important');
         badgeNuke.textContent = `x${nukeCount}`;
         btnNuke.classList.add('ready');
         badgeNuke.classList.remove('zero');
       } else {
-        btnNuke.style.display = 'none';
+        btnNuke.classList.add('hidden');
+        btnNuke.style.setProperty('display', 'none', 'important');
         btnNuke.classList.remove('ready');
       }
     }
@@ -2427,12 +2619,14 @@ export class MainScene extends Phaser.Scene {
     const badgeLightning = document.getElementById('skill-charge-lightning') || document.getElementById('skill-charge-freeze');
     if (btnLightning && badgeLightning) {
       if (lightningCount > 0) {
-        btnLightning.style.display = 'flex';
+        btnLightning.classList.remove('hidden');
+        btnLightning.style.setProperty('display', 'flex', 'important');
         badgeLightning.textContent = `x${lightningCount}`;
         btnLightning.classList.add('ready');
         badgeLightning.classList.remove('zero');
       } else {
-        btnLightning.style.display = 'none';
+        btnLightning.classList.add('hidden');
+        btnLightning.style.setProperty('display', 'none', 'important');
         btnLightning.classList.remove('ready');
       }
     }
@@ -2441,19 +2635,22 @@ export class MainScene extends Phaser.Scene {
     const badgeAegis = document.getElementById('skill-charge-aegis');
     if (btnAegis && badgeAegis) {
       if (aegisCount > 0) {
-        btnAegis.style.display = 'flex';
+        btnAegis.classList.remove('hidden');
+        btnAegis.style.setProperty('display', 'flex', 'important');
         badgeAegis.textContent = `x${aegisCount}`;
         btnAegis.classList.add('ready');
         badgeAegis.classList.remove('zero');
       } else {
-        btnAegis.style.display = 'none';
+        btnAegis.classList.add('hidden');
+        btnAegis.style.setProperty('display', 'none', 'important');
         btnAegis.classList.remove('ready');
       }
     }
 
     if (tacticalDock) {
       const anyTactical = (nukeCount > 0) || (lightningCount > 0) || (aegisCount > 0);
-      tacticalDock.style.display = anyTactical ? 'flex' : 'none';
+      tacticalDock.classList.toggle('hidden', !anyTactical);
+      tacticalDock.style.setProperty('display', anyTactical ? 'flex' : 'none', 'important');
     }
   }
 
@@ -3656,6 +3853,193 @@ export class MainScene extends Phaser.Scene {
     renderPath(traceArc(0, false), false);
   }
 
+  public showDirectionTutorialUI(): void {
+    applyJumpButtonPosition();
+    const overlay = document.getElementById('tutorial-direction-overlay');
+    if (overlay) {
+      overlay.classList.remove('hidden');
+      overlay.classList.remove('fade-out');
+    }
+  }
+
+  public hideDirectionTutorialUI(): void {
+    const overlay = document.getElementById('tutorial-direction-overlay');
+    if (overlay) {
+      overlay.classList.add('fade-out');
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 350);
+    }
+  }
+
+  public completeDirectionTutorial(): void {
+    if (!this.isDirectionTutorialActive) return;
+    this.isDirectionTutorialActive = false;
+    try {
+      localStorage.setItem('ragdoll_archers_tutorial_seen', 'true');
+    } catch {}
+    this.hideDirectionTutorialUI();
+    try {
+      soundFX.playGemCollect();
+    } catch {}
+    try {
+      this.matter.world.resume();
+    } catch {}
+    if (this.player) {
+      const tip = this.player.getBowTipPosition();
+      this.spawnFloatingText('🎯 TARGET LOCKED! AIM FOR THE HEAD! 💀', tip.x + 80, tip.y - 40, '#f5a623', 22);
+    }
+    // Resume gameplay session & start Wave 1!
+    this.startNextWave();
+  }
+
+  /**
+   * 🏹 First-Time Player Direction & Aiming In-World Canvas Guide
+   * Highlights the aiming vector towards incoming zombie lane with glowing parabolic guide,
+   * pulsing animated chevrons, and target landing reticle.
+   */
+  public renderDirectionTutorial(g: Phaser.GameObjects.Graphics): void {
+    if (!this.player || this.player.dead || this.state !== 'playing' || !this.isDirectionTutorialActive) return;
+
+    const bowTip = this.player.getBowTipPosition();
+    const groundY = this.tower ? this.tower.groundY : this.cameras.main.height * 0.72;
+    const time = (this.time.now || performance.now()) * 0.001;
+
+    // Target zone: incoming zombie approach lane to the right
+    const targetX = Math.min(bowTip.x + 400, this.cameras.main.width - 120);
+    const targetY = groundY - 24;
+
+    // Parabolic arc control points
+    const midX = (bowTip.x + targetX) * 0.5;
+    const midY = Math.min(bowTip.y, targetY) - 90;
+
+    const numPoints = 28;
+    const animPhase = (time * 1.6) % 1;
+
+    // 1. Draw glowing parabolic dotted stream flowing to the right
+    for (let i = 0; i < numPoints; i++) {
+      const t = i / (numPoints - 1);
+      const invT = 1 - t;
+      const px = invT * invT * bowTip.x + 2 * invT * t * midX + t * t * targetX;
+      const py = invT * invT * bowTip.y + 2 * invT * t * midY + t * t * targetY;
+
+      const wave = Math.sin(t * 12 - animPhase * Math.PI * 2);
+      const alpha = Math.max(0.18, 0.65 + 0.35 * wave);
+
+      // Outer amber/fire aura
+      g.fillStyle(0xf5a623, alpha * 0.45);
+      g.fillCircle(px, py, 4.5 + wave * 1.2);
+
+      // Inner bright golden core
+      g.fillStyle(0xfffa65, alpha * 0.95);
+      g.fillCircle(px, py, 2.2);
+    }
+
+    // 2. Pulsating Target Reticle in the zombie lane (Blood red & gold)
+    const pulseR = 18 + Math.sin(time * 6) * 4;
+    g.lineStyle(2.5, 0xe74c3c, 0.85 + Math.sin(time * 6) * 0.15);
+    g.strokeCircle(targetX, targetY, pulseR);
+
+    // Inner bulls-eye
+    g.fillStyle(0xff4757, 0.9);
+    g.fillCircle(targetX, targetY, 4.5);
+    g.lineStyle(1.5, 0xffffff, 0.9);
+    g.strokeCircle(targetX, targetY, 8);
+
+    // Crosshair ticks
+    g.lineStyle(2, 0xf5a623, 0.85);
+    g.lineBetween(targetX - pulseR - 6, targetY, targetX - pulseR + 4, targetY);
+    g.lineBetween(targetX + pulseR - 4, targetY, targetX + pulseR + 6, targetY);
+    g.lineBetween(targetX, targetY - pulseR - 6, targetX, targetY - pulseR + 4);
+    g.lineBetween(targetX, targetY + pulseR - 4, targetX, targetY + pulseR + 6);
+
+    // Ensure stopped target zombie stays anchored right at targetX
+    if (this.zombies) {
+      for (const z of this.zombies) {
+        if (z.speed <= 0) {
+          z.x = targetX;
+          z.y = groundY + z.groundYOffset;
+          z.ragdoll.setPosition(z.x, z.y, {
+            isAttacking: false,
+            attackPhase: 0,
+            isQueued: false,
+            speedMult: 0
+          });
+        }
+      }
+    }
+
+    // 3. Directional Chevron Pointer
+    const arrowX = targetX - 52 + Math.sin(time * 8) * 6;
+    const arrowY = targetY;
+    g.lineStyle(3, 0xf5a623, 0.95);
+    g.beginPath();
+    g.moveTo(arrowX - 8, arrowY - 8);
+    g.lineTo(arrowX + 4, arrowY);
+    g.lineTo(arrowX - 8, arrowY + 8);
+    g.strokePath();
+
+    // 4. Platform-Specific in-world guidance indicators:
+    const isMobile = document.body.classList.contains('is-mobile') || isMobileDevice();
+
+    if (isMobile) {
+      // On Mobile: Highlight the on-screen Jump button area (bottom-left)
+      const jumpBtn = document.getElementById('mobile-jump-btn');
+      if (jumpBtn && jumpBtn.offsetParent !== null) {
+        const rect = jumpBtn.getBoundingClientRect();
+        const canvasRect = this.game.canvas.getBoundingClientRect();
+        if (canvasRect.width > 0 && canvasRect.height > 0) {
+          const scaleX = this.cameras.main.width / canvasRect.width;
+          const scaleY = this.cameras.main.height / canvasRect.height;
+          const jx = (rect.left - canvasRect.left + rect.width * 0.5) * scaleX;
+          const jy = (rect.top - canvasRect.top + rect.height * 0.5) * scaleY;
+
+          const jPulse = 28 + Math.sin(time * 7) * 4;
+          // Glowing green dodge aura around jump button
+          g.lineStyle(2.5, 0x2ecc71, 0.85);
+          g.strokeCircle(jx, jy, jPulse);
+          g.fillStyle(0x2ecc71, 0.18);
+          g.fillCircle(jx, jy, jPulse);
+
+          // Animated pointer arrow pointing down towards Jump button
+          const ptrY = jy - jPulse - 10 + Math.sin(time * 8) * 4;
+          g.lineStyle(2.5, 0x2ecc71, 0.95);
+          g.beginPath();
+          g.moveTo(jx, ptrY - 14);
+          g.lineTo(jx, ptrY);
+          g.lineTo(jx - 5, ptrY - 6);
+          g.moveTo(jx, ptrY);
+          g.lineTo(jx + 5, ptrY - 6);
+          g.strokePath();
+        }
+      }
+    } else {
+      // On Desktop: Render dragging mouse indicator near bow tip
+      const mx = bowTip.x + 35 + Math.sin(time * 3) * 10;
+      const my = bowTip.y - 28;
+
+      // Miniature mouse shape
+      g.lineStyle(1.8, 0x94a3b8, 0.85);
+      g.strokeRoundedRect(mx - 8, my - 12, 16, 24, 6);
+      g.lineBetween(mx, my - 12, mx, my - 2);
+      g.lineBetween(mx - 8, my - 2, mx + 8, my - 2);
+      // Highlight left click button in blood red
+      g.fillStyle(0xff2222, 0.85);
+      g.fillRoundedRect(mx - 7, my - 11, 7, 9, 3);
+
+      // Trajectory pull arrow to right
+      const pX = mx + 16 + Math.sin(time * 6) * 5;
+      g.lineStyle(2, 0xf5a623, 0.95);
+      g.beginPath();
+      g.moveTo(mx + 12, my);
+      g.lineTo(pX + 8, my);
+      g.lineTo(pX + 3, my - 4);
+      g.moveTo(pX + 8, my);
+      g.lineTo(pX + 3, my + 4);
+      g.strokePath();
+    }
+  }
+
   public spawnStormImpactGround(x: number, y: number, dmg: number): void {
     soundFX.playThunderStrike();
     this.shakeScreen(7, 0.18);
@@ -3991,6 +4375,20 @@ export class MainScene extends Phaser.Scene {
   }
 
   public update(_time: number, delta: number): void {
+    // 🛑 First-Time Direction Tutorial Freeze: Stop all gameplay updates & physics
+    if (this.isDirectionTutorialActive) {
+      this.graphicsLayer.clear();
+      this.renderAtmosphere(this.graphicsLayer);
+      if (this.tower) this.tower.render(this.graphicsLayer);
+      if (this.player) this.player.render(this.graphicsLayer);
+      // Render stopped zombies in place so the player sees the target zombie completely frozen
+      for (const z of this.zombies) {
+        z.render(this.graphicsLayer);
+      }
+      this.renderDirectionTutorial(this.graphicsLayer);
+      return;
+    }
+
     const rawDt = Math.min(delta / 1000, 0.05);
 
     if (this.slowMoTimer > 0) {
@@ -4007,6 +4405,11 @@ export class MainScene extends Phaser.Scene {
     const pointer = this.input.activePointer;
     if (this.player && !this.player.dead) {
       this.player.setAim(pointer.worldX, pointer.worldY);
+    }
+
+    // Keep destruction physics, falling debris, dust and smoke simulating during defeat / pause
+    if (this.state !== 'playing' && this.tower && (this.tower.isDestroyed || this.tower.collapseProgress > 0)) {
+      this.tower.updateDestruction(rawDt);
     }
 
     if (this.state === 'playing') {
@@ -5056,6 +5459,11 @@ export class MainScene extends Phaser.Scene {
     // 🎯 Ballistic Trajectory Guide (Active only when clicking/charging the bow)
     if (this.player && !this.player.dead && this.state === 'playing' && this.player.isCharging) {
       this.renderAimTrajectory(this.graphicsLayer);
+    }
+
+    // 🏹 First-Time Player Direction & Aiming Tutorial Guide (Canvas in-game indicators)
+    if (this.isDirectionTutorialActive && this.player && !this.player.dead && this.state === 'playing') {
+      this.renderDirectionTutorial(this.graphicsLayer);
     }
 
     // ── Render Persistent Ground Blood Stains / Carnage ──

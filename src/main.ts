@@ -4,9 +4,11 @@ import { soundFX } from './systems/SoundFX';
 import { uiManager } from './systems/UIManager';
 import { crazyGames } from './systems/CrazyGamesSDK';
 import { syncMobileMode, requestLandscapeOrientation } from './utils/DeviceDetection';
+import { initMobileControlsUI } from './utils/MobileControls';
 
 // Apply initial device detection immediately
 syncMobileMode();
+initMobileControlsUI();
 
 // Attempt landscape orientation lock on first user touch/click
 window.addEventListener('pointerdown', () => {
@@ -127,6 +129,7 @@ function startGameWithScene() {
 
 // Global UI listeners attached immediately so buttons ALWAYS work
 function initUI() {
+  initMobileControlsUI();
   const btnPlay = document.getElementById('btn-play');
   if (btnPlay) {
     btnPlay.onclick = () => startGameWithScene();
@@ -135,12 +138,13 @@ function initUI() {
   const btnRestartCampaign = document.getElementById('btn-restart-campaign');
   if (btnRestartCampaign) {
     btnRestartCampaign.onclick = () => {
-      const s = getScene();
-      if (s) {
+      const modalRestart = document.getElementById('modal-restart-confirm');
+      if (modalRestart) {
         soundFX.playBowDraw();
-        s.campaignWave = 1;
-        s.saveGameData();
-        s.startGame('campaign');
+        modalRestart.classList.remove('hidden');
+      } else {
+        const s = getScene();
+        if (s) s.restartCampaignFromNight1();
       }
     };
   }
@@ -267,22 +271,51 @@ function initUI() {
     };
   }
 
-  const btnDoubleSkulls = document.getElementById('btn-double-skulls');
-  if (btnDoubleSkulls) {
-    btnDoubleSkulls.onclick = () => {
+  // ── 2X Skulls Rewarded Ad Rewards (Game Over & Victory End Menus) ──
+  const setupDoubleSkullsBtn = (btnId: string, statElId: string) => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.onclick = () => {
+      btn.setAttribute('disabled', 'true');
       crazyGames.requestRewardedAd(() => {
+        btn.removeAttribute('disabled');
         const s = getScene();
         if (s && s.player) {
-          const bonus = Math.max(50, s.kills * 2);
+          const bonus = (btn as any)._calculatedBonus || Math.max(50, ((s as any).currentRunSkullsEarned > 0) ? (s as any).currentRunSkullsEarned : s.kills * 3);
           s.player.skulls += bonus;
           s.saveGameData();
           s.updateMenuSkullsUI();
-          btnDoubleSkulls.style.display = 'none';
-          s.spawnFloatingText(`💰 +${bonus} BONUS SKULLS!`, window.innerWidth / 2, window.innerHeight / 2, '#ffd700', 32);
+
+          try { soundFX.playGemCollect(); } catch {}
+          s.spawnFloatingText(`+${bonus} 2X SKULLS CLAIMED!`, window.innerWidth / 2, window.innerHeight * 0.42, '#ffd700', 30);
+
+          const statEl = document.getElementById(statElId);
+          if (statEl) {
+            statEl.textContent = `${s.player.skulls}`;
+          }
+          const goSkullsHint = document.getElementById('go-alert-skulls');
+          if (goSkullsHint) {
+            goSkullsHint.textContent = `💀 ${s.player.skulls} SKULLS READY`;
+          }
+
+          // Mark as claimed
+          btn.classList.add('claimed');
+          btn.setAttribute('disabled', 'true');
+          const title = btn.querySelector('.double-skulls-title');
+          const sub = btn.querySelector('.double-skulls-sub');
+          const badge = btn.querySelector('.double-skulls-badge');
+          if (title) title.textContent = '2X SKULLS CLAIMED';
+          if (sub) sub.textContent = `+${bonus} SKULLS ADDED TO ARSENAL`;
+          if (badge) badge.textContent = 'CLAIMED';
         }
+      }, () => {
+        btn.removeAttribute('disabled');
       });
     };
-  }
+  };
+
+  setupDoubleSkullsBtn('btn-gameover-double-skulls', 'go-gems');
+  setupDoubleSkullsBtn('btn-double-skulls', 'vic-gems');
 
   const btnMenu = document.getElementById('btn-menu');
   if (btnMenu) {
@@ -405,6 +438,26 @@ function initUI() {
       const s = getScene();
       if (s) {
         s.resetAllProgress();
+      }
+    };
+  }
+
+  // ── Restart Campaign from Night 1 Confirmation Modal ──
+  const modalRestart = document.getElementById('modal-restart-confirm');
+  const btnRestartCancel = document.getElementById('btn-restart-cancel');
+  const btnRestartModalConfirm = document.getElementById('btn-restart-modal-confirm');
+
+  const closeRestartConfirmModal = () => {
+    if (modalRestart) modalRestart.classList.add('hidden');
+  };
+
+  if (btnRestartCancel) btnRestartCancel.onclick = closeRestartConfirmModal;
+  if (btnRestartModalConfirm) {
+    btnRestartModalConfirm.onclick = () => {
+      closeRestartConfirmModal();
+      const s = getScene();
+      if (s) {
+        s.restartCampaignFromNight1();
       }
     };
   }

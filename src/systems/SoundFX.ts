@@ -4,7 +4,9 @@ export class SoundFX {
 
   constructor() {
     try {
-      const saved = (window as any).CrazyGames?.SDK?.data?.getItem?.('ragdoll_archers_sound_muted') ?? localStorage.getItem('ragdoll_archers_sound_muted');
+      const saved = (window as any).FBInstant 
+        ? localStorage.getItem('ragdoll_archers_sound_muted') 
+        : ((window as any).CrazyGames?.SDK?.data?.getItem?.('ragdoll_archers_sound_muted') ?? localStorage.getItem('ragdoll_archers_sound_muted'));
       if (saved !== null && saved !== undefined) {
         this.muted = saved === 'true';
       }
@@ -28,6 +30,9 @@ export class SoundFX {
     this.muted = !this.muted;
     try {
       const val = this.muted ? 'true' : 'false';
+      if ((window as any).FBInstant?.player?.setDataAsync) {
+        (window as any).FBInstant.player.setDataAsync({ ragdoll_archers_sound_muted: val }).catch(() => {});
+      }
       (window as any).CrazyGames?.SDK?.data?.setItem?.('ragdoll_archers_sound_muted', val);
       localStorage.setItem('ragdoll_archers_sound_muted', val);
     } catch (e) {}

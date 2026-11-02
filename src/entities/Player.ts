@@ -425,10 +425,9 @@ export class Player {
 
       const currentCost = this.getCurrentStaminaCost();
 
-      // Update in-game charge meter and live stamina deduction preview
+      // Update in-game charge meter above player
       const chargeEl = document.getElementById('charge-indicator');
       const fillEl = document.getElementById('charge-fill');
-      const staminaTag = document.getElementById('charge-stamina-tag');
       if (chargeEl) {
         chargeEl.classList.remove('hidden');
         const scaleX = window.innerWidth / (this.scene.scale.width || window.innerWidth || 1);
@@ -437,19 +436,6 @@ export class Player {
         chargeEl.style.top = `${(this.y - 78) * scaleY}px`;
       }
       if (fillEl) fillEl.style.width = `${this.chargeFrac * 100}%`;
-      if (staminaTag) {
-        const canAfford = this.stamina >= currentCost;
-        staminaTag.textContent = `⚡ -${currentCost} STAMINA`;
-        if (!canAfford) {
-          staminaTag.classList.add('danger');
-          staminaTag.classList.remove('warn');
-        } else if (currentCost > this.stamina * 0.75) {
-          staminaTag.classList.add('warn');
-          staminaTag.classList.remove('danger');
-        } else {
-          staminaTag.classList.remove('warn', 'danger');
-        }
-      }
     } else {
       this.ragdoll.bowDrawFrac = 0;
       const chargeEl = document.getElementById('charge-indicator');
@@ -511,11 +497,10 @@ export class Player {
     this.vy = jumpPower;
     if (!this.onGround) {
       soundFX.playJump();
-      (this.scene as any).spawnFloatingText?.(`DOUBLE JUMP! 🪽 (-${this.jumpStaminaCost} ⚡)`, this.x, this.y - 25, '#00d2d3', 16);
+      (this.scene as any).spawnFloatingText?.(`DOUBLE JUMP! 🪽`, this.x, this.y - 25, '#00d2d3', 16);
       (this.scene as any).shakeScreen?.(4, 0.1);
     } else {
       soundFX.playJump();
-      (this.scene as any).spawnFloatingText?.(`-${this.jumpStaminaCost} ⚡ STAMINA`, this.x, this.y - 40, '#f1c40f', 14);
     }
     this.onGround = false;
   }
@@ -564,7 +549,23 @@ export class Player {
     this.jumpsLeft = this.maxJumps;
     if (deckX !== undefined) this.x = deckX;
     this.y = deckY;
-    this.ragdoll.revive(this.x, this.y);
+
+    // Destroy previous dead / ragdolled bodies and constraints cleanly
+    if (this.ragdoll) {
+      try {
+        this.ragdoll.destroy();
+      } catch (err) {}
+    }
+
+    // Recreate a pristine, upright hero ragdoll on the tower deck
+    this.ragdoll = new MatterRagdoll(this.scene, this.x, this.y, {
+      scale: 1.0,
+      isZombie: false
+    });
+    this.ragdoll.dead = false;
+    this.ragdoll.faceDir = 1;
+    this.ragdoll.aimAngle = 0;
+    this.ragdoll.bowDrawFrac = 0;
     this.ragdoll.setPosition(this.x, this.y);
   }
 
@@ -574,43 +575,5 @@ export class Player {
       heroSkin: this.currentSkin,
       bowType: this.bowType
     });
-
-    // Overhead Stamina Gauge (Visible whenever stamina is not full or during bow charge)
-    if ((this.stamina < this.maxStamina || this.isCharging) && !this.dead) {
-      const s = this.ragdoll.scale;
-      const barW = 44 * s;
-      const barH = 5 * s;
-      const bx = this.x - barW / 2;
-      const by = this.y - 82 * s;
-      const sFrac = Math.max(0, Math.min(1, this.stamina / this.maxStamina));
-
-      // Dark background
-      g.fillStyle(0x0a0e17, 0.85);
-      g.fillRoundedRect(bx - 1.5, by - 1.5, barW + 3, barH + 3, 2.5);
-
-      if (this.isCharging) {
-        const liveCost = this.getCurrentStaminaCost();
-        const remFrac = Math.max(0, Math.min(1, (this.stamina - liveCost) / this.maxStamina));
-
-        // Deduction ghost bar in red/orange
-        g.fillStyle(0xff4757, 0.7);
-        g.fillRoundedRect(bx, by, barW * sFrac, barH, 2);
-
-        // Live remaining stamina fill
-        const fillCol = remFrac < 0.25 ? 0xff4757 : (remFrac < 0.5 ? 0xf5af3e : 0xf29a0a);
-        g.fillStyle(fillCol, 0.95);
-        g.fillRoundedRect(bx, by, barW * remFrac, barH, 2);
-      } else {
-        // Energy bar fill
-        const fillCol = sFrac < 0.25 ? 0xff4757 : (sFrac < 0.5 ? 0xf5af3e : 0xf29a0a);
-        g.fillStyle(fillCol, 0.95);
-        g.fillRoundedRect(bx, by, barW * sFrac, barH, 2);
-      }
-
-      // Border outline
-      g.lineStyle(1, 0xffffff, 0.3);
-      g.strokeRoundedRect(bx - 1.5, by - 1.5, barW + 3, barH + 3, 2.5);
-    }
-
   }
 }

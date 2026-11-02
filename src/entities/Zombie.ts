@@ -346,20 +346,22 @@ export class Zombie {
       return r < 0.45 ? 'crawler' : 'walker';
     }
     if (wave === 3) {
-      if (r < 0.45) return 'buckethead';
-      if (r < 0.75) return 'crawler';
+      if (r < 0.30) return 'buckethead';
+      if (r < 0.65) return 'crawler';
       return 'walker';
     }
     if (wave === 4) {
-      if (r < 0.32) return 'bloater';
-      if (r < 0.68) return 'buckethead';
-      return 'crawler';
+      if (r < 0.24) return 'bloater';
+      if (r < 0.55) return 'buckethead';
+      if (r < 0.82) return 'crawler';
+      return 'walker';
     }
     if (wave === 5) {
-      if (r < 0.28) return 'skeleton';
-      if (r < 0.42) return 'bloater';
-      if (r < 0.72) return 'buckethead';
-      return 'crawler';
+      if (r < 0.22) return 'skeleton';
+      if (r < 0.38) return 'bloater';
+      if (r < 0.64) return 'buckethead';
+      if (r < 0.85) return 'crawler';
+      return 'walker';
     }
     if (wave === 6) {
       if (r < 0.24) return 'necromancer';
@@ -726,6 +728,19 @@ export class Zombie {
   }
 
   public update(dt: number, tower: any, allZombies?: Zombie[]): void {
+    // 🛑 Direction Tutorial Freeze: Completely stop all zombie updates, movement, attacks and animations
+    if ((this.scene as any)?.isDirectionTutorialActive) {
+      const gy = tower ? tower.groundY : (this.scene.cameras.main.height * 0.72);
+      this.y = gy + this.groundYOffset;
+      this.ragdoll.setPosition(this.x, this.y, {
+        isAttacking: false,
+        attackPhase: 0,
+        isQueued: false,
+        speedMult: 0
+      });
+      return;
+    }
+
     if (this.hitFlashTimer > 0) this.hitFlashTimer -= dt;
     if (this.hitStaggerTimer > 0) this.hitStaggerTimer -= dt;
 
@@ -917,10 +932,16 @@ export class Zombie {
     }
 
     // ── Ranged attacks targeting Archer on tower platform ──
-    const canSpit = this.isSpitter || this.type === 'bloater' || this.type === 'necromancer';
-    const sceneHazards = (this.scene as any).enemyHazards || [];
-    const maxSimultaneousHazards = this.waveNum <= 2 ? 1 : (this.waveNum <= 8 ? 3 : 4);
-    const playerTargetY = tower.topY - 38; // Archer's chest height on tower platform
+    const isTowerDead = !!tower && (tower.isDestroyed || tower.hp <= 0);
+    if (isTowerDead) {
+      this.isCharging = false;
+    }
+
+    if (!isTowerDead) {
+      const canSpit = this.isSpitter || this.type === 'bloater' || this.type === 'necromancer';
+      const sceneHazards = (this.scene as any).enemyHazards || [];
+      const maxSimultaneousHazards = this.waveNum <= 2 ? 1 : (this.waveNum <= 8 ? 3 : 4);
+      const playerTargetY = tower.topY - 38; // Archer's chest height on tower platform
 
     if (canSpit && !this.dead && !this.isFrozen) {
       this.summonTimer -= dt;
@@ -971,7 +992,6 @@ export class Zombie {
       if (this.teleportCooldown > 0) this.teleportCooldown -= dt;
       // Ghostly hovering bob
       this.y = (this.scene.cameras.main.height * 0.72) - 14 + Math.sin(Date.now() * 0.006) * 10;
-      this.ragdoll.setPosition(this.x, this.y);
 
       if (!this.isFrozen) {
         this.summonTimer -= dt;
@@ -993,7 +1013,7 @@ export class Zombie {
       this.isBurning = false; // Immune to fire
       this.summonTimer -= dt;
       const camW = (this.scene as any).cameras?.main?.width || 1280;
-      const canShoot = this.x <= camW + 60 && this.x >= tower.x + 320;
+      const canShoot = this.x <= camW + 60 && this.x >= tower.x + 100;
       if (this.summonTimer <= 0 && canShoot && !this.isFrozen && sceneHazards.length < maxSimultaneousHazards) {
         this.summonTimer = 3.6 + Math.random() * 1.5;
         const bombDmg = this.playerDamage + 8; // Scales with pyro level
@@ -1007,7 +1027,7 @@ export class Zombie {
     if (this.type === 'stalker' && !this.dead && !this.isFrozen) {
       this.summonTimer -= dt;
       const camW = (this.scene as any).cameras?.main?.width || 1280;
-      const minThrowDist = tower.x + 360;
+      const minThrowDist = tower.x + 100;
       const canShoot = this.x <= camW + 60 && this.x >= minThrowDist;
       if (this.summonTimer <= 0 && canShoot && sceneHazards.length < maxSimultaneousHazards) {
         this.summonTimer = 3.2 + Math.random() * 1.2;
@@ -1234,6 +1254,7 @@ export class Zombie {
         (this.scene as any).spawnFloatingText?.('👑 MALAKOR AWAKENS VANGUARD GUARDS! 👑', this.x, this.y - 140, '#e74c3c', 22);
       }
     }
+    }
 
     // Movement toward Barricade (Ranged foes hold position at sniping distance)
     // The wooden tower platform and barricade spikes extend to tower.x + tower.width / 2 + (tower.hasSpikes ? 32 : 24)
@@ -1241,15 +1262,19 @@ export class Zombie {
     // Hard boundary: zombie center stops right against the barricade spikes (8px offset) so chest touches spikes and claws reach wood
     const minBarricadeStopX = barricadeFrontX + 8 * this.scale;
 
-    // All standard wave zombies (walkers, skeletons, frostwights, pyros, etc.) advance all the way to the barricade!
-    // Only apex bosses (Malakor, Reaper) and flying Phantoms maintain special tactical arena positioning.
+    // Air-attacking and ranged foes stop at standoff distance behind the melee front line.
+    // Pure melee wave zombies (walkers, crawlers, bucketheads, centurions, berserkers, juggernauts) advance to the barricade!
     let targetX = minBarricadeStopX;
-    if (this.type === 'phantom') {
-      targetX = tower.x + (this.preferredDistance || 320) + this.personalTargetOffset;
+    if (this.isAirAttacker() || this.type === 'phantom') {
+      // Standoff distance: ~280px from tower base, exactly where ranged/air foes snipe comfortably
+      const standDist = (this.preferredDistance && this.preferredDistance <= 340)
+        ? this.preferredDistance
+        : 280;
+      targetX = tower.x + standDist + this.personalTargetOffset;
+      targetX = Math.max(minBarricadeStopX + 60, targetX);
     } else if (this.type === 'reaper' || this.type === 'malakor') {
       targetX = tower.x + (this.preferredDistance || 240) + this.personalTargetOffset;
     } else if (this.type === 'necromancer') {
-      // Necromancer supports from mid-range but stays closer to the battle
       targetX = tower.x + 240 + this.personalTargetOffset;
     }
 
@@ -1300,32 +1325,39 @@ export class Zombie {
       }
     }
 
-    if (this.x > targetX) {
+    const isMoving = this.x > targetX + 1.5;
+    if (isMoving) {
       this.x = Math.max(targetX, this.x - moveSpeed * dt);
     }
     // Hard clamp to keep all zombies strictly in front of the tower barricade
     this.x = Math.max(minBarricadeStopX, this.x);
 
-    // Only front zombie physically at the barricade claws it; rear queued zombies hold ready posture
+    // Only front zombie physically at the barricade claws it; if tower is destroyed, all zombies cease attacking
     const isAtBarricade = this.x <= minBarricadeStopX + 10 && (!isQueued || this.x <= minBarricadeStopX + 3);
     const interval = (this.type === 'boss' || this.type === 'reaper' || this.type === 'malakor') ? 2.2 : 1.1;
     let attackPhase = 0;
 
-    if (isAtBarricade) {
+    const canAttack = isAtBarricade && !isTowerDead;
+
+    if (canAttack) {
       this.attackTimer += dt;
       attackPhase = (this.attackTimer % interval) / interval;
     } else {
       this.attackTimer = 0;
     }
 
+    // A zombie is stationary when it has reached its destination and is not attacking the barricade
+    const isStationary = !isMoving && !canAttack;
+
     this.ragdoll.setPosition(this.x, this.y, {
-      isAttacking: isAtBarricade && !this.isFrozen,
+      isAttacking: canAttack && !this.isFrozen,
       attackPhase,
       isQueued: isQueued && !isAtBarricade,
+      isStationary: isStationary || this.isFrozen,
       speedMult: injurySpeedMult * (this.hitStaggerTimer > 0 ? 0.45 : 1.0)
     });
 
-    if (isAtBarricade && this.attackTimer >= interval) {
+    if (canAttack && this.attackTimer >= interval) {
       this.attackTimer = 0;
       let tDmg = this.damage;
       let pDmg = this.playerDamage;
@@ -1345,49 +1377,30 @@ export class Zombie {
         tower.takeDamage(tDmg);
         soundFX.playExplosion();
         (this.scene as any).shakeScreen?.(15, 0.38);
-        (this.scene as any).spawnDeckShockwave?.(pDmg, '⚡ TITAN SEISMIC SLAM');
       } else if (this.type === 'reaper') {
         tower.takeDamage(tDmg);
         soundFX.playExplosion();
         (this.scene as any).shakeScreen?.(18, 0.45);
-        (this.scene as any).spawnDeckShockwave?.(pDmg, '⚡ REAPER VOID SHOCKWAVE');
       } else if (this.type === 'malakor') {
         tower.takeDamage(tDmg);
         soundFX.playExplosion();
         (this.scene as any).shakeScreen?.(24, 0.55);
-        (this.scene as any).spawnDeckShockwave?.(pDmg, '⚡ MALAKOR TITAN CATACLYSM');
       } else if (this.type === 'juggernaut') {
         const mult = this.isCharging ? 1.6 : 1.0;
         const finalTDmg = Math.round(tDmg * mult);
-        const finalPDmg = Math.round(pDmg * mult);
         tower.takeDamage(finalTDmg);
         this.isCharging = false;
         this.speed = 52;
         soundFX.playExplosion();
         (this.scene as any).shakeScreen?.(14, 0.35);
-
-        const p = (this.scene as any).player;
-        if (p && !p.dead && p.onGround) {
-          p.takeDamage(finalPDmg);
-          (this.scene as any).spawnFloatingText?.(`💥 JUGGERNAUT RAM! -${finalPDmg} HP ❤️`, p.x, p.y - 70, '#e74c3c', 22);
-        }
       } else {
         // Berserker enrage bonus:
         if (this.type === 'berserker' && this.isEnraged) {
           tDmg = Math.round(tDmg * 1.5);
-          pDmg = Math.round(pDmg * 1.5);
         }
 
         tower.takeDamage(tDmg);
-
-        // Barricade shock & claw splinters: damages the player if standing on the deck
-        const p = (this.scene as any).player;
-        if (p && !p.dead && p.onGround && Math.random() < 0.45) {
-          p.takeDamage(pDmg);
-          const levelLabel = `L${this.zombieLevel || 1}`;
-          (this.scene as any).spawnFloatingText?.(`${levelLabel} CLAW! -${pDmg} HP ❤️`, p.x, p.y - 65, '#ff4757', 18);
-          (this.scene as any).shakeScreen?.(6 + (this.zombieLevel || 1) * 0.5, 0.2);
-        }
+        (this.scene as any).shakeScreen?.(5 + (this.zombieLevel || 1) * 0.4, 0.16);
       }
 
       // Thorns

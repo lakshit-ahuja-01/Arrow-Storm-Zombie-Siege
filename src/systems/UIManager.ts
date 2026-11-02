@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { UpgradeItem, GameState } from '../types';
 import { soundFX } from './SoundFX';
 import { HERO_SKINS_CATALOG, HeroSkinDef } from './HeroSkinsCatalog';
+import { applyJumpButtonPosition } from '../utils/MobileControls';
 
 export class UIManager {
   public currentCategory: string = 'all';
@@ -29,6 +30,7 @@ export class UIManager {
       document.getElementById('screen-shop')?.classList.add('active');
     } else if (s === 'pause') {
       document.getElementById('screen-pause')?.classList.add('active');
+      applyJumpButtonPosition();
     } else if (s === 'gameover') {
       document.getElementById('screen-gameover')?.classList.add('active');
       hud?.classList.add('hidden');
@@ -73,7 +75,7 @@ export class UIManager {
           sDrain.style.background = 'rgba(255, 71, 87, 0.7)';
         }
         if (sVal) {
-          sVal.innerHTML = `${Math.max(0, Math.round(effectiveStamina))} / ${player.maxStamina || 100} <span style="color: #ff6b6b; font-size: 11px; font-weight: 800;">(-${currentCost})</span>`;
+          sVal.textContent = `${Math.max(0, Math.round(effectiveStamina))} / ${player.maxStamina || 100}`;
         }
       } else {
         if (sFill) {
@@ -455,18 +457,29 @@ export class UIManager {
       if (isEquipped) item.classList.add('equipped');
       if ((!canAfford || isMasteryLocked) && !isEquipped && !(isBowCategory && up.bought)) item.classList.add('disabled');
 
+      const isTowerEvolution = up.id === 'towerHP';
       const levelTag = isChargeSkill
         ? `<span class="shop-lvl-badge" style="background:rgba(245,166,35,0.22);color:#f5a623;border-color:rgba(245,166,35,0.5);">x${charges} Ready</span>`
-        : (up.maxLevel ? `<span class="shop-lvl-badge">Lvl ${up.level || 0}/${up.maxLevel}</span>` : '');
+        : (isTowerEvolution
+          ? `<span class="shop-lvl-badge" style="background:rgba(241,196,15,0.22);color:#f1c40f;border-color:rgba(241,196,15,0.5);">Tier ${tower.tier || 1}/5</span>`
+          : (up.maxLevel ? `<span class="shop-lvl-badge">Lvl ${up.level || 0}/${up.maxLevel}</span>` : ''));
+
+      const dynamicName = isTowerEvolution
+        ? `Evolve Fortress (${tower.getTierName ? tower.getTierName() : 'Tier ' + (tower.tier || 1)})`
+        : up.name;
+
+      const dynamicDesc = isTowerEvolution
+        ? (tower.tier >= 5 ? `Max Fortress Tier Reached! Impenetrable Apex Dragon Citadel.` : `Evolve from <b>${tower.getTierName ? tower.getTierName() : 'Tier ' + (tower.tier || 1)}</b> to <b>${tower.getNextTierName ? tower.getNextTierName() : 'Tier ' + ((tower.tier || 1) + 1)}</b>! Unlocks new stone masonry, battlements & braziers (+140 Max HP & Full Repair).`)
+        : `${up.desc}${isVolleyLocked ? ' <span style="color:#ff6b6b;font-weight:700;">(Requires Volley Unlock)</span>' : ''}${isFrostLocked ? ' <span style="color:#ff6b6b;font-weight:700;">(Requires Frost Nova Unlock)</span>' : ''}`;
 
       item.innerHTML = `
         <div class="shop-item-icon">${up.icon}</div>
         <div class="shop-item-content">
           <div class="shop-item-header">
-            <div class="shop-item-name">${up.name}</div>
+            <div class="shop-item-name">${dynamicName}</div>
             ${levelTag}
           </div>
-          <div class="shop-item-desc">${up.desc}${isVolleyLocked ? ' <span style="color:#ff6b6b;font-weight:700;">(Requires Volley Unlock)</span>' : ''}${isFrostLocked ? ' <span style="color:#ff6b6b;font-weight:700;">(Requires Frost Nova Unlock)</span>' : ''}</div>
+          <div class="shop-item-desc">${dynamicDesc}</div>
           ${up.statLabel ? `<div class="shop-item-stat" style="font-size:11px;color:#f5a623;font-weight:700;margin-top:3px;">⚡ ${up.statLabel}</div>` : ''}
         </div>
         ${actionHtml}
@@ -559,6 +572,9 @@ export class UIManager {
           } else if (isChargeSkill) {
             const count = up.id === 'nukeStrike' ? player.nukeCharges : (up.id === 'lightningStorm' || up.id === 'timeStop') ? (player.lightningCharges || player.timeFreezeCharges || 0) : player.divineAegisCharges;
             this.showShopNotice(`Acquired ${up.name}! (x${count} Charges Ready)`);
+          } else if (up.id === 'towerHP') {
+            tower.triggerUpgradeEffect?.();
+            this.showShopNotice(`🏰 Fortress Evolved to ${tower.getTierName ? tower.getTierName() : 'Tier ' + tower.tier}!`);
           } else {
             this.showShopNotice(`Acquired ${up.name}!`);
           }

@@ -343,13 +343,19 @@ export const BASE_UPGRADES: UpgradeItem[] = [
   {
     id: 'towerHP',
     category: 'tower',
-    name: 'Fortify Barricade',
+    name: 'Evolve Fortress (Clash Tier)',
     icon: '🏰',
-    desc: '+120 Tower Max HP and fully repairs the barricade',
+    desc: 'Transforms the tower into an upgraded fortress like Clash of Clans! Unlocks carved stone masonry, castle battlements, gold filigree & dragon braziers (+140 Max HP & full repair per tier).',
     cost: 35,
-    statLabel: '+120 Barricade HP & Repair',
-    apply: (_p: any, tower: any) => { if (tower) { tower.maxHP += 120; tower.repair(120); } },
-    maxLevel: 5,
+    statLabel: 'Evolve Clash Tier & +140 HP',
+    apply: (_p: any, tower: any) => {
+      if (tower) {
+        tower.maxHP += 140;
+        tower.repair(140);
+        tower.upgradeTier(undefined, true);
+      }
+    },
+    maxLevel: 4,
     level: 0,
   },
   {

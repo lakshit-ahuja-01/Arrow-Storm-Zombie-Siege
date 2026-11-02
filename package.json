@@ -7,6 +7,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && node scripts/sync-crazygames.js",
+    "build:fb": "tsc && vite build && node scripts/build-fbinstant.js",
+    "build:poki": "tsc && vite build && node scripts/build-poki.js",
+    "build:playgama": "tsc && vite build && node scripts/build-playgama.js",
+    "build:all": "tsc && vite build && node scripts/sync-crazygames.js && node scripts/build-fbinstant.js && node scripts/build-poki.js && node scripts/build-playgama.js",
     "preview": "vite preview"
   },
   "dependencies": {

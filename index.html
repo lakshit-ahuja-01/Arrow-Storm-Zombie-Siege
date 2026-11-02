@@ -181,16 +181,80 @@
     <div id="screen-gameover" class="screen">
       <div class="gameover-card">
         <div class="gameover-icon" id="gameover-icon">
-          <svg class="modal-icon-svg skull-defeat-svg" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="9" cy="10" r="1.5"/><circle cx="15" cy="10" r="1.5"/>
-            <path d="M12 2C7.5 2 4 5.5 4 10c0 2.5 1.1 4.7 2.9 6.2.4.3.7.9.7 1.4V19c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2v-1.4c0-.5.3-1.1.7-1.4 1.8-1.5 2.9-3.7 2.9-6.2 0-4.5-3.5-8-8-8zm-2 15h4v2h-4v-2z"/>
+          <svg class="modal-icon-svg skull-defeat-svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.5 2 2 6.5 2 12c0 2.8 1.2 5.4 3.2 7.1.3.3.5.7.6 1.1l.4 2.3c.1.9.9 1.5 1.8 1.5h8c.9 0 1.7-.6 1.8-1.5l.4-2.3c.1-.4.3-.8.6-1.1 2-1.7 3.2-4.3 3.2-7.1 0-5.5-4.5-10-10-10z" fill="#ff2a3b"/>
+            <ellipse cx="8.5" cy="11.5" rx="2.2" ry="2.7" fill="#0c0708"/>
+            <ellipse cx="15.5" cy="11.5" rx="2.2" ry="2.7" fill="#0c0708"/>
+            <circle cx="8.5" cy="11.5" r="0.8" fill="#ff4d4d"/>
+            <circle cx="15.5" cy="11.5" r="0.8" fill="#ff4d4d"/>
+            <polygon points="12,14.5 10.8,17 13.2,17" fill="#0c0708"/>
+            <rect x="8.5" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+            <rect x="11.25" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+            <rect x="14" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
           </svg>
         </div>
         <h2 id="gameover-title">FORTRESS OVERRUN</h2>
         <div class="gameover-stats">
-          <div class="stat-item"><span>Wave Survived</span><strong id="go-wave">1</strong></div>
-          <div class="stat-item"><span>Zombies Slain</span><strong id="go-kills">0</strong></div>
-          <div class="stat-item"><span>Skulls Gathered</span><strong id="go-gems">0</strong></div>
+          <div class="stat-item stat-wave"><span>Wave Survived</span><strong id="go-wave">1</strong></div>
+          <div class="stat-item stat-kills"><span>Zombies Slain</span><strong id="go-kills">0</strong></div>
+          <div class="stat-item stat-gems"><span>Skulls Gathered</span><strong id="go-gems">0</strong></div>
+        </div>
+
+        <!-- Symmetrical Rewarded Video Ad Offers: Revive Hero & 2X Skulls in identical structure -->
+        <div class="gameover-ad-offers" id="go-ad-offers">
+          <!-- Rewarded Offer 1: Revive Hero -->
+          <div class="gameover-ad-card-wrap" id="go-revive-wrap">
+            <button id="btn-rewarded-revive" class="btn btn-rewarded-offer" type="button" aria-label="Watch CrazyGames ad to revive hero">
+              <div class="rewarded-offer-content">
+                <span class="ad-tag">
+                  <svg class="ad-play-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="6 4 20 12 6 20 6 4"/>
+                  </svg>
+                  AD
+                </span>
+                <svg class="rewarded-offer-svg revive-hero-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l7 3.5v6c0 5-3 9-7 10.5-4-1.5-7-5.5-7-10.5v-6L12 2z" fill="rgba(229, 9, 20, 0.25)"/>
+                  <path d="M12 7v7"/>
+                  <path d="M8.5 10.5h7"/>
+                </svg>
+                <div class="rewarded-offer-text">
+                  <span class="rewarded-offer-title revive-title">REVIVE HERO</span>
+                  <span class="rewarded-offer-sub revive-sub">WATCH AD TO RESTORE 50% HP &amp; FORTRESS</span>
+                </div>
+              </div>
+              <span class="rewarded-offer-badge revive-badge">+50% HP</span>
+            </button>
+          </div>
+
+          <!-- Rewarded Offer 2: Claim 2X Skulls -->
+          <div class="gameover-ad-card-wrap" id="go-double-skulls-wrap">
+            <button id="btn-gameover-double-skulls" class="btn btn-rewarded-offer btn-double-skulls-reward" type="button" aria-label="Watch CrazyGames ad to double skulls">
+              <div class="rewarded-offer-content double-skulls-content">
+                <span class="ad-tag">
+                  <svg class="ad-play-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="6 4 20 12 6 20 6 4"/>
+                  </svg>
+                  AD
+                </span>
+                <svg class="rewarded-offer-svg skull-reward-svg" viewBox="0 0 24 24">
+                  <path d="M12 2C6.5 2 2 6.5 2 12c0 2.8 1.2 5.4 3.2 7.1.3.3.5.7.6 1.1l.4 2.3c.1.9.9 1.5 1.8 1.5h8c.9 0 1.7-.6 1.8-1.5l.4-2.3c.1-.4.3-.8.6-1.1 2-1.7 3.2-4.3 3.2-7.1 0-5.5-4.5-10-10-10z" fill="#ff2a3b"/>
+                  <ellipse cx="8.5" cy="11.5" rx="2.2" ry="2.7" fill="#0c0708"/>
+                  <ellipse cx="15.5" cy="11.5" rx="2.2" ry="2.7" fill="#0c0708"/>
+                  <circle cx="8.5" cy="11.5" r="0.8" fill="#ffffff"/>
+                  <circle cx="15.5" cy="11.5" r="0.8" fill="#ffffff"/>
+                  <polygon points="12,14.5 10.8,17 13.2,17" fill="#0c0708"/>
+                  <rect x="8.5" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+                  <rect x="11.25" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+                  <rect x="14" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+                </svg>
+                <div class="rewarded-offer-text double-skulls-text">
+                  <span class="rewarded-offer-title double-skulls-title">CLAIM 2X SKULLS</span>
+                  <span class="rewarded-offer-sub double-skulls-sub">WATCH AD TO DOUBLE NIGHT BOUNTY</span>
+                </div>
+              </div>
+              <span class="rewarded-offer-badge double-skulls-badge">2X REWARD</span>
+            </button>
+          </div>
         </div>
 
         <!-- Defeat Tactical Upgrade Alert Callout -->
@@ -204,24 +268,27 @@
           </p>
           <button id="btn-gameover-shop" class="btn btn-upgrade-alert" type="button">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              <path d="M12 2l7 3.5v6c0 5-3 9-7 10.5-4-1.5-7-5.5-7-10.5v-6L12 2z"/>
+              <path d="M12 7v7"/>
+              <path d="M9.5 10.5h5"/>
             </svg>
             <span>UPGRADE ARSENAL &amp; FORTRESS</span>
           </button>
         </div>
 
         <div class="gameover-buttons">
-          <button id="btn-rewarded-revive" class="btn btn-rewarded" type="button">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-            <span>📺 REVIVE HERO (+50% HP)</span>
+          <button id="btn-retry" class="btn btn-primary" type="button">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span class="btn-main-text">RETRY DEFENSE</span>
           </button>
-          <button id="btn-retry" class="btn btn-primary">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            <span>RETRY DEFENSE</span>
-          </button>
-          <button id="btn-menu" class="btn btn-ghost">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>MAIN MENU</span>
+          <button id="btn-menu" class="btn btn-ghost" type="button">
+            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span class="btn-main-text">MAIN MENU</span>
           </button>
         </div>
       </div>
@@ -242,11 +309,38 @@
           <div class="stat-item"><span>Zombies Slain</span><strong id="vic-kills">0</strong></div>
           <div class="stat-item"><span>Skulls Collected</span><strong id="vic-gems">0</strong></div>
         </div>
-        <div class="gameover-buttons">
-          <button id="btn-double-skulls" class="btn btn-rewarded" type="button">
-            <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span>📺 CLAIM 2X SKULLS</span>
+
+        <!-- 2X SKULLS Rewarded Ad Callout Card -->
+        <div class="gameover-double-skulls" id="vic-double-skulls-wrap">
+          <button id="btn-double-skulls" class="btn btn-double-skulls-reward" type="button" aria-label="Watch CrazyGames ad to double skulls">
+            <div class="double-skulls-content">
+              <span class="ad-tag">
+                <svg class="ad-play-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6 4 20 12 6 20 6 4"/>
+                </svg>
+                AD
+              </span>
+              <svg class="skull-reward-svg" viewBox="0 0 24 24">
+                <path d="M12 2C6.5 2 2 6.5 2 12c0 2.8 1.2 5.4 3.2 7.1.3.3.5.7.6 1.1l.4 2.3c.1.9.9 1.5 1.8 1.5h8c.9 0 1.7-.6 1.8-1.5l.4-2.3c.1-.4.3-.8.6-1.1 2-1.7 3.2-4.3 3.2-7.1 0-5.5-4.5-10-10-10z" fill="#ff2a3b"/>
+                <ellipse cx="8.5" cy="11.5" rx="2.2" ry="2.7" fill="#0c0708"/>
+                <ellipse cx="15.5" cy="11.5" rx="2.2" ry="2.7" fill="#0c0708"/>
+                <circle cx="8.5" cy="11.5" r="0.8" fill="#ffffff"/>
+                <circle cx="15.5" cy="11.5" r="0.8" fill="#ffffff"/>
+                <polygon points="12,14.5 10.8,17 13.2,17" fill="#0c0708"/>
+                <rect x="8.5" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+                <rect x="11.25" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+                <rect x="14" y="19.5" width="1.5" height="3" rx="0.5" fill="#0c0708"/>
+              </svg>
+              <div class="double-skulls-text">
+                <span class="double-skulls-title">DOUBLE YOUR SKULLS</span>
+                <span class="double-skulls-sub">WATCH AD TO DOUBLE VICTORY BOUNTY</span>
+              </div>
+            </div>
+            <span class="double-skulls-badge">2X REWARD</span>
           </button>
+        </div>
+
+        <div class="gameover-buttons">
           <button id="btn-continue-endless" class="btn btn-primary pulse">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>
             <span>CONTINUE IN ENDLESS</span>
@@ -273,6 +367,27 @@
           <div class="pause-stat"><span>Undead</span><strong id="pause-enemies">0</strong></div>
           <div class="pause-stat"><span>Skulls</span><strong id="pause-skulls">0</strong></div>
         </div>
+
+        <!-- Mobile-Only Jump Position Preference -->
+        <div id="pause-mobile-jump-pos" class="pause-mobile-jump-pos">
+          <div class="pause-jump-label">
+            <svg class="pause-jump-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+            <span>JUMP BUTTON PLACEMENT</span>
+          </div>
+          <div class="jump-pos-toggle-group">
+            <button type="button" id="btn-pause-jump-left" class="btn-jump-pill" data-pos="left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>LEFT</span>
+            </button>
+            <button type="button" id="btn-pause-jump-right" class="btn-jump-pill active" data-pos="right">
+              <span>RIGHT (DEFAULT)</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
         <div class="pause-buttons">
           <button id="btn-pause-resume" class="btn btn-primary">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
@@ -340,6 +455,15 @@
           </div>
         </div>
 
+        <!-- Quick Fortress Tier Showcase Dock (T1 - T5) -->
+        <div id="hud-tier-dock" style="display:none;">
+          <button id="btn-quick-tier-1" type="button" class="btn" style="padding:2px 4px; font-size:8.5px; min-height:20px; flex:1;" onclick="window.setTier&&window.setTier(1)">T1</button>
+          <button id="btn-quick-tier-2" type="button" class="btn" style="padding:2px 4px; font-size:8.5px; min-height:20px; flex:1;" onclick="window.setTier&&window.setTier(2)">T2</button>
+          <button id="btn-quick-tier-3" type="button" class="btn" style="padding:2px 4px; font-size:8.5px; min-height:20px; flex:1;" onclick="window.setTier&&window.setTier(3)">T3</button>
+          <button id="btn-quick-tier-4" type="button" class="btn" style="padding:2px 4px; font-size:8.5px; min-height:20px; flex:1;" onclick="window.setTier&&window.setTier(4)">T4</button>
+          <button id="btn-quick-tier-5" type="button" class="btn" style="padding:2px 4px; font-size:8.5px; min-height:20px; flex:1;" onclick="window.setTier&&window.setTier(5)">T5</button>
+        </div>
+
       <!-- Dual Weapon Loadout Dock ([1] / [2] or [Q] to Quick-Swap) -->
       <div id="hud-weapons-dock">
         <button id="weapon-slot-1" class="hud-weapon-btn active" title="Primary Bow [1]" type="button">
@@ -382,8 +506,8 @@
       </div>
 
       <!-- Special Tactical Skills Dock (R / T / G Hotkeys) - Only appears when purchased -->
-      <div id="hud-tactical-dock" style="display: none;">
-        <button id="skill-btn-nuke" class="hud-skill-btn skill-tactical skill-nuke" title="Orbital Nuclear Strike [R]" type="button" style="display: none;">
+      <div id="hud-tactical-dock" class="hidden" style="display: none !important;">
+        <button id="skill-btn-nuke" class="hud-skill-btn skill-tactical skill-nuke hidden" title="Orbital Nuclear Strike [R]" type="button" style="display: none !important;">
           <div class="skill-icon-wrap">
             <span class="skill-icon">💥</span>
             <span class="skill-charge-badge" id="skill-charge-nuke">0</span>
@@ -394,7 +518,7 @@
           </div>
         </button>
 
-        <button id="skill-btn-lightning" class="hud-skill-btn skill-tactical skill-lightning" title="Chain Lightning Tempest [T]" type="button" style="display: none;">
+        <button id="skill-btn-lightning" class="hud-skill-btn skill-tactical skill-lightning hidden" title="Chain Lightning Tempest [T]" type="button" style="display: none !important;">
           <div class="skill-icon-wrap">
             <span class="skill-icon">⚡</span>
             <span class="skill-charge-badge" id="skill-charge-lightning">0</span>
@@ -405,7 +529,7 @@
           </div>
         </button>
 
-        <button id="skill-btn-aegis" class="hud-skill-btn skill-tactical skill-aegis" title="Divine Aegis Shield [G]" type="button" style="display: none;">
+        <button id="skill-btn-aegis" class="hud-skill-btn skill-tactical skill-aegis hidden" title="Divine Aegis Shield [G]" type="button" style="display: none !important;">
           <div class="skill-icon-wrap">
             <span class="skill-icon">🌟</span>
             <span class="skill-charge-badge" id="skill-charge-aegis">0</span>
@@ -435,7 +559,7 @@
 
         <!-- Night Wave & Horde Counter Center Pill -->
         <div id="hud-center">
-          <div id="hud-wave">Night <span id="wave-num">1</span></div>
+          <div id="hud-wave"><span class="hud-night-label">NIGHT</span> <span id="wave-num">1</span></div>
           <div id="hud-enemies">
             <span class="enemy-skull-icon">🧟</span>
             <span>HORDE:</span>
@@ -477,6 +601,143 @@
         </svg>
         <span class="jump-text">JUMP</span>
       </button>
+
+      <!-- First-Time Player Direction & Aiming Tutorial Overlay -->
+      <div id="tutorial-direction-overlay" class="tutorial-direction-overlay hidden" aria-live="polite">
+        <!-- 🖥️ DESKTOP VARIANT -->
+        <div class="tutorial-variant desktop-variant">
+          <div class="tutorial-card desktop-card">
+            <div class="tutorial-badge-row">
+              <span class="tutorial-badge desktop-badge">FORTRESS DEFENSE MANUAL</span>
+              <span class="tutorial-night-tag">NIGHT 1 BRIEFING</span>
+            </div>
+            <h3 class="tutorial-title">AIM &amp; FIRE DIRECTION</h3>
+            <div class="tutorial-subtitle">DRAW YOUR BOW &amp; REPEL THE UNDEAD HORDE</div>
+            
+            <div class="tutorial-visual-row desktop-visual-row">
+              <div class="tutorial-mouse-anim">
+                <svg class="tutorial-mouse-svg" viewBox="0 0 32 48" fill="none" stroke="currentColor">
+                  <rect x="3" y="3" width="26" height="42" rx="13" stroke-width="2.5" />
+                  <line x1="16" y1="3" x2="16" y2="20" stroke-width="2" />
+                  <line x1="3" y1="20" x2="29" y2="20" stroke-width="2" />
+                  <path class="mouse-lmb-pulse" d="M 3 16 A 13 13 0 0 1 16 3 L 16 20 L 3 20 Z" fill="#ff2222" />
+                  <rect x="14" y="8" width="4" height="7" rx="2" fill="#ffffff" />
+                </svg>
+                <div class="mouse-pulse-ring"></div>
+              </div>
+              <div class="tutorial-arrow-stream">
+                <span class="arrow-dot dot-1">&gt;</span>
+                <span class="arrow-dot dot-2">&gt;</span>
+                <span class="arrow-dot dot-3">&gt;</span>
+                <div class="target-head-marker">
+                  <span class="arrow-target-icon">🎯</span>
+                  <span class="target-head-label">ZOMBIE LANE</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="desktop-controls-grid">
+              <div class="control-box">
+                <div class="control-header"><span class="ctrl-icon">🖱️</span> <strong>CLICK &amp; DRAG</strong></div>
+                <div class="control-desc">Hold left click to draw bow, drag right to adjust arc, release to fire</div>
+              </div>
+              <div class="control-box">
+                <div class="control-header"><kbd class="key-pill">SPACE</kbd> <strong>JUMP &amp; DODGE</strong></div>
+                <div class="control-desc">Leap to dodge incoming arrows, cleavers &amp; ground shockwaves</div>
+              </div>
+              <div class="control-box">
+                <div class="control-header"><kbd class="key-pill">1</kbd> <kbd class="key-pill">2</kbd> <kbd class="key-pill">Q</kbd> <strong>SWAP WEAPONS</strong></div>
+                <div class="control-desc">Quickly toggle between primary &amp; secondary bows</div>
+              </div>
+              <div class="control-box">
+                <div class="control-header"><kbd class="key-pill">F</kbd> <kbd class="key-pill">E</kbd> <strong>SPECIAL SKILLS</strong></div>
+                <div class="control-desc">Rain of Fire Volley &amp; Glacial Frost Nova</div>
+              </div>
+            </div>
+
+            <button id="btn-tutorial-dismiss-desktop" class="btn btn-primary btn-tutorial-dismiss desktop-dismiss-btn" type="button">
+              <span>GOT IT! START DEFENDING 🏹</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 📱 MOBILE VARIANT -->
+        <div class="tutorial-variant mobile-variant">
+          <div class="tutorial-card mobile-card">
+            <div class="tutorial-badge-row">
+              <span class="tutorial-badge mobile-badge">FORTRESS DEFENSE MANUAL</span>
+              <span class="tutorial-night-tag">TOUCH BRIEFING</span>
+            </div>
+            <h3 class="tutorial-title mobile-title">AIM &amp; DODGE CONTROLS</h3>
+            <div class="tutorial-subtitle">DEFEND THE FORTRESS WALL FROM INCOMING ZOMBIES</div>
+
+            <div class="mobile-dual-layout">
+              <!-- Action 1: Touch & Drag to Aim -->
+              <div class="mobile-action-card aim-action">
+                <div class="mobile-action-icon">
+                  <div class="touch-anim-wrapper">
+                    <svg class="touch-finger-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+                      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+                      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+                      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.83L7 15"/>
+                    </svg>
+                    <div class="touch-ring-anim"></div>
+                  </div>
+                </div>
+                <div class="mobile-action-text">
+                  <div class="action-heading">🏹 TOUCH &amp; DRAG TO AIM</div>
+                  <div class="action-desc">Touch anywhere, drag towards zombies on the right, release to fire!</div>
+                </div>
+              </div>
+
+              <!-- Action 2: On-Screen Jump Button -->
+              <div class="mobile-action-card jump-action">
+                <div class="mobile-action-icon">
+                  <div class="mini-jump-badge">
+                    <svg class="mini-jump-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                      <path d="M12 19V5M5 12l7-7 7 7"/>
+                    </svg>
+                    <span>JUMP</span>
+                  </div>
+                </div>
+                <div class="mobile-action-text">
+                  <div id="tutorial-jump-heading" class="action-heading">🦘 TAP [JUMP] (BOTTOM-RIGHT)</div>
+                  <div class="action-desc">Leap to dodge enemy arrows, cleavers &amp; boss shockwaves!</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mobile Jump Placement Selector (Full-Width Responsive Row) -->
+            <div class="tutorial-jump-pos-row">
+              <span class="tutorial-jump-pos-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg" style="width: 14px; height: 14px; color: #ff2a3b;"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                JUMP BUTTON SIDE:
+              </span>
+              <div class="jump-pos-toggle-group">
+                <button type="button" id="btn-tutorial-jump-left" class="btn-jump-pill" data-pos="left">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  <span>LEFT</span>
+                </button>
+                <button type="button" id="btn-tutorial-jump-right" class="btn-jump-pill active" data-pos="right">
+                  <span>RIGHT (DEFAULT)</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Direction Indicator to right -->
+            <div class="mobile-lane-prompt">
+              <span class="lane-tag">AIM RIGHT 👉</span>
+              <span class="lane-detail">Zombies advance from the right • Headshots deal 2.5x critical damage! 💀</span>
+            </div>
+
+            <button id="btn-tutorial-dismiss-mobile" class="btn btn-primary btn-tutorial-dismiss mobile-dismiss-btn" type="button">
+              <span>TAP TO DEFEND FORTRESS 🏹</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Wave Announcement Banner -->
@@ -642,12 +903,34 @@
       </div>
     </div>
 
+    <!-- Restart Campaign from Night 1 Confirmation Modal -->
+    <div id="modal-restart-confirm" class="reset-confirm-overlay hidden">
+      <div class="reset-confirm-card restart-confirm-card">
+        <div class="reset-confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="restart-modal-svg">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+        </div>
+        <h3 class="reset-confirm-title">RESTART FROM NIGHT 1?</h3>
+        <p class="reset-confirm-desc">
+          Are you sure you want to restart your campaign defense from <strong>Night 1</strong>?<br/>
+          Your gathered <strong>skulls</strong>, purchased <strong>upgrades</strong>, and unlocked <strong>weapons</strong> will be kept safe!
+        </p>
+        <div class="reset-confirm-warning">
+          ⚠️ Your campaign progress checkpoint will be set to Night 1.
+        </div>
+        <div class="reset-confirm-buttons">
+          <button id="btn-restart-cancel" class="btn btn-ghost btn-modal-cancel" type="button">CANCEL</button>
+          <button id="btn-restart-modal-confirm" class="btn btn-primary btn-modal-restart-confirm" type="button">YES, START NIGHT 1 🏹</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Floating In-Game Dynamic Archer Charge Meter -->
     <div id="charge-indicator" class="hidden">
       <div class="charge-bar-bg">
         <div class="charge-bar-fill" id="charge-fill"></div>
       </div>
-      <div class="charge-stamina-tag" id="charge-stamina-tag">⚡ -12 STAMINA</div>
     </div>
   </div>
 
