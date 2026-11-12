@@ -328,6 +328,11 @@ export class YouTubePlayablesManager {
 
   private handlePlatformPause(): void {
     this.isPlatformPaused = true;
+    soundFX.pauseAudio();
+    try {
+      const g = (window as any).game;
+      if (g) g.isPaused = true;
+    } catch {}
     for (const cb of this.onPauseCallbacks) {
       try { cb(); } catch {}
     }
@@ -335,6 +340,11 @@ export class YouTubePlayablesManager {
 
   private handlePlatformResume(): void {
     this.isPlatformPaused = false;
+    soundFX.resumeAudio();
+    try {
+      const g = (window as any).game;
+      if (g) g.isPaused = false;
+    } catch {}
     for (const cb of this.onResumeCallbacks) {
       try { cb(); } catch {}
     }

@@ -49,6 +49,18 @@ export class SoundFX {
     }
   }
 
+  public pauseAudio(): void {
+    if (this.ctx && this.ctx.state === 'running') {
+      try { this.ctx.suspend(); } catch {}
+    }
+  }
+
+  public resumeAudio(): void {
+    if (this.ctx && !this.muted) {
+      try { this.ctx.resume(); } catch {}
+    }
+  }
+
   public init(): void {
     if (this.ctx) return;
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
