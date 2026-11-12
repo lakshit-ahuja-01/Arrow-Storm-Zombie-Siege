@@ -43,6 +43,15 @@ for (const fileName of unneededFiles) {
   }
 }
 
+// Clean YouTube script from CrazyGames zip
+const cgIndex = path.join(uploadDir, 'index.html');
+if (fs.existsSync(cgIndex)) {
+  let html = fs.readFileSync(cgIndex, 'utf-8');
+  html = html.replace(/(?:<!--.*?YouTube.*?-->\s*)?<script src="https:\/\/www\.youtube\.com\/game_api\/v1"><\/script>\s*/g, '');
+  fs.writeFileSync(cgIndex, html, 'utf-8');
+  console.log('🧹 [CrazyGames Sync] Cleaned YouTube script tag from CrazyGames index.html');
+}
+
 // 3. Automatically generate updated CrazyGames zip package from clean uploadDir
 try {
   if (fs.existsSync(zipFile)) {
