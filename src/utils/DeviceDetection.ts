@@ -65,9 +65,37 @@ export function isLandscapeMode(): boolean {
 }
 
 /**
+ * Returns true if running in YouTube Playables environment (SDK, test suite, or iframe).
+ * YouTube Playables certification mandates NO ORIENTATION LOCKING (games must never block portrait).
+ */
+export function isYouTubePlayables(): boolean {
+  if (typeof window === 'undefined') return false;
+  return Boolean(
+    (window as any).ytgame ||
+    (window as any).IN_PLAYABLES_ENV ||
+    (document.referrer && document.referrer.includes('youtube')) ||
+    (window.location && (window.location.search.includes('youtube') || window.location.pathname.includes('yt-test-suite'))) ||
+    (window.self !== window.top && (window as any).ytgame)
+  );
+}
+
+let userDismissedPortraitPrompt = false;
+
+export function dismissPortraitPrompt(): void {
+  userDismissedPortraitPrompt = true;
+  const overlay = document.getElementById('orientation-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+  }
+}
+
+/**
  * Attempts to lock screen orientation to landscape using modern ScreenOrientation API.
  */
 export async function requestLandscapeOrientation(): Promise<void> {
+  // Do not attempt orientation lock in YouTube Playables (violates certification policy)
+  if (isYouTubePlayables()) return;
+
   try {
     const orientation = (screen as any).orientation;
     if (orientation && typeof orientation.lock === 'function') {
@@ -93,19 +121,25 @@ export function syncMobileMode(): boolean {
   }
 
   const overlay = document.getElementById('orientation-overlay');
+  const suppressOverlay = isYouTubePlayables() || userDismissedPortraitPrompt;
+
   if (overlay) {
-    if (portrait) {
+    if (portrait && !suppressOverlay) {
       overlay.classList.add('active');
-      document.body.classList.add('is-portrait');
-      document.body.classList.remove('is-landscape');
     } else {
       overlay.classList.remove('active');
-      document.body.classList.remove('is-portrait');
-      if (mobile) {
-        document.body.classList.add('is-landscape');
-      } else {
-        document.body.classList.remove('is-landscape');
-      }
+    }
+  }
+
+  if (portrait) {
+    document.body.classList.add('is-portrait');
+    document.body.classList.remove('is-landscape');
+  } else {
+    document.body.classList.remove('is-portrait');
+    if (mobile) {
+      document.body.classList.add('is-landscape');
+    } else {
+      document.body.classList.remove('is-landscape');
     }
   }
 

@@ -4,7 +4,7 @@ import { soundFX } from './systems/SoundFX';
 import { uiManager } from './systems/UIManager';
 import { crazyGames } from './systems/CrazyGamesSDK';
 import { youtubePlayables } from './systems/YouTubePlayablesSDK';
-import { syncMobileMode, requestLandscapeOrientation } from './utils/DeviceDetection';
+import { syncMobileMode, requestLandscapeOrientation, dismissPortraitPrompt } from './utils/DeviceDetection';
 import { initMobileControlsUI } from './utils/MobileControls';
 
 // Apply initial device detection immediately
@@ -139,6 +139,14 @@ function startGameWithScene() {
 // Global UI listeners attached immediately so buttons ALWAYS work
 function initUI() {
   initMobileControlsUI();
+  const btnPortraitDismiss = document.getElementById('btn-portrait-dismiss');
+  if (btnPortraitDismiss) {
+    btnPortraitDismiss.onclick = () => {
+      dismissPortraitPrompt();
+      const s = getScene();
+      if (s) s.handleResize();
+    };
+  }
   const btnPlay = document.getElementById('btn-play');
   if (btnPlay) {
     btnPlay.onclick = () => startGameWithScene();
