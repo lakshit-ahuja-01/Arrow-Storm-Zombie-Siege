@@ -2273,10 +2273,6 @@ export class MainScene extends Phaser.Scene {
     this.shakeScreen(6, 0.2);
     uiManager.updateHUD(this.player, this.tower, this.wave, this.zombies.length, this.kills, this.gameMode);
     if (this.tower.hp <= 0) {
-      if (!this.hasUsedSecondChance) {
-        this.triggerSecondChance('Tower Barricade Overrun!');
-        return;
-      }
       if (!this.tower.isDestroyed) {
         this.tower.triggerDestruction();
       }
@@ -2300,10 +2296,6 @@ export class MainScene extends Phaser.Scene {
   public onPlayerDeath(): void {
     // If the tower is already collapsing or destroyed, do not cut short the tower destruction animation
     if (this.tower && (this.tower.hp <= 0 || this.tower.isDestroyed)) {
-      return;
-    }
-    if (!this.hasUsedSecondChance) {
-      this.triggerSecondChance('Archer Slain by Undead!');
       return;
     }
     if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
