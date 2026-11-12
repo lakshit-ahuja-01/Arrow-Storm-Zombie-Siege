@@ -1,11 +1,21 @@
 export class SoundFX {
   private ctx: AudioContext | null = null;
-  public muted: boolean = false;
+  private _muted: boolean = false;
+  private masterGain: GainNode | null = null;
   private bgmGain: GainNode | null = null;
   private bgmOscNodes: OscillatorNode[] = [];
   private bgmHeartbeatTimer: number | null = null;
   private isBgmPlaying: boolean = false;
   private wasSuspendedByVisibility: boolean = false;
+  public onMuteChange: ((muted: boolean) => void) | null = null;
+
+  public get muted(): boolean {
+    return this._muted;
+  }
+
+  public set muted(val: boolean) {
+    this.setMuted(val);
+  }
 
   constructor() {
     try {
@@ -13,7 +23,7 @@ export class SoundFX {
         ? localStorage.getItem('ragdoll_archers_sound_muted') 
         : ((window as any).CrazyGames?.SDK?.data?.getItem?.('ragdoll_archers_sound_muted') ?? localStorage.getItem('ragdoll_archers_sound_muted'));
       if (saved !== null && saved !== undefined) {
-        this.muted = saved === 'true';
+        this._muted = saved === 'true';
       }
     } catch (e) {}
 
@@ -41,7 +51,7 @@ export class SoundFX {
   }
 
   private handleVisibilityResume(): void {
-    if (this.wasSuspendedByVisibility && this.ctx && !this.muted) {
+    if (this.wasSuspendedByVisibility && this.ctx && !this._muted) {
       this.wasSuspendedByVisibility = false;
       try {
         this.ctx.resume();
@@ -56,7 +66,7 @@ export class SoundFX {
   }
 
   public resumeAudio(): void {
-    if (this.ctx && !this.muted) {
+    if (this.ctx && !this._muted) {
       try { this.ctx.resume(); } catch {}
     }
   }
@@ -64,20 +74,52 @@ export class SoundFX {
   public init(): void {
     if (this.ctx) return;
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (AudioCtx) this.ctx = new AudioCtx();
+    if (AudioCtx) {
+      this.ctx = new AudioCtx();
+      this.ensureMasterGain();
+      if (this._muted) {
+        try { this.ctx.suspend(); } catch {}
+      }
+    }
+  }
+
+  private ensureMasterGain(): GainNode | null {
+    if (!this.ctx) return null;
+    if (!this.masterGain) {
+      try {
+        const hardwareOut = this.ctx['destination'];
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(this._muted ? 0.0 : 1.0, this.ctx.currentTime);
+        this.masterGain.connect(hardwareOut);
+      } catch (e) {
+        console.warn('[SoundFX] Failed to create master gain:', e);
+      }
+    }
+    return this.masterGain;
+  }
+
+  private get destination(): AudioNode {
+    const gain = this.ensureMasterGain();
+    const hardwareOut = this.ctx ? this.ctx['destination'] : (null as any);
+    return gain || hardwareOut;
   }
 
   public ensure(): void {
     this.init();
-    if (this.ctx && this.ctx.state === 'suspended' && !this.muted) {
-      this.ctx.resume();
+    if (this.ctx && this.ctx.state === 'suspended' && !this._muted && !this.wasSuspendedByVisibility) {
+      try { this.ctx.resume(); } catch {}
     }
   }
 
   public toggleMute(): boolean {
-    this.muted = !this.muted;
+    this.setMuted(!this._muted);
+    return !this._muted;
+  }
+
+  public setMuted(mute: boolean): void {
+    this._muted = mute;
     try {
-      const val = this.muted ? 'true' : 'false';
+      const val = this._muted ? 'true' : 'false';
       if ((window as any).FBInstant?.player?.setDataAsync) {
         (window as any).FBInstant.player.setDataAsync({ ragdoll_archers_sound_muted: val }).catch(() => {});
       }
@@ -85,21 +127,45 @@ export class SoundFX {
       localStorage.setItem('ragdoll_archers_sound_muted', val);
     } catch (e) {}
 
-    if (this.bgmGain && this.ctx) {
-      this.bgmGain.gain.setValueAtTime(this.muted ? 0.0 : 0.08, this.ctx.currentTime);
+    if (this.masterGain && this.ctx) {
+      try {
+        this.masterGain.gain.setValueAtTime(this._muted ? 0.0 : 1.0, this.ctx.currentTime);
+      } catch {}
     }
-    return !this.muted;
-  }
-
-  public setMuted(mute: boolean): void {
-    this.muted = mute;
-    try {
-      const val = this.muted ? 'true' : 'false';
-      localStorage.setItem('ragdoll_archers_sound_muted', val);
-    } catch (e) {}
 
     if (this.bgmGain && this.ctx) {
-      this.bgmGain.gain.setValueAtTime(this.muted ? 0.0 : 0.08, this.ctx.currentTime);
+      try {
+        this.bgmGain.gain.setValueAtTime(this._muted ? 0.0 : 0.08, this.ctx.currentTime);
+      } catch {}
+    }
+
+    if (this.ctx) {
+      try {
+        if (this._muted) {
+          if (this.ctx.state === 'running') {
+            this.ctx.suspend().catch(() => {});
+          }
+        } else {
+          if (this.ctx.state === 'suspended' && !this.wasSuspendedByVisibility) {
+            this.ctx.resume().catch(() => {});
+          }
+        }
+      } catch {}
+    }
+
+    // Synchronize Phaser sound system
+    try {
+      const g = (window as any).game;
+      if (g && g.sound) {
+        g.sound.mute = this._muted;
+      }
+    } catch {}
+
+    // Notify UI / external subscribers
+    if (this.onMuteChange) {
+      try {
+        this.onMuteChange(this._muted);
+      } catch {}
     }
   }
 
@@ -118,7 +184,7 @@ export class SoundFX {
       // Master BGM Gain
       this.bgmGain = this.ctx.createGain();
       this.bgmGain.gain.setValueAtTime(this.muted ? 0.0 : 0.08, now);
-      this.bgmGain.connect(this.ctx.destination);
+      this.bgmGain.connect(this.destination);
 
       // Lowpass Atmosphere Filter
       const atmosphereFilter = this.ctx.createBiquadFilter();
@@ -163,7 +229,7 @@ export class SoundFX {
           kickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
 
           kickOsc.connect(kickGain);
-          kickGain.connect(this.ctx.destination);
+          kickGain.connect(this.destination);
           kickOsc.start(t);
           kickOsc.stop(t + 0.2);
         } catch {}
@@ -213,7 +279,7 @@ export class SoundFX {
     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
     noise.connect(filter);
     filter.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     noise.start();
   }
 
@@ -235,7 +301,7 @@ export class SoundFX {
     gain.gain.linearRampToValueAtTime(0.001, now + 0.35);
     osc.connect(filter);
     filter.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.35);
   }
@@ -253,7 +319,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.32 * power, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.17);
   }
@@ -271,7 +337,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(isCrit ? 0.45 : 0.28, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.18);
     this.playNoise(0.08, 900, 0.2);
@@ -290,7 +356,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.38, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.28);
     this.playNoise(0.24, 1500, 0.4);
@@ -309,7 +375,7 @@ export class SoundFX {
     subGain.gain.setValueAtTime(0.65, now);
     subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
     sub.connect(subGain);
-    subGain.connect(this.ctx.destination);
+    subGain.connect(this.destination);
     sub.start(now);
     sub.stop(now + 0.55);
     this.playNoise(0.2, 2800, 0.45);
@@ -329,7 +395,7 @@ export class SoundFX {
       gain.gain.setValueAtTime(0.25 / (idx + 1), now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.destination);
       osc.start(now);
       osc.stop(now + 0.26);
     });
@@ -348,7 +414,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.65, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.65);
     this.playNoise(0.55, 1200, 0.6);
@@ -368,7 +434,7 @@ export class SoundFX {
       gain.gain.setValueAtTime(0.18, now + idx * 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.2);
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.destination);
       osc.start(now + idx * 0.05);
       osc.stop(now + idx * 0.05 + 0.2);
     });
@@ -387,7 +453,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.2, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.35);
   }
@@ -405,7 +471,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.25, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.2);
     this.playNoise(0.15, 3200, 0.35);
@@ -424,7 +490,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.22, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.2);
   }
@@ -443,7 +509,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.07, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.8);
   }
@@ -461,7 +527,7 @@ export class SoundFX {
     gain.gain.setValueAtTime(0.2, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
     osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    gain.connect(this.destination);
     osc.start(now);
     osc.stop(now + 0.45);
   }
@@ -481,7 +547,7 @@ export class SoundFX {
     subGain.gain.setValueAtTime(0.7, now);
     subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
     sub.connect(subGain);
-    subGain.connect(this.ctx.destination);
+    subGain.connect(this.destination);
     sub.start(now);
     sub.stop(now + 0.9);
 
@@ -494,7 +560,7 @@ export class SoundFX {
     midGain.gain.setValueAtTime(0.4, now);
     midGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
     mid.connect(midGain);
-    midGain.connect(this.ctx.destination);
+    midGain.connect(this.destination);
     mid.start(now);
     mid.stop(now + 0.35);
 
@@ -519,7 +585,7 @@ export class SoundFX {
       gain.gain.setValueAtTime(0.25 / (i + 1), now + i * 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.02 + 0.28);
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      gain.connect(this.destination);
       osc.start(now + i * 0.02);
       osc.stop(now + i * 0.02 + 0.28);
     });
@@ -543,7 +609,7 @@ export class SoundFX {
       subGain.gain.setValueAtTime(0.45, now);
       subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
       sub.connect(subGain);
-      subGain.connect(this.ctx.destination);
+      subGain.connect(this.destination);
       sub.start(now);
       sub.stop(now + 0.35);
       return;
@@ -558,7 +624,7 @@ export class SoundFX {
     subGain.gain.setValueAtTime(0.55, now);
     subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
     sub.connect(subGain);
-    subGain.connect(this.ctx.destination);
+    subGain.connect(this.destination);
     sub.start(now);
     sub.stop(now + 0.38);
 
@@ -571,7 +637,7 @@ export class SoundFX {
     snapGain.gain.setValueAtTime(0.42, now);
     snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
     snap.connect(snapGain);
-    snapGain.connect(this.ctx.destination);
+    snapGain.connect(this.destination);
     snap.start(now);
     snap.stop(now + 0.14);
 

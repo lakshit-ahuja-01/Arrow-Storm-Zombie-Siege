@@ -24,6 +24,9 @@ crazyGames.init().then(() => {
   syncMobileMode();
 });
 
+// Initialize YouTube Playables SDK
+youtubePlayables.init();
+
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
 
 // Determine explicit renderType for custom canvas environment (fixes Phaser Error: Must set explicit renderType in custom environment)

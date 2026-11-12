@@ -41,6 +41,8 @@ declare global {
 
 export class YouTubePlayablesManager {
   private isInitialized: boolean = false;
+  private isListeningToSystemAudio: boolean = false;
+  private isListeningToLifecycle: boolean = false;
   private hasFirstFrameFired: boolean = false;
   private hasGameReadyFired: boolean = false;
   private hasLoadedData: boolean = false;
@@ -49,6 +51,7 @@ export class YouTubePlayablesManager {
   private onPauseCallbacks: Array<() => void> = [];
   private onResumeCallbacks: Array<() => void> = [];
   private isPlatformPaused: boolean = false;
+  private detectionInterval: any = null;
 
   /**
    * Returns true if running in the YouTube Playables environment (or SDK is injected)
@@ -66,66 +69,94 @@ export class YouTubePlayablesManager {
 
     console.log('[YouTube Playables SDK] Initializing module...');
 
-    if (!this.isAvailable()) {
-      console.log('[YouTube Playables SDK] ytgame object not detected, operating in offline/mock mode');
-      return;
-    }
+    // Attempt immediate hookup
+    this.setupHooks();
 
-    try {
-      // 1. Audio Sync
-      if (window.ytgame?.system?.isAudioEnabled) {
+    // Start polling loop to attach asynchronously if ytgame / ytgame.system arrives after startup
+    let attempts = 0;
+    const maxAttempts = 100; // 10 seconds max
+    this.detectionInterval = setInterval(() => {
+      attempts++;
+      this.setupHooks();
+      if ((this.isListeningToSystemAudio && this.hasLoadedData) || attempts >= maxAttempts) {
+        clearInterval(this.detectionInterval);
+        this.detectionInterval = null;
+      }
+    }, 100);
+  }
+
+  private setupHooks(): void {
+    if (typeof window === 'undefined' || !window.ytgame) return;
+
+    // 1. System Audio Sync
+    if (window.ytgame.system && !this.isListeningToSystemAudio) {
+      if (typeof window.ytgame.system.isAudioEnabled === 'function') {
         try {
           const audioOn = window.ytgame.system.isAudioEnabled();
-          console.log('[YouTube Playables SDK] Initial audio enabled:', audioOn);
+          console.log('[YouTube Playables SDK] Host isAudioEnabled initial state:', audioOn);
           soundFX.setMuted(!audioOn);
         } catch (e) {
           console.warn('[YouTube Playables SDK] Error reading isAudioEnabled:', e);
         }
       }
 
-      if (window.ytgame?.system?.onAudioEnabledChange) {
-        window.ytgame.system.onAudioEnabledChange((enabled: boolean) => {
-          console.log('[YouTube Playables SDK] onAudioEnabledChange fired:', enabled);
-          soundFX.setMuted(!enabled);
-        });
+      if (typeof window.ytgame.system.onAudioEnabledChange === 'function') {
+        try {
+          window.ytgame.system.onAudioEnabledChange((enabled: boolean) => {
+            console.log('[YouTube Playables SDK] onAudioEnabledChange fired by host:', enabled);
+            soundFX.setMuted(!enabled);
+          });
+          this.isListeningToSystemAudio = true;
+          console.log('🔊 [YouTube Playables SDK] Successfully attached onAudioEnabledChange listener');
+        } catch (e) {
+          console.warn('[YouTube Playables SDK] Error attaching onAudioEnabledChange:', e);
+        }
+      }
+    }
+
+    // 2. Lifecycle System Listeners (onPause / onResume)
+    if (window.ytgame.system && !this.isListeningToLifecycle) {
+      if (typeof window.ytgame.system.onPause === 'function') {
+        try {
+          window.ytgame.system.onPause(() => {
+            console.log('[YouTube Playables SDK] onPause received from YouTube host');
+            this.handlePlatformPause();
+          });
+        } catch (e) {}
       }
 
-      // 2. Lifecycle System Listeners (onPause / onResume)
-      if (window.ytgame?.system?.onPause) {
-        window.ytgame.system.onPause(() => {
-          console.log('[YouTube Playables SDK] onPause received from YouTube host');
-          this.handlePlatformPause();
-        });
+      if (typeof window.ytgame.system.onResume === 'function') {
+        try {
+          window.ytgame.system.onResume(() => {
+            console.log('[YouTube Playables SDK] onResume received from YouTube host');
+            this.handlePlatformResume();
+          });
+        } catch (e) {}
       }
+      this.isListeningToLifecycle = true;
+    }
 
-      if (window.ytgame?.system?.onResume) {
-        window.ytgame.system.onResume(() => {
-          console.log('[YouTube Playables SDK] onResume received from YouTube host');
-          this.handlePlatformResume();
-        });
-      }
+    // 3. Mandatory Cloud Data Load (Must await loadData before saving)
+    if (window.ytgame.game && !this.hasLoadedData) {
+      this.loadInitialCloudData().then(() => {
+        // Signal first frame as soon as cloud data is resolved
+        this.firstFrameReady();
 
-      // 3. Mandatory Cloud Data Load (Must await loadData before saving)
-      await this.loadInitialCloudData();
+        // Perform baseline cloud save to immediately validate "Cloud save data < 3 MiB" in Test Suite
+        try {
+          this.flushDataToCloud();
+        } catch {}
 
-      // Signal first frame as soon as SDK is initialized
-      this.firstFrameReady();
+        // Submit baseline score to immediately satisfy "sendScore called with an integer"
+        try {
+          const savedWave = parseInt(this.getItem('ragdoll_endless_best') || '0', 10);
+          this.sendScore(savedWave);
+        } catch {}
 
-      // Perform baseline cloud save to immediately validate "Cloud save data < 3 MiB" in Test Suite
-      try {
-        await this.flushDataToCloud();
-      } catch {}
-
-      // Submit baseline score to immediately satisfy "sendScore called with an integer"
-      try {
-        const savedWave = parseInt(this.getItem('ragdoll_endless_best') || '0', 10);
-        this.sendScore(savedWave);
-      } catch {}
-
-      console.log('✅ [YouTube Playables SDK] Integration initialized successfully');
-    } catch (err) {
-      console.error('[YouTube Playables SDK] Initialization error:', err);
-      this.logError(`Init error: ${err instanceof Error ? err.message : String(err)}`);
+        console.log('✅ [YouTube Playables SDK] Host storage & score handshake completed');
+      }).catch(err => {
+        console.warn('[YouTube Playables SDK] Error during initial cloud handshake:', err);
+      });
     }
   }
 

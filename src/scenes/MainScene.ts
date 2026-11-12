@@ -699,6 +699,11 @@ export class MainScene extends Phaser.Scene {
       }
     };
 
+    // Keep UI synced with external host events (e.g. YouTube Playables Audio toggle)
+    soundFX.onMuteChange = (muted: boolean) => {
+      updateSoundUI(!muted);
+    };
+
     const btnSound = document.getElementById('btn-sound');
     if (btnSound) {
       btnSound.onclick = () => {
