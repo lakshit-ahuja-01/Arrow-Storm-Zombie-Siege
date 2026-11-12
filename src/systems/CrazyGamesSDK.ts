@@ -346,6 +346,11 @@ class CrazyGamesManager {
    * Automatically pauses physics/scene and mutes sound, then restores them.
    */
   public requestMidgameAd(onComplete?: () => void): void {
+    if (youtubePlayables.isAvailable()) {
+      onComplete?.();
+      return;
+    }
+
     if (playgamaSDK.isAvailable()) {
       playgamaSDK.requestMidgameAd(onComplete);
       return;

@@ -841,6 +841,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   public restartWave(): void {
+    this.isGameOverTriggered = false;
     this.waveCompleting = false;
     this.waveCompleteDelay = 0;
     this.zombies.forEach(z => z.destroy());
@@ -870,6 +871,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   public startGame(mode?: GameMode): void {
+    this.isGameOverTriggered = false;
     if (mode) this.gameMode = mode;
     if (this.gameOverTimeout) {
       clearTimeout(this.gameOverTimeout);
@@ -2269,10 +2271,12 @@ export class MainScene extends Phaser.Scene {
   }
 
   public onTowerDamage(_amount: number): void {
+    if (this.state === 'gameover' || this.isGameOverTriggered) return;
     uiManager.triggerDamageFlash();
     this.shakeScreen(6, 0.2);
     uiManager.updateHUD(this.player, this.tower, this.wave, this.zombies.length, this.kills, this.gameMode);
     if (this.tower.hp <= 0) {
+      this.isGameOverTriggered = true;
       if (!this.tower.isDestroyed) {
         this.tower.triggerDestruction();
       }
@@ -2283,26 +2287,27 @@ export class MainScene extends Phaser.Scene {
         this.player.ragdoll.relaxForDeath(-130, -160);
       }
       this.enemyHazards = []; // Clear in-flight hazards
-      if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
-      this.gameOverTimeout = setTimeout(() => {
-        this.gameOverTimeout = null;
-        this.showGameOver('Tower Barricade Overrun!');
-      }, 1500); // 1.5 seconds cinematic delay
+      if (!this.gameOverTimeout) {
+        this.gameOverTimeout = setTimeout(() => {
+          this.gameOverTimeout = null;
+          this.showGameOver('Tower Barricade Overrun!');
+        }, 800);
+      }
     }
   }
 
   private gameOverTimeout: any = null;
+  private isGameOverTriggered: boolean = false;
 
   public onPlayerDeath(): void {
-    // If the tower is already collapsing or destroyed, do not cut short the tower destruction animation
-    if (this.tower && (this.tower.hp <= 0 || this.tower.isDestroyed)) {
-      return;
+    if (this.state === 'gameover' || this.isGameOverTriggered) return;
+    this.isGameOverTriggered = true;
+    if (!this.gameOverTimeout) {
+      this.gameOverTimeout = setTimeout(() => {
+        this.gameOverTimeout = null;
+        this.showGameOver('Archer Slain by Undead!');
+      }, 700);
     }
-    if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
-    this.gameOverTimeout = setTimeout(() => {
-      this.gameOverTimeout = null;
-      this.showGameOver('Archer Slain by Undead!');
-    }, 1200);
   }
 
   public onZombieKilled(z: Zombie): void {
@@ -2427,7 +2432,6 @@ export class MainScene extends Phaser.Scene {
   public showGameOver(reason: string): void {
     crazyGames.gameplayStop();
     soundFX.stopBGM();
-    crazyGames.recordGamePlayedAndCheckMidgameAd();
     if (this.gameMode === 'campaign' && this.wave > 0) {
       this.campaignWave = this.wave;
     }
@@ -2540,6 +2544,7 @@ export class MainScene extends Phaser.Scene {
 
   public reviveHero(): void {
     if (!this.player || !this.tower) return;
+    this.isGameOverTriggered = false;
     if (this.gameOverTimeout) {
       clearTimeout(this.gameOverTimeout);
       this.gameOverTimeout = null;

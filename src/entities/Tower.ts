@@ -236,7 +236,7 @@ export class Tower {
   }
 
   public takeDamage(amount: number): void {
-    if (this.invincible || amount <= 0) return;
+    if (this.isDestroyed || this.hp <= 0 || this.invincible || amount <= 0) return;
     const dr = Math.min(0.80, this.damageReduction || 0);
     const reducedAmount = Math.max(1, amount * (1 - dr));
     this.hp = Math.max(0, this.hp - reducedAmount);
