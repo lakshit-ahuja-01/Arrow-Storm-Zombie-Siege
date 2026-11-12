@@ -31,6 +31,7 @@ export class Zombie {
   public inPitchPit: boolean = false;
   public inCaltrops: boolean = false;
   public inSmokeScreen: boolean = false;
+  public isGoldenGoblin: boolean = false;
 
   public dead: boolean = false;
   public deadTimer: number = 0;
@@ -1730,6 +1731,16 @@ export class Zombie {
     const tY = this.ragdoll.hasTorso && this.ragdoll.torso ? this.ragdoll.torso.position.y : this.y - 32 * s;
     const hX = this.ragdoll.hasHead && this.ragdoll.head ? this.ragdoll.head.position.x : tX;
     const hY = this.ragdoll.hasHead && this.ragdoll.head ? this.ragdoll.head.position.y : tY - 30 * s;
+
+    // === Golden Loot Goblin Crown & Radiant Sparkles ===
+    if (this.isGoldenGoblin && !this.dead) {
+      g.fillStyle(0xf1c40f, 1);
+      g.fillTriangle(hX - 9, hY - 14 * s, hX - 6, hY - 21 * s, hX - 2, hY - 14 * s);
+      g.fillTriangle(hX - 4, hY - 14 * s, hX, hY - 24 * s, hX + 4, hY - 14 * s);
+      g.fillTriangle(hX + 2, hY - 14 * s, hX + 6, hY - 21 * s, hX + 9, hY - 14 * s);
+      g.fillStyle(0xffd700, 0.35);
+      g.fillCircle(hX, hY, 20 * s);
+    }
 
     // === Status Effect Underlays ===
     if (this.isFrozen && this.frozenTimer > 0) {

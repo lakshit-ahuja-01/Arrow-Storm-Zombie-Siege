@@ -119,15 +119,14 @@ export class Player {
   // Stamina System
   public maxStamina: number = 100;
   public stamina: number = 100;
-  public staminaRegenRate: number = 7.0; // Slightly increased auto stamina recovery per second
-  public staminaKillBonus: number = 8;  // Substantial reward restored on killing a zombie
-  public staminaHeadshotBonus: number = 15; // High-impact reward on headshot kill
+  public staminaRegenRate: number = 10.0; // Responsive natural stamina recovery per second
+  public staminaKillBonus: number = 7;   // Restored on killing a zombie
+  public staminaHeadshotBonus: number = 14; // Precision reward on headshot kill
   public staminaRegenDelay: number = 0; // Brief cooldown before natural regeneration starts after firing
 
   /**
    * Configures Endless Mode stamina buffs:
-   * 2x Max Stamina (200), boosted Regen Rate (11.5/s), 2x Kill & Headshot Recovery Bonuses (14/28),
-   * and slightly decreased stamina consumption costs (jump cost 4, lower bow costs, faster delay).
+   * Max Stamina (120), natural Regen Rate (12.0/s), Kill & Headshot Recovery Bonuses (9/18).
    */
   public setEndlessMode(enabled: boolean = true): void {
     this.isEndless = enabled;
@@ -135,22 +134,22 @@ export class Player {
       this.maxHP = 100;
       this.hp = 100;
       this.arrowDamage = 26;
-      this.maxStamina = 200;
-      this.stamina = 200;
-      this.staminaRegenRate = 11.5; // Enhanced natural stamina regen
-      this.staminaKillBonus = 14; // 2x stamina reward per zombie kill
-      this.staminaHeadshotBonus = 28; // 2x stamina reward per headshot kill
-      this.jumpStaminaCost = 4; // Decreased jump stamina cost
+      this.maxStamina = 120;
+      this.stamina = 120;
+      this.staminaRegenRate = 12.0;
+      this.staminaKillBonus = 9;
+      this.staminaHeadshotBonus = 18;
+      this.jumpStaminaCost = 8;
     } else {
       this.maxHP = 115;
       this.hp = 115;
       this.arrowDamage = 28;
       this.maxStamina = 100;
       this.stamina = 100;
-      this.staminaRegenRate = 7.0;
-      this.staminaKillBonus = 8;
-      this.staminaHeadshotBonus = 15;
-      this.jumpStaminaCost = 5;
+      this.staminaRegenRate = 10.0;
+      this.staminaKillBonus = 7;
+      this.staminaHeadshotBonus = 14;
+      this.jumpStaminaCost = 8;
     }
   }
 
@@ -165,18 +164,14 @@ export class Player {
   }
 
   public getStaminaCost(): number {
-    let cost = 22;
-    if (this.bowType === 'triple') cost = 28;
-    else if (this.bowType === 'storm') cost = 42; // 🌩️ Storm Rain Bow: balanced high stamina consumption for celestial lightning rain
-    else if (this.bowType === 'cluster' || this.bowType === 'ballista' || this.bowType === 'buzzsaw') cost = 26;
-    else if (this.bowType === 'blackhole') cost = 32;
-    else if (this.bowType === 'holy') cost = 25;
-    else if (this.bowType === 'ricochet') cost = 24;
+    let cost = 18;
+    if (this.bowType === 'triple') cost = 24;
+    else if (this.bowType === 'storm') cost = 34; // 🌩️ Storm Rain Bow: celestial lightning rain
+    else if (this.bowType === 'cluster' || this.bowType === 'ballista' || this.bowType === 'buzzsaw') cost = 24;
+    else if (this.bowType === 'blackhole') cost = 30;
+    else if (this.bowType === 'holy') cost = 22;
+    else if (this.bowType === 'ricochet') cost = 22;
 
-    // In Endless Mode: slightly decrease arrow stamina cost (~20% reduction)
-    if (this.isEndless || (this.scene as any)?.gameMode === 'endless') {
-      cost = Math.round(cost * 0.80);
-    }
     return cost;
   }
 
@@ -188,17 +183,14 @@ export class Player {
   public getCurrentStaminaCost(customFrac?: number): number {
     const baseCost = this.getStaminaCost();
     const pullFrac = customFrac !== undefined
-      ? Math.max(0.12, Math.min(1.0, customFrac))
-      : (this.isCharging ? Math.max(0.12, Math.min(1.0, this.chargeFrac)) : 0.25);
+      ? Math.max(0.20, Math.min(1.0, customFrac))
+      : (this.isCharging ? Math.max(0.20, Math.min(1.0, this.chargeFrac)) : 0.35);
     
-    // For Storm Rain: balanced pull scaling
-    const minFactor = this.bowType === 'storm' ? 0.35 : 0.20;
+    // Dynamic pull scaling: minimum 55% of cost on quick release, up to 100% on full draw
+    const minFactor = this.bowType === 'storm' ? 0.60 : 0.50;
     const factor = minFactor + (1.0 - minFactor) * pullFrac;
 
-    const isEndlessMode = this.isEndless || (this.scene as any)?.gameMode === 'endless';
-    const minCost = isEndlessMode 
-      ? (this.bowType === 'storm' ? 14 : 3) 
-      : (this.bowType === 'storm' ? 18 : 5);
+    const minCost = this.bowType === 'storm' ? 18 : 9;
     return Math.max(minCost, Math.round(baseCost * factor));
   }
 
@@ -276,10 +268,7 @@ export class Player {
   public startCharge(): void {
     if (this.dead || this.cooldown > 0) return;
 
-    const isEndlessMode = this.isEndless || (this.scene as any)?.gameMode === 'endless';
-    const minCost = this.bowType === 'storm'
-      ? (isEndlessMode ? 6 : 8)
-      : Math.max(isEndlessMode ? 3 : 5, Math.round(this.getStaminaCost() * 0.20));
+    const minCost = 2; // Always responsive: low barrier to draw bow
 
     if (this.stamina < minCost) {
       soundFX.playArmorHit();
@@ -408,11 +397,18 @@ export class Player {
     if (this.cooldown > 0) this.cooldown -= dt;
     if (this.adrenalineTimer > 0) this.adrenalineTimer -= dt;
 
-    // Stamina recovery: pauses during draw and for 0.8s after firing
-    if (this.staminaRegenDelay > 0) {
-      this.staminaRegenDelay -= dt;
-    } else if (!this.isCharging && this.stamina < this.maxStamina) {
-      this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRegenRate * dt);
+    // Natural stamina recovery occurs when not drawing the bow
+    if (this.isCharging) {
+      // Holding at full draw (95%+) gradually strains and drains stamina
+      if (this.chargeFrac >= 0.95) {
+        this.stamina = Math.max(0, this.stamina - 5.0 * dt);
+      }
+    } else {
+      if (this.staminaRegenDelay > 0) {
+        this.staminaRegenDelay -= dt;
+      } else if (this.stamina < this.maxStamina) {
+        this.stamina = Math.min(this.maxStamina, this.stamina + this.staminaRegenRate * dt);
+      }
     }
 
     if (this.isCharging) {
@@ -479,7 +475,7 @@ export class Player {
   public triggerJump(): void {
     if (this.dead || this.jumpsLeft <= 0) return;
     const isEndlessMode = this.isEndless || (this.scene as any)?.gameMode === 'endless';
-    const minJumpStamina = isEndlessMode ? 3 : 4;
+    const minJumpStamina = 6;
     if (this.stamina < minJumpStamina) {
       const sBar = document.getElementById('hud-stamina-p1');
       if (sBar) {

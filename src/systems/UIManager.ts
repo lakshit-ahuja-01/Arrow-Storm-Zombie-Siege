@@ -3,10 +3,11 @@ import { UpgradeItem, GameState } from '../types';
 import { soundFX } from './SoundFX';
 import { HERO_SKINS_CATALOG, HeroSkinDef } from './HeroSkinsCatalog';
 import { applyJumpButtonPosition } from '../utils/MobileControls';
+import { crazyGames } from './CrazyGamesSDK';
 
 export class UIManager {
   public currentCategory: string = 'all';
-  public currentSort: string = 'default';
+  public currentSort: string = 'recommended';
   public shopOpenedFromMenu: boolean = false;
   public shopOpenedFromGameOver: boolean = false;
 
@@ -40,6 +41,10 @@ export class UIManager {
 
     } else if (s === 'wardrobe') {
       document.getElementById('screen-wardrobe')?.classList.add('active');
+      hud?.classList.add('hidden');
+      charge?.classList.add('hidden');
+    } else if (s === 'leaderboard') {
+      document.getElementById('screen-leaderboard')?.classList.add('active');
       hud?.classList.add('hidden');
       charge?.classList.add('hidden');
     }
@@ -247,6 +252,143 @@ export class UIManager {
     return Math.max(10, Math.round(baseCost / 5) * 5);
   }
 
+  public getUpgradeRecommendationScore(up: UpgradeItem, player: any, tower: any, wave: number): number {
+    const isBowCategory = up.category === 'bows';
+    const bowId = (up.id === 'cryo' || up.id === 'ice') ? 'ice' : (up.id as any);
+    const isEquippedBow = isBowCategory && (player?.primaryBow === bowId || player?.secondaryBow === bowId);
+    const isTowerTrap = (up.id === 'spikes' && tower?.hasSpikes) ||
+                        (up.id === 'caltrops' && tower?.hasCaltrops) ||
+                        (up.id === 'tarMoat' && tower?.hasTarMoat) ||
+                        (up.id === 'pitchPits' && tower?.hasPitchPits) ||
+                        (up.id === 'gunpowderBarrels' && tower?.hasGunpowderBarrels) ||
+                        (up.id === 'smokeScreen' && tower?.hasSmokeScreen);
+    const scene = player?.scene || (window as any).game?.scene?.getScene('MainScene');
+    const isVolleyUnlocked = up.id === 'unlockVolley' && (!!up.bought || !!scene?.hasVolleyUnlocked);
+    const isFrostUnlocked = up.id === 'unlockFrostNova' && (!!up.bought || !!scene?.hasFrostNovaUnlocked);
+    const isOneTimeBought = !!up.oneTime && (!!up.bought || isVolleyUnlocked || isFrostUnlocked);
+    const isMaxed = up.maxLevel ? (up.level || 0) >= up.maxLevel : false;
+
+    // Prerequisite checks: completely exclude invalid or already maxed items
+    const isVolleyLocked = up.id === 'volleyMastery' && !isVolleyUnlocked;
+    const isFrostLocked = up.id === 'frostMastery' && !isFrostUnlocked;
+    if (isEquippedBow || isTowerTrap || isOneTimeBought || isMaxed || isVolleyLocked || isFrostLocked) {
+      return -9999;
+    }
+
+    if (up.id === 'towerHP' && (tower?.tier || 1) >= 5) {
+      return -9999;
+    }
+
+    let score = 50;
+    const cost = this.getUpgradeCost(up);
+    const skulls = player?.skulls || 0;
+    const canAfford = skulls >= cost;
+    const closeToAfford = skulls >= cost * 0.7;
+
+    // ── 1. Skull Economy & Affordability Weighting ──
+    if (canAfford) {
+      score += 35;
+    } else if (closeToAfford) {
+      score += 15;
+    } else if (cost > skulls * 2.5) {
+      score -= 45; // Out of reach for current wallet
+    }
+
+    // ── 2. Health & Defeat Recovery State ──
+    const towerHPRatio = (tower && tower.maxHP > 0) ? (tower.hp / tower.maxHP) : 1;
+    const isCriticalTower = towerHPRatio < 0.55 || this.shopOpenedFromGameOver;
+
+    if (isCriticalTower) {
+      if (up.id === 'towerHP' && (tower?.tier || 1) < 5) score += 95; // Full repair + Max HP boost!
+      if (up.id === 'fieldRepair') score += 85; // Immediate +150 HP patch
+      if (up.id === 'ironGate') score += 70; // -20% barricade damage
+      if (up.id === 'healingShrine') score += 65; // Passive regen
+    }
+
+    if (this.shopOpenedFromGameOver) {
+      // Prioritize survivability to prevent repeated deaths
+      if (up.id === 'vitality') score += 85;
+      if (up.id === 'secondWind') score += 80;
+      if (up.id === 'ironArmor' || up.id === 'ironConstitution') score += 75;
+    }
+
+    // ── 3. Stamina & Draw Speed Synergies ──
+    // Vital after bow stamina changes
+    if (up.id === 'rapidRecovery') {
+      score += 80; // Combat conditioning: +30% regen & kill bonus
+    }
+    if (up.id === 'ironLungs') {
+      score += (wave <= 6 ? 75 : 60); // Max stamina gauge
+    }
+    if (up.id === 'drawSpeed') {
+      score += (wave <= 5 ? 75 : 55);
+    }
+    if (up.id === 'dmg1') {
+      score += (wave <= 5 ? 75 : 60); // Core arrow broadheads
+    }
+
+    // ── 4. Dual-Slot Bow Arsenal Progression ──
+    const primary = player?.primaryBow || 'normal';
+    const secondary = player?.secondaryBow || 'normal';
+    const hasOnlyBasicBow = primary === 'normal' && secondary === 'normal';
+    const hasOnlyOneSpecialBow = (primary !== 'normal' && secondary === 'normal') || (primary === 'normal' && secondary !== 'normal');
+
+    if (hasOnlyBasicBow && isBowCategory) {
+      if (up.id === 'fire' || up.id === 'ice') score += 90; // Top tier starter elemental bows
+      else if (up.id === 'triple' || up.id === 'viper') score += 70;
+    } else if (hasOnlyOneSpecialBow && isBowCategory) {
+      // Recommend a complementary second weapon for Slot 2
+      const existingBow = primary !== 'normal' ? primary : secondary;
+      if (existingBow === 'fire' && up.id === 'ice') score += 80; // Freeze + Fire synergy
+      else if (existingBow === 'ice' && (up.id === 'buzzsaw' || up.id === 'triple' || up.id === 'ballista')) score += 85; // Shatter 2.5x crit synergy!
+      else score += 60;
+    } else if (wave >= 5 && isBowCategory) {
+      // Heavy siege bows in mid/late game
+      if (up.id === 'ballista' || up.id === 'cluster' || up.id === 'tesla' || up.id === 'storm' || up.id === 'blackhole') {
+        score += 65;
+      }
+    }
+
+    // ── 5. Elemental Hazard Synergies ──
+    const hasFireWeapon = primary === 'fire' || secondary === 'fire' || !!scene?.hasVolleyUnlocked;
+    if (hasFireWeapon && up.id === 'pitchPits' && !tower?.hasPitchPits) {
+      score += 85; // Pitch pools slow 52% and fire arrows ignite them into roaring infernos!
+    }
+    if (up.id === 'gunpowderBarrels' && !tower?.hasGunpowderBarrels) {
+      score += (wave >= 3 ? 75 : 50); // 160px explosive demolition barrels
+    }
+    if (up.id === 'spikes' && !tower?.hasSpikes) {
+      score += (wave <= 6 ? 80 : 55); // Ground spikes stop crawler breaches
+    }
+    if (up.id === 'caltrops' && tower?.hasSpikes && !tower?.hasCaltrops) {
+      score += 65;
+    }
+
+    // ── 6. Active Ultimate Spells & Masteries ──
+    if (up.id === 'unlockVolley' && !isVolleyUnlocked) {
+      score += (wave >= 3 ? 85 : 45); // Rain of Fire Volley [F]
+    }
+    if (up.id === 'unlockFrostNova' && !isFrostUnlocked) {
+      score += (wave >= 5 ? 80 : 40); // Glacial Frost Nova [E]
+    }
+    if (up.id === 'volleyMastery' && isVolleyUnlocked) {
+      score += 80; // -4s cooldown & +10 flaming arrows
+    }
+    if (up.id === 'frostMastery' && isFrostUnlocked) {
+      score += 80; // -5s cooldown, +1.2s freeze & 60 AoE shatter
+    }
+    if (up.id === 'nukeStrike' || up.id === 'lightningStorm' || up.id === 'godMode') {
+      score += (wave >= 7 ? 70 : 30);
+    }
+
+    // ── 7. Economy Compounding in Early Nights ──
+    if (up.id === 'magnet' && wave <= 4) {
+      score += 75; // Bounty Hunter: +25% skulls early snowballs run
+    }
+
+    return score;
+  }
+
   public buildShop(upgrades: UpgradeItem[], player: any, tower: any, wave: number, onUpdate: () => void): void {
     const grid = document.getElementById('shop-items');
     if (!grid || !player) return;
@@ -271,6 +413,41 @@ export class UIManager {
         subTitleEl.innerHTML = `Fortify your hero archer and tower defenses with your gathered skulls. ${modeTag}`;
       } else {
         subTitleEl.innerHTML = `Night <span id="shop-wave-prev">${Math.max(1, wave)}</span> Cleared! Fortify your archer and tower defenses. ${modeTag}`;
+      }
+    }
+
+    // Update Active Bow Loadout Dock (Slot 1 & Slot 2)
+    const pBowId = player.primaryBow || 'normal';
+    const sBowId = player.secondaryBow || null;
+    const pBow = upgrades.find(u => u.id === (pBowId === 'ice' || pBowId === 'cryo' ? 'ice' : pBowId)) || { name: 'Standard Recurve Bow', icon: '🏹', statLabel: '25 Dmg • Standard Kinetic' };
+    const sBow = sBowId ? (upgrades.find(u => u.id === (sBowId === 'ice' || sBowId === 'cryo' ? 'ice' : sBowId)) || null) : null;
+
+    const icon1El = document.getElementById('loadout-icon-1');
+    const name1El = document.getElementById('loadout-name-1');
+    const stat1El = document.getElementById('loadout-stat-1');
+    if (icon1El) icon1El.textContent = pBow.icon || '🏹';
+    if (name1El) name1El.textContent = pBow.name;
+    if (stat1El) stat1El.textContent = pBow.statLabel || 'Primary Kinetic';
+
+    const icon2El = document.getElementById('loadout-icon-2');
+    const name2El = document.getElementById('loadout-name-2');
+    const stat2El = document.getElementById('loadout-stat-2');
+    const status2El = document.getElementById('loadout-status-2');
+    if (sBow) {
+      if (icon2El) icon2El.textContent = sBow.icon || '🏹';
+      if (name2El) name2El.textContent = sBow.name;
+      if (stat2El) stat2El.textContent = sBow.statLabel || 'Secondary Slot';
+      if (status2El) {
+        status2El.textContent = 'EQUIPPED';
+        status2El.className = 'loadout-status-pill secondary-pill equipped';
+      }
+    } else {
+      if (icon2El) icon2El.textContent = '➕';
+      if (name2El) name2El.textContent = 'Slot 2 Empty';
+      if (stat2El) stat2El.textContent = 'Equip an unlocked bow below';
+      if (status2El) {
+        status2El.textContent = 'EMPTY';
+        status2El.className = 'loadout-status-pill secondary-pill';
       }
     }
 
@@ -369,6 +546,7 @@ export class UIManager {
       const el = btn as HTMLElement;
       el.classList.toggle('active', el.dataset.cat === this.currentCategory);
       el.onclick = () => {
+        try { soundFX.playBowDraw(); } catch {}
         this.currentCategory = el.dataset.cat || 'all';
         this.buildShop(upgrades, player, tower, wave, onUpdate);
       };
@@ -379,6 +557,7 @@ export class UIManager {
     if (sortSelect) {
       sortSelect.value = this.currentSort;
       sortSelect.onchange = () => {
+        try { soundFX.playBowDraw(); } catch {}
         this.currentSort = sortSelect.value;
         this.buildShop(upgrades, player, tower, wave, onUpdate);
       };
@@ -389,9 +568,57 @@ export class UIManager {
       itemsToShow = itemsToShow.filter(u => u.category === this.currentCategory);
     }
 
-    const renderCard = (up: UpgradeItem) => {
+    // Pre-calculate recommendation scores for all upgrades
+    const recScores = new Map<string, number>();
+    upgrades.forEach(u => {
+      recScores.set(u.id, this.getUpgradeRecommendationScore(u, player, tower, wave));
+    });
+
+    // Valid recommended items (score >= 60) sorted descending
+    const validRecs = upgrades
+      .filter(u => (recScores.get(u.id) || 0) >= 60)
+      .sort((a, b) => (recScores.get(b.id) || 0) - (recScores.get(a.id) || 0));
+
+    // Assemble a diverse 4-Pillar Tactical Battle Loadout:
+    // Pillar 1: Best Weapon Arsenal / Offensive Active (category 'bows' or unlockVolley/unlockFrostNova)
+    // Pillar 2: Hero Stat / Stamina / Vitality Passive (category 'archer')
+    // Pillar 3: Citadel Fortification / Trap / Hazard (category 'tower')
+    // Pillar 4: Top Strategic Synergy (highest remaining score across any category)
+    const selectedPicks: UpgradeItem[] = [];
+    const usedIds = new Set<string>();
+
+    const pickBestFrom = (filterFn: (u: UpgradeItem) => boolean) => {
+      const best = validRecs.find(u => !usedIds.has(u.id) && filterFn(u));
+      if (best) {
+        selectedPicks.push(best);
+        usedIds.add(best.id);
+      }
+    };
+
+    // 1. Offense / Weapon Pillar
+    pickBestFrom(u => u.category === 'bows' || u.id === 'unlockVolley' || u.id === 'unlockFrostNova');
+    // 2. Hero Passive / Stamina Pillar
+    pickBestFrom(u => u.category === 'archer');
+    // 3. Fortress Defense Pillar
+    pickBestFrom(u => u.category === 'tower');
+    // 4. Fill remaining slots up to 4 with the highest scoring synergy picks
+    for (const u of validRecs) {
+      if (selectedPicks.length >= 4) break;
+      if (!usedIds.has(u.id)) {
+        selectedPicks.push(u);
+        usedIds.add(u.id);
+      }
+    }
+
+    // Top recommended IDs (up to 4)
+    const topRecommendedIds = new Set(selectedPicks.map(u => u.id));
+
+    const renderCard = (up: UpgradeItem, forceRecommendedBadge: boolean = false) => {
+      const isRecommended = forceRecommendedBadge || topRecommendedIds.has(up.id);
       const item = document.createElement('div');
+      
       item.className = 'shop-item';
+      if (isRecommended) item.classList.add('recommended');
 
       const isBowCategory = up.category === 'bows';
       const bowId = (up.id === 'cryo' || up.id === 'ice') ? 'ice' : (up.id as any);
@@ -429,29 +656,29 @@ export class UIManager {
         actionHtml = `
           <div class="shop-equip-slots">
             <button class="shop-slot-btn slot-1 ${isSlot1 ? 'equipped active' : ''}" type="button" title="Equip to Slot [1] Primary">
-              ${isSlot1 ? '[1] PRIMARY' : 'SET [1]'}
+              <span class="slot-tag">[1]</span> PRIMARY
             </button>
             <button class="shop-slot-btn slot-2 ${isSlot2 ? 'equipped active' : ''}" type="button" title="Equip to Slot [2] Secondary">
-              ${isSlot2 ? '[2] SECONDARY' : 'SET [2]'}
+              <span class="slot-tag">[2]</span> SECONDARY
             </button>
           </div>
         `;
       } else if (isFortressDefense) {
-        actionHtml = `<button class="shop-buy-btn btn-equipped">DEPLOYED</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-equipped">🛡️ DEPLOYED</button>`;
       } else if (isOneTimeBought) {
-        actionHtml = `<button class="shop-buy-btn btn-equipped">UNLOCKED</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-equipped">⚔️ UNLOCKED</button>`;
       } else if (isChargeSkill) {
         canAfford = player.skulls >= currentCost;
-        actionHtml = `<button class="shop-buy-btn" ${!canAfford ? 'disabled' : ''}>+1 CHARGE (💀 ${currentCost})</button>`;
+        actionHtml = `<button class="shop-buy-btn ${canAfford ? 'can-afford' : ''}" ${!canAfford ? 'disabled' : ''}>+1 CHARGE (💀 ${currentCost})</button>`;
       } else if (isEquipped) {
-        actionHtml = `<button class="shop-buy-btn btn-equipped">DEPLOYED</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-equipped">🛡️ DEPLOYED</button>`;
       } else if (isMaxed) {
-        actionHtml = `<button class="shop-buy-btn" disabled>MAX LEVEL</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-maxed" disabled>MAX RANK</button>`;
       } else if (isMasteryLocked) {
-        actionHtml = `<button class="shop-buy-btn" disabled style="opacity:0.6;font-size:12px;">🔒 REQUIRES UNLOCK</button>`;
+        actionHtml = `<button class="shop-buy-btn btn-locked" disabled style="opacity:0.6;font-size:11px;">🔒 LOCKED</button>`;
       } else {
         canAfford = player.skulls >= currentCost;
-        actionHtml = `<button class="shop-buy-btn" ${!canAfford ? 'disabled' : ''}>💀 ${currentCost}</button>`;
+        actionHtml = `<button class="shop-buy-btn ${canAfford ? 'can-afford' : ''}" ${!canAfford ? 'disabled' : ''}><span class="btn-skull-icon">💀</span> ${currentCost}</button>`;
       }
 
       if (isEquipped) item.classList.add('equipped');
@@ -459,10 +686,10 @@ export class UIManager {
 
       const isTowerEvolution = up.id === 'towerHP';
       const levelTag = isChargeSkill
-        ? `<span class="shop-lvl-badge" style="background:rgba(245,166,35,0.22);color:#f5a623;border-color:rgba(245,166,35,0.5);">x${charges} Ready</span>`
+        ? `<span class="shop-lvl-badge badge-charge">⚡ x${charges} READY</span>`
         : (isTowerEvolution
-          ? `<span class="shop-lvl-badge" style="background:rgba(241,196,15,0.22);color:#f1c40f;border-color:rgba(241,196,15,0.5);">Tier ${tower.tier || 1}/5</span>`
-          : (up.maxLevel ? `<span class="shop-lvl-badge">Lvl ${up.level || 0}/${up.maxLevel}</span>` : ''));
+          ? `<span class="shop-lvl-badge badge-tier">🏰 TIER ${tower.tier || 1}/5</span>`
+          : (up.maxLevel ? `<span class="shop-lvl-badge">RANK ${up.level || 0}/${up.maxLevel}</span>` : ''));
 
       const dynamicName = isTowerEvolution
         ? `Evolve Fortress (${tower.getTierName ? tower.getTierName() : 'Tier ' + (tower.tier || 1)})`
@@ -472,18 +699,31 @@ export class UIManager {
         ? (tower.tier >= 5 ? `Max Fortress Tier Reached! Impenetrable Apex Dragon Citadel.` : `Evolve from <b>${tower.getTierName ? tower.getTierName() : 'Tier ' + (tower.tier || 1)}</b> to <b>${tower.getNextTierName ? tower.getNextTierName() : 'Tier ' + ((tower.tier || 1) + 1)}</b>! Unlocks new stone masonry, battlements & braziers (+140 Max HP & Full Repair).`)
         : `${up.desc}${isVolleyLocked ? ' <span style="color:#ff6b6b;font-weight:700;">(Requires Volley Unlock)</span>' : ''}${isFrostLocked ? ' <span style="color:#ff6b6b;font-weight:700;">(Requires Frost Nova Unlock)</span>' : ''}`;
 
+      const recBadge = isRecommended ? `<span class="shop-rec-badge">★ RECOMMENDED</span>` : '';
+
       item.innerHTML = `
-        <div class="shop-item-icon">${up.icon}</div>
+        <div class="shop-item-media">
+          <div class="shop-item-icon">${up.icon}</div>
+        </div>
         <div class="shop-item-content">
           <div class="shop-item-header">
             <div class="shop-item-name">${dynamicName}</div>
+            ${recBadge}
             ${levelTag}
           </div>
           <div class="shop-item-desc">${dynamicDesc}</div>
-          ${up.statLabel ? `<div class="shop-item-stat" style="font-size:11px;color:#f5a623;font-weight:700;margin-top:3px;">⚡ ${up.statLabel}</div>` : ''}
+          ${up.statLabel ? `<div class="shop-item-stat"><span class="stat-glyph">⚡</span> ${up.statLabel}</div>` : ''}
         </div>
-        ${actionHtml}
+        <div class="shop-item-action-wrap">
+          ${actionHtml}
+        </div>
       `;
+
+      item.onmouseenter = () => {
+        if (!item.classList.contains('disabled')) {
+          try { soundFX.playBowDraw(); } catch {}
+        }
+      };
 
       if (isBowCategory && up.bought) {
         const slot1Btn = item.querySelector('.shop-slot-btn.slot-1') as HTMLButtonElement;
@@ -607,18 +847,57 @@ export class UIManager {
       grid.appendChild(item);
     };
 
-    // Sorting
-    if (this.currentSort === 'cost-asc') {
+    // Sorting & Layout
+    if (this.currentSort === 'recommended') {
+      if (this.currentCategory === 'all') {
+        const recommendedPicks = selectedPicks;
+        if (recommendedPicks.length > 0) {
+          const recHeader = document.createElement('div');
+          recHeader.className = 'shop-recommended-header';
+          recHeader.innerHTML = `
+            <div class="rec-left">
+              <span class="rec-icon">⚔️</span>
+              <span class="rec-title">RECOMMENDED BUILDS (NIGHT ${Math.max(1, wave)})</span>
+            </div>
+            <span class="rec-sub">★ OPTIMAL COMBAT SYNERGIES FOR YOUR SKULLS</span>
+          `;
+          grid.appendChild(recHeader);
+          recommendedPicks.forEach(u => renderCard(u, true));
+
+          const allTitle = document.createElement('div');
+          allTitle.className = 'shop-section-title';
+          allTitle.innerHTML = `<span class="sec-icon">📜</span> ALL AVAILABLE ARMORY RELICS`;
+          grid.appendChild(allTitle);
+        }
+
+        const remainingItems = itemsToShow.filter(u => !topRecommendedIds.has(u.id));
+        remainingItems.sort((a, b) => {
+          const scoreA = recScores.get(a.id) || 0;
+          const scoreB = recScores.get(b.id) || 0;
+          if (scoreA !== scoreB) return scoreB - scoreA;
+          return this.getUpgradeCost(a) - this.getUpgradeCost(b);
+        });
+        remainingItems.forEach(u => renderCard(u, false));
+      } else {
+        itemsToShow.sort((a, b) => {
+          const scoreA = recScores.get(a.id) || 0;
+          const scoreB = recScores.get(b.id) || 0;
+          if (scoreA !== scoreB) return scoreB - scoreA;
+          return this.getUpgradeCost(a) - this.getUpgradeCost(b);
+        });
+        itemsToShow.forEach(u => renderCard(u, topRecommendedIds.has(u.id)));
+      }
+    } else if (this.currentSort === 'cost-asc') {
       itemsToShow.sort((a, b) => this.getUpgradeCost(a) - this.getUpgradeCost(b));
-      itemsToShow.forEach(renderCard);
+      itemsToShow.forEach(u => renderCard(u, topRecommendedIds.has(u.id)));
     } else if (this.currentSort === 'cost-desc') {
       itemsToShow.sort((a, b) => this.getUpgradeCost(b) - this.getUpgradeCost(a));
-      itemsToShow.forEach(renderCard);
+      itemsToShow.forEach(u => renderCard(u, topRecommendedIds.has(u.id)));
     } else if (this.currentSort === 'name-asc') {
       itemsToShow.sort((a, b) => a.name.localeCompare(b.name));
-      itemsToShow.forEach(renderCard);
+      itemsToShow.forEach(u => renderCard(u, topRecommendedIds.has(u.id)));
     } else {
-      // Default: By Criteria Groups
+      // Category Groups (Category Order)
       if (this.currentCategory === 'all') {
         const groups = [
           { id: 'bows', title: 'Weapon Arsenal' },
@@ -633,12 +912,12 @@ export class UIManager {
             h.className = 'shop-section-title';
             h.textContent = g.title;
             grid.appendChild(h);
-            groupItems.forEach(renderCard);
+            groupItems.forEach(u => renderCard(u, topRecommendedIds.has(u.id)));
           }
         });
       } else {
         itemsToShow.sort((a, b) => this.getUpgradeCost(a) - this.getUpgradeCost(b));
-        itemsToShow.forEach(renderCard);
+        itemsToShow.forEach(u => renderCard(u, topRecommendedIds.has(u.id)));
       }
     }
   }
@@ -759,6 +1038,172 @@ export class UIManager {
 
       container.appendChild(card);
     });
+  }
+
+  public currentLeaderboardMode: 'endless' | 'campaign' = 'endless';
+
+  public async buildLeaderboard(
+    mode: 'endless' | 'campaign' = 'endless',
+    playerBestWave: number = 1,
+    playerSkulls: number = 0,
+    onModeChange?: (newMode: 'endless' | 'campaign') => void
+  ): Promise<void> {
+    this.currentLeaderboardMode = mode;
+
+    // 1. Update Mode Tabs
+    const tabEndless = document.getElementById('lb-tab-endless');
+    const tabCampaign = document.getElementById('lb-tab-campaign');
+
+    if (tabEndless && tabCampaign) {
+      if (mode === 'endless') {
+        tabEndless.classList.add('active');
+        tabCampaign.classList.remove('active');
+      } else {
+        tabCampaign.classList.add('active');
+        tabEndless.classList.remove('active');
+      }
+
+      tabEndless.onclick = () => {
+        soundFX.playBowDraw();
+        if (onModeChange) onModeChange('endless');
+      };
+      tabCampaign.onclick = () => {
+        soundFX.playBowDraw();
+        if (onModeChange) onModeChange('campaign');
+      };
+    }
+
+    // 2. Fetch User & Update Avatar / Status
+    const userChipName = document.getElementById('leaderboard-user-name');
+    const userChipStatus = document.getElementById('leaderboard-user-status');
+    const userAvatarSlot = document.getElementById('leaderboard-user-avatar');
+
+    try {
+      const user = await crazyGames.getUser();
+      if (user && user.username) {
+        if (userChipName) userChipName.textContent = user.username.toUpperCase();
+        if (userChipStatus) {
+          userChipStatus.innerHTML = `<span style="color:#2ecc71;">●</span> CRAZYGAMES VERIFIED`;
+          userChipStatus.style.borderColor = 'rgba(46, 204, 113, 0.4)';
+        }
+        if (userAvatarSlot && user.profilePictureUrl) {
+          userAvatarSlot.innerHTML = `<img src="${user.profilePictureUrl}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+        }
+      } else {
+        if (userChipName) userChipName.textContent = 'SURVIVOR (YOU)';
+        if (userChipStatus) {
+          userChipStatus.innerHTML = `<span>GUEST SURVIVOR</span> <span style="text-decoration:underline;cursor:pointer;margin-left:4px;color:#ffd700;" id="lb-auth-btn">SIGN IN</span>`;
+          document.getElementById('lb-auth-btn')?.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            soundFX.playBowDraw();
+            const loggedIn = await crazyGames.showAuthPrompt();
+            if (loggedIn && loggedIn.username) {
+              this.buildLeaderboard(this.currentLeaderboardMode, safeWave, playerSkulls, onModeChange);
+            }
+          });
+        }
+      }
+
+      crazyGames.onAuthChange = (newUser) => {
+        if (document.getElementById('screen-leaderboard')?.classList.contains('active')) {
+          this.buildLeaderboard(this.currentLeaderboardMode, safeWave, playerSkulls, onModeChange);
+        }
+      };
+    } catch {}
+
+    // 3. Compute Player Personal Best and Standing
+    const safeWave = Math.max(1, playerBestWave);
+    const pbBestEl = document.getElementById('lb-player-best');
+    const pbSkullsEl = document.getElementById('lb-player-skulls');
+    const pbTierEl = document.getElementById('lb-player-tier');
+    const pbRankEl = document.getElementById('lb-player-rank');
+
+    if (pbBestEl) pbBestEl.textContent = `NIGHT ${safeWave}`;
+    if (pbSkullsEl) pbSkullsEl.textContent = `💀 ${playerSkulls.toLocaleString()}`;
+
+    let tierName = 'FRONTIER SCOUT';
+    if (safeWave >= 30) tierName = 'IMMORTAL APEX HUNTER';
+    else if (safeWave >= 20) tierName = 'TITAN EXECUTIONER';
+    else if (safeWave >= 15) tierName = 'VETERAN WARDEN';
+    else if (safeWave >= 8) tierName = 'ELITE DEFENDER';
+    else if (safeWave >= 4) tierName = 'SHARPSHOOTER';
+    if (pbTierEl) pbTierEl.textContent = tierName;
+
+    // 4. Standings: Query Real SDK Leaderboard or Display Verified Player Records
+    interface LeaderboardEntry {
+      rank: number;
+      name: string;
+      wave: number;
+      skulls: number;
+      isPlayer?: boolean;
+    }
+
+    const rawPlayerName = (userChipName?.textContent || 'SURVIVOR (YOU)').replace(' (YOU)', '').trim();
+    const listContainer = document.getElementById('leaderboard-list');
+
+    // Attempt to fetch real external entries if provided by bridge / platform
+    const externalEntries = await crazyGames.getLeaderboardEntries(mode);
+
+    if (listContainer) {
+      listContainer.innerHTML = '';
+
+      if (externalEntries && externalEntries.length > 0) {
+        // Real platform entries returned by backend
+        externalEntries.forEach((entry) => {
+          const row = document.createElement('div');
+          row.className = `leaderboard-row ${entry.isPlayer ? 'player-row' : ''}`;
+
+          let rankBadge = `${entry.rank}`;
+          let medalClass = '';
+          if (entry.rank === 1) {
+            rankBadge = '🥇 1';
+            medalClass = 'rank-gold';
+          } else if (entry.rank === 2) {
+            rankBadge = '🥈 2';
+            medalClass = 'rank-silver';
+          } else if (entry.rank === 3) {
+            rankBadge = '🥉 3';
+            medalClass = 'rank-bronze';
+          }
+
+          row.innerHTML = `
+            <div class="col-rank ${medalClass}"><span class="rank-pill">${rankBadge}</span></div>
+            <div class="col-player">
+              <span class="player-icon">${entry.isPlayer ? '🏹' : '💀'}</span>
+              <span class="player-text ${entry.isPlayer ? 'highlight-player' : ''}">${entry.name}</span>
+            </div>
+            <div class="col-wave"><span class="wave-pill">Night ${entry.score}</span></div>
+            <div class="col-score">${entry.skulls ? `💀 ${entry.skulls.toLocaleString()}` : '—'}</div>
+          `;
+
+          listContainer.appendChild(row);
+        });
+
+        const playerRankItem = externalEntries.find(r => r.isPlayer);
+        if (pbRankEl) pbRankEl.textContent = playerRankItem ? `#${playerRankItem.rank}` : '#1';
+      } else {
+        // CrazyGames SDK v3 native mode:
+        // No fake/dummy entries. Display genuine player record & official CrazyGames submission sync info.
+        if (pbRankEl) pbRankEl.textContent = '#1 (YOU)';
+
+        // Genuine Player Record Row
+        const playerRow = document.createElement('div');
+        playerRow.className = 'leaderboard-row player-row';
+        playerRow.innerHTML = `
+          <div class="col-rank rank-gold"><span class="rank-pill">🏆 #1</span></div>
+          <div class="col-player">
+            <span class="player-icon">🏹</span>
+            <span class="player-text highlight-player">${rawPlayerName} (YOU)</span>
+          </div>
+          <div class="col-wave"><span class="wave-pill">Night ${safeWave}</span></div>
+          <div class="col-score">💀 ${playerSkulls.toLocaleString()}</div>
+        `;
+        listContainer.appendChild(playerRow);
+      }
+    }
+
+    // Submit live score to CrazyGames SDK & bridge
+    crazyGames.submitScore(safeWave, mode);
   }
 }
 

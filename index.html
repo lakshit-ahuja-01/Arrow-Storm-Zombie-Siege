@@ -144,6 +144,7 @@
                 <span class="nav-btn-text">HERO SKINS</span>
                 <span class="nav-badge-pill">WARDROBE</span>
               </button>
+              
               <!-- Reset Progress / Start Fresh -->
               <button id="btn-menu-reset" class="zombie-nav-btn nav-white nav-reset" type="button" title="Reset all progress and start completely fresh">
                 <span class="nav-btn-text">RESET DATA</span>
@@ -283,6 +284,7 @@
             </svg>
             <span class="btn-main-text">RETRY DEFENSE</span>
           </button>
+          
           <button id="btn-menu" class="btn btn-ghost" type="button">
             <svg class="btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -602,139 +604,13 @@
         <span class="jump-text">JUMP</span>
       </button>
 
-      <!-- First-Time Player Direction & Aiming Tutorial Overlay -->
-      <div id="tutorial-direction-overlay" class="tutorial-direction-overlay hidden" aria-live="polite">
-        <!-- 🖥️ DESKTOP VARIANT -->
-        <div class="tutorial-variant desktop-variant">
-          <div class="tutorial-card desktop-card">
-            <div class="tutorial-badge-row">
-              <span class="tutorial-badge desktop-badge">FORTRESS DEFENSE MANUAL</span>
-              <span class="tutorial-night-tag">NIGHT 1 BRIEFING</span>
-            </div>
-            <h3 class="tutorial-title">AIM &amp; FIRE DIRECTION</h3>
-            <div class="tutorial-subtitle">DRAW YOUR BOW &amp; REPEL THE UNDEAD HORDE</div>
-            
-            <div class="tutorial-visual-row desktop-visual-row">
-              <div class="tutorial-mouse-anim">
-                <svg class="tutorial-mouse-svg" viewBox="0 0 32 48" fill="none" stroke="currentColor">
-                  <rect x="3" y="3" width="26" height="42" rx="13" stroke-width="2.5" />
-                  <line x1="16" y1="3" x2="16" y2="20" stroke-width="2" />
-                  <line x1="3" y1="20" x2="29" y2="20" stroke-width="2" />
-                  <path class="mouse-lmb-pulse" d="M 3 16 A 13 13 0 0 1 16 3 L 16 20 L 3 20 Z" fill="#ff2222" />
-                  <rect x="14" y="8" width="4" height="7" rx="2" fill="#ffffff" />
-                </svg>
-                <div class="mouse-pulse-ring"></div>
-              </div>
-              <div class="tutorial-arrow-stream">
-                <span class="arrow-dot dot-1">&gt;</span>
-                <span class="arrow-dot dot-2">&gt;</span>
-                <span class="arrow-dot dot-3">&gt;</span>
-                <div class="target-head-marker">
-                  <span class="arrow-target-icon">🎯</span>
-                  <span class="target-head-label">ZOMBIE LANE</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="desktop-controls-grid">
-              <div class="control-box">
-                <div class="control-header"><span class="ctrl-icon">🖱️</span> <strong>CLICK &amp; DRAG</strong></div>
-                <div class="control-desc">Hold left click to draw bow, drag right to adjust arc, release to fire</div>
-              </div>
-              <div class="control-box">
-                <div class="control-header"><kbd class="key-pill">SPACE</kbd> <strong>JUMP &amp; DODGE</strong></div>
-                <div class="control-desc">Leap to dodge incoming arrows, cleavers &amp; ground shockwaves</div>
-              </div>
-              <div class="control-box">
-                <div class="control-header"><kbd class="key-pill">1</kbd> <kbd class="key-pill">2</kbd> <kbd class="key-pill">Q</kbd> <strong>SWAP WEAPONS</strong></div>
-                <div class="control-desc">Quickly toggle between primary &amp; secondary bows</div>
-              </div>
-              <div class="control-box">
-                <div class="control-header"><kbd class="key-pill">F</kbd> <kbd class="key-pill">E</kbd> <strong>SPECIAL SKILLS</strong></div>
-                <div class="control-desc">Rain of Fire Volley &amp; Glacial Frost Nova</div>
-              </div>
-            </div>
-
-            <button id="btn-tutorial-dismiss-desktop" class="btn btn-primary btn-tutorial-dismiss desktop-dismiss-btn" type="button">
-              <span>GOT IT! START DEFENDING 🏹</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 📱 MOBILE VARIANT -->
-        <div class="tutorial-variant mobile-variant">
-          <div class="tutorial-card mobile-card">
-            <div class="tutorial-badge-row">
-              <span class="tutorial-badge mobile-badge">FORTRESS DEFENSE MANUAL</span>
-              <span class="tutorial-night-tag">TOUCH BRIEFING</span>
-            </div>
-            <h3 class="tutorial-title mobile-title">AIM &amp; DODGE CONTROLS</h3>
-            <div class="tutorial-subtitle">DEFEND THE FORTRESS WALL FROM INCOMING ZOMBIES</div>
-
-            <div class="mobile-dual-layout">
-              <!-- Action 1: Touch & Drag to Aim -->
-              <div class="mobile-action-card aim-action">
-                <div class="mobile-action-icon">
-                  <div class="touch-anim-wrapper">
-                    <svg class="touch-finger-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-                      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-                      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-                      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.83L7 15"/>
-                    </svg>
-                    <div class="touch-ring-anim"></div>
-                  </div>
-                </div>
-                <div class="mobile-action-text">
-                  <div class="action-heading">🏹 TOUCH &amp; DRAG TO AIM</div>
-                  <div class="action-desc">Touch anywhere, drag towards zombies on the right, release to fire!</div>
-                </div>
-              </div>
-
-              <!-- Action 2: On-Screen Jump Button -->
-              <div class="mobile-action-card jump-action">
-                <div class="mobile-action-icon">
-                  <div class="mini-jump-badge">
-                    <svg class="mini-jump-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                      <path d="M12 19V5M5 12l7-7 7 7"/>
-                    </svg>
-                    <span>JUMP</span>
-                  </div>
-                </div>
-                <div class="mobile-action-text">
-                  <div id="tutorial-jump-heading" class="action-heading">🦘 TAP [JUMP] (BOTTOM-RIGHT)</div>
-                  <div class="action-desc">Leap to dodge enemy arrows, cleavers &amp; boss shockwaves!</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Mobile Jump Placement Selector (Full-Width Responsive Row) -->
-            <div class="tutorial-jump-pos-row">
-              <span class="tutorial-jump-pos-label">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg" style="width: 14px; height: 14px; color: #ff2a3b;"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                JUMP BUTTON SIDE:
-              </span>
-              <div class="jump-pos-toggle-group">
-                <button type="button" id="btn-tutorial-jump-left" class="btn-jump-pill" data-pos="left">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                  <span>LEFT</span>
-                </button>
-                <button type="button" id="btn-tutorial-jump-right" class="btn-jump-pill active" data-pos="right">
-                  <span>RIGHT (DEFAULT)</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="pos-svg"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Direction Indicator to right -->
-            <div class="mobile-lane-prompt">
-              <span class="lane-tag">AIM RIGHT 👉</span>
-              <span class="lane-detail">Zombies advance from the right • Headshots deal 2.5x critical damage! 💀</span>
-            </div>
-
-            <button id="btn-tutorial-dismiss-mobile" class="btn btn-primary btn-tutorial-dismiss mobile-dismiss-btn" type="button">
-              <span>TAP TO DEFEND FORTRESS 🏹</span>
-            </button>
+      <!-- Non-Blocking Seamless Onboarding Aim Guide (CrazyGames Quality Guidelines Compliant) -->
+      <div id="ingame-aim-guide" class="ingame-aim-guide hidden" aria-live="polite">
+        <div class="aim-guide-content">
+          <div class="aim-guide-icon-pulse">🏹</div>
+          <div class="aim-guide-text-col">
+            <span class="aim-guide-main" id="aim-guide-text">CLICK &amp; DRAG TO AIM • RELEASE TO FIRE</span>
+            <span class="aim-guide-sub">Aim for the head to land Critical Hits! Space to Jump</span>
           </div>
         </div>
       </div>
@@ -887,7 +763,9 @@
       </div>
     </div>
 
-    <!-- Reset Progress Confirmation Modal -->
+    
+
+        <!-- Reset Progress Confirmation Modal -->
     <div id="modal-reset-confirm" class="reset-confirm-overlay hidden">
       <div class="reset-confirm-card">
         <div class="reset-confirm-icon">💀</div>

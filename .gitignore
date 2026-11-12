@@ -8,6 +8,7 @@ crazygames-upload/
 fbinstant-upload/
 poki-upload/
 playgama-upload/
+youtube-playables-upload/
 *.mp4
 chrome-zombie-siege*
 Screen_Recording*
@@ -16,3 +17,5 @@ src/ChatGPT Image*
 *.avif
 src/arrow-storm-zombie-siege-cover-1920x1080-muted.png
 arrow-storm-zombie-siege-cover-1920x1080.png
+*_backup.jpg
+zombie_800x800.jpg

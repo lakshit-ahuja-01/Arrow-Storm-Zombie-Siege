@@ -33,12 +33,17 @@ if (fs.existsSync(fbConfig)) {
   fs.rmSync(fbConfig);
 }
 
-// Ensure playgama-bridge-config.json is placed in root
+// Ensure playgama-bridge-config.json is placed in root AND in public/ subdirectory
 const rootBridgeConfig = path.join(rootDir, 'public', 'playgama-bridge-config.json');
-const targetBridgeConfig = path.join(uploadDir, 'playgama-bridge-config.json');
+const targetBridgeConfigRoot = path.join(uploadDir, 'playgama-bridge-config.json');
+const publicSubdir = path.join(uploadDir, 'public');
+const targetBridgeConfigPublic = path.join(publicSubdir, 'playgama-bridge-config.json');
+
 if (fs.existsSync(rootBridgeConfig)) {
-  fs.copyFileSync(rootBridgeConfig, targetBridgeConfig);
-  console.log('✅ [Playgama Build] Verified playgama-bridge-config.json in archive root');
+  fs.copyFileSync(rootBridgeConfig, targetBridgeConfigRoot);
+  if (!fs.existsSync(publicSubdir)) fs.mkdirSync(publicSubdir, { recursive: true });
+  fs.copyFileSync(rootBridgeConfig, targetBridgeConfigPublic);
+  console.log('✅ [Playgama Build] Verified playgama-bridge-config.json at root AND public/');
 }
 
 // 3. Inject official Playgama Bridge script in index.html

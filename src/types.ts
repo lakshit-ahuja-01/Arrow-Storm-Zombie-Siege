@@ -75,7 +75,7 @@ export interface UpgradeItem {
   bought?: boolean;
 }
 
-export type GameState = 'menu' | 'playing' | 'shop' | 'pause' | 'gameover' | 'victory' | 'wardrobe';
+export type GameState = 'menu' | 'playing' | 'shop' | 'pause' | 'gameover' | 'victory' | 'wardrobe' | 'leaderboard';
 
 export interface FloatingText {
   text: string;
@@ -88,4 +88,13 @@ export interface FloatingText {
   life: number;
   maxLife: number;
   scale: number;
+}
+
+export interface RunBounty {
+  id: string;
+  title: string;
+  target: number;
+  current: number;
+  reward: number;
+  type: 'headshots' | 'kills' | 'night' | 'combo';
 }

@@ -4,11 +4,12 @@ import { Tower } from '../entities/Tower';
 import { Zombie } from '../entities/Zombie';
 import { Arrow } from '../entities/Arrow';
 import { Pickup } from '../entities/Pickup';
-import { FloatingText, UpgradeItem, GameState, GameMode, ZombieType, BowType, BOW_METADATA, HeroSkinId } from '../types';
+import { FloatingText, UpgradeItem, GameState, GameMode, ZombieType, BowType, BOW_METADATA, HeroSkinId, RunBounty } from '../types';
 import { createUpgradeCatalog } from '../systems/UpgradeCatalog';
 import { soundFX } from '../systems/SoundFX';
 import { uiManager } from '../systems/UIManager';
 import { crazyGames } from '../systems/CrazyGamesSDK';
+import { youtubePlayables } from '../systems/YouTubePlayablesSDK';
 import { getGameResolution } from '../main';
 import { isMobileDevice } from '../utils/DeviceDetection';
 import { applyJumpButtonPosition } from '../utils/MobileControls';
@@ -105,6 +106,7 @@ export class MainScene extends Phaser.Scene {
   public set endlessSkullsBanked(v: number) { this.endlessRunSkullsBanked = v; }
   public waveCompleting: boolean = false;
   public waveCompleteDelay: number = 0;
+  public hasUsedSecondChance: boolean = false;
   public isDirectionTutorialActive: boolean = false;
   public tutorialShotsFired: number = 0;
 
@@ -113,6 +115,18 @@ export class MainScene extends Phaser.Scene {
   public hitStopTimer: number = 0;
   public combo: number = 0;
   public comboTimer: number = 0;
+  public activeBounty: RunBounty | null = null;
+  public currentBountyIdx: number = 0;
+  public goblinSpawnedThisWave: boolean = false;
+  public bountiesSequence: Array<Omit<RunBounty, 'current'>> = [
+    { id: 'b_headshots_1', title: '3 Headshots', target: 3, reward: 15, type: 'headshots' },
+    { id: 'b_night_3', title: 'Survive to Night 3', target: 3, reward: 20, type: 'night' },
+    { id: 'b_kills_15', title: 'Slay 15 Undead', target: 15, reward: 20, type: 'kills' },
+    { id: 'b_combo_5', title: '5x Combo Streak', target: 5, reward: 25, type: 'combo' },
+    { id: 'b_night_5', title: 'Survive to Night 5', target: 5, reward: 30, type: 'night' },
+    { id: 'b_headshots_10', title: '10 Headshots', target: 10, reward: 35, type: 'headshots' },
+    { id: 'b_kills_35', title: 'Slay 35 Undead', target: 35, reward: 40, type: 'kills' }
+  ];
 
   private graphicsLayer!: Phaser.GameObjects.Graphics;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -258,8 +272,8 @@ export class MainScene extends Phaser.Scene {
   }> = [];
 
   // ── Active Tactical Ultimate Skills ([F] / [E] / [R] / [T] / [G]) ──
-  public hasVolleyUnlocked: boolean = false;
-  public hasFrostNovaUnlocked: boolean = false;
+  public hasVolleyUnlocked: boolean = true;
+  public hasFrostNovaUnlocked: boolean = true;
   public volleyCooldown: number = 0;
   public volleyMaxCooldown: number = 24;
   public volleyArrowCount: number = 28;
@@ -354,7 +368,6 @@ export class MainScene extends Phaser.Scene {
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       try { soundFX.ensure(); } catch {}
-      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && (pointer.leftButtonDown() || pointer.isDown) && this.player && !this.player.dead) {
         this.player.setAim(pointer.worldX, pointer.worldY);
         this.player.startCharge();
@@ -362,11 +375,13 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
-      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && this.player.isCharging) {
         this.player.setAim(pointer.worldX, pointer.worldY);
         const released = this.player.releaseArrow();
         if (released) {
+          if (this.isDirectionTutorialActive) {
+            this.completeDirectionTutorial();
+          }
           const spawnPos = this.player.getBowTipPosition();
           released.forEach(r => {
             const startX = r.x !== undefined ? r.x : spawnPos.x;
@@ -416,12 +431,14 @@ export class MainScene extends Phaser.Scene {
     });
 
     window.addEventListener('mouseup', (e: MouseEvent) => {
-      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && this.player.isCharging) {
         const coords = getAimCoords(e.clientX, e.clientY);
         this.player.setAim(coords.x, coords.y);
         const released = this.player.releaseArrow();
         if (released) {
+          if (this.isDirectionTutorialActive) {
+            this.completeDirectionTutorial();
+          }
           const spawnPos = this.player.getBowTipPosition();
           released.forEach(r => {
             const startX = r.x !== undefined ? r.x : spawnPos.x;
@@ -443,7 +460,6 @@ export class MainScene extends Phaser.Scene {
         return;
       }
       try { soundFX.ensure(); } catch {}
-      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && !this.player.dead && e.touches.length > 0) {
         const coords = getAimCoords(e.touches[0].clientX, e.touches[0].clientY);
         this.player.setAim(coords.x, coords.y);
@@ -459,7 +475,6 @@ export class MainScene extends Phaser.Scene {
     }, { passive: true });
 
     window.addEventListener('touchend', (e: TouchEvent) => {
-      if (this.isDirectionTutorialActive) return;
       if (this.state === 'playing' && this.player && this.player.isCharging) {
         if (e.changedTouches && e.changedTouches.length > 0) {
           const coords = getAimCoords(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
@@ -467,6 +482,9 @@ export class MainScene extends Phaser.Scene {
         }
         const released = this.player.releaseArrow();
         if (released) {
+          if (this.isDirectionTutorialActive) {
+            this.completeDirectionTutorial();
+          }
           const spawnPos = this.player.getBowTipPosition();
           released.forEach(r => {
             const startX = r.x !== undefined ? r.x : spawnPos.x;
@@ -533,6 +551,30 @@ export class MainScene extends Phaser.Scene {
       btnWardrobeBack.onclick = () => {
         soundFX.playBowDraw();
         this.returnToMenu();
+      };
+    }
+
+    const btnMenuLeaderboard = document.getElementById('btn-menu-leaderboard');
+    if (btnMenuLeaderboard) {
+      btnMenuLeaderboard.onclick = () => {
+        soundFX.playBowDraw();
+        this.openLeaderboard('menu');
+      };
+    }
+
+    const btnGameoverLeaderboard = document.getElementById('btn-gameover-leaderboard');
+    if (btnGameoverLeaderboard) {
+      btnGameoverLeaderboard.onclick = () => {
+        soundFX.playBowDraw();
+        this.openLeaderboard('gameover');
+      };
+    }
+
+    const btnLeaderboardBack = document.getElementById('btn-leaderboard-back');
+    if (btnLeaderboardBack) {
+      btnLeaderboardBack.onclick = () => {
+        soundFX.playBowDraw();
+        this.closeLeaderboard();
       };
     }
 
@@ -693,40 +735,26 @@ export class MainScene extends Phaser.Scene {
       };
     }
 
-    const btnVolley = document.getElementById('skill-btn-volley');
-    if (btnVolley) {
-      btnVolley.onclick = () => {
-        if (this.state === 'playing') this.triggerArrowVolley();
+    const bindSkillBtn = (btnId: string, action: () => void) => {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      const handler = (ev: Event) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try { soundFX.ensure(); } catch {}
+        if (this.state === 'playing') action();
       };
-    }
+      btn.onclick = handler;
+      btn.addEventListener('pointerdown', handler);
+      btn.addEventListener('touchstart', handler, { passive: false });
+    };
 
-    const btnFrost = document.getElementById('skill-btn-frost');
-    if (btnFrost) {
-      btnFrost.onclick = () => {
-        if (this.state === 'playing') this.triggerFrostNova();
-      };
-    }
-
-    const btnNuke = document.getElementById('skill-btn-nuke');
-    if (btnNuke) {
-      btnNuke.onclick = () => {
-        if (this.state === 'playing') this.triggerNukeStrike();
-      };
-    }
-
-    const btnLightning = document.getElementById('skill-btn-lightning') || document.getElementById('skill-btn-freeze');
-    if (btnLightning) {
-      btnLightning.onclick = () => {
-        if (this.state === 'playing') this.triggerChainLightning();
-      };
-    }
-
-    const btnAegis = document.getElementById('skill-btn-aegis');
-    if (btnAegis) {
-      btnAegis.onclick = () => {
-        if (this.state === 'playing') this.triggerDivineAegis();
-      };
-    }
+    bindSkillBtn('skill-btn-volley', () => this.triggerArrowVolley());
+    bindSkillBtn('skill-btn-frost', () => this.triggerFrostNova());
+    bindSkillBtn('skill-btn-nuke', () => this.triggerNukeStrike());
+    bindSkillBtn('skill-btn-lightning', () => this.triggerChainLightning());
+    bindSkillBtn('skill-btn-freeze', () => this.triggerChainLightning());
+    bindSkillBtn('skill-btn-aegis', () => this.triggerDivineAegis());
 
     const btnMobileJump = document.getElementById('mobile-jump-btn');
     if (btnMobileJump) {
@@ -758,12 +786,8 @@ export class MainScene extends Phaser.Scene {
         }
       }
 
-      if (this.isDirectionTutorialActive) {
-        if (code === 'Space' || code === 'Enter') {
-          e.preventDefault();
-          this.completeDirectionTutorial();
-        }
-        return;
+      if (this.isDirectionTutorialActive && code === 'Space') {
+        this.completeDirectionTutorial();
       }
 
       if (this.state === 'playing' && this.player && !this.player.dead) {
@@ -799,6 +823,21 @@ export class MainScene extends Phaser.Scene {
         document.getElementById('btn-next-wave')?.click();
       }
     });
+
+    // Hook up YouTube Playables platform pause/resume listeners
+    youtubePlayables.registerPauseListener(() => {
+      if (this.state === 'playing') {
+        this.togglePause();
+      }
+    });
+    youtubePlayables.registerResumeListener(() => {
+      if (this.state === 'pause') {
+        this.togglePause();
+      }
+    });
+
+    // Notify YouTube Playables that game assets & UI are loaded and interactive
+    youtubePlayables.gameReady();
   }
 
   public restartWave(): void {
@@ -845,6 +884,9 @@ export class MainScene extends Phaser.Scene {
     this.currentRunSkullsEarned = 0;
     this.combo = 0;
     this.comboTimer = 0;
+    this.hasUsedSecondChance = false;
+    this.goblinSpawnedThisWave = false;
+    this.initBounties();
     this.waveFeaturedSpawned = false;
     this.waveCompleting = false;
     this.waveCompleteDelay = 0;
@@ -876,8 +918,8 @@ export class MainScene extends Phaser.Scene {
         this.tower.maxHP = 300;
         this.tower.hp = 300;
       }
-      this.hasVolleyUnlocked = false;
-      this.hasFrostNovaUnlocked = false;
+      this.hasVolleyUnlocked = true;
+      this.hasFrostNovaUnlocked = true;
       this.volleyMaxCooldown = 24;
       this.volleyArrowCount = 28;
       this.frostNovaMaxCooldown = 28;
@@ -936,7 +978,10 @@ export class MainScene extends Phaser.Scene {
     this.updateWeaponHUD();
     uiManager.updateHUD(this.player, this.tower, this.wave, 0, this.kills, this.gameMode);
 
-    // First-Time Player Direction & Aiming Tutorial Check
+    // Start cinematic atmospheric ambient music
+    soundFX.startBGM();
+
+    // First-Time Player Direction & Aiming Seamless In-Game Guide Check
     let isFirstTime = false;
     try {
       const tutorialSeen = localStorage.getItem('ragdoll_archers_tutorial_seen');
@@ -948,30 +993,31 @@ export class MainScene extends Phaser.Scene {
     if (isFirstTime) {
       this.isDirectionTutorialActive = true;
       this.tutorialShotsFired = 0;
-
-      // Spawn a stationary practice Walker Zombie right at the aim lane target so player sees what to aim at
-      const targetX = Math.min((this.player?.getBowTipPosition().x || 200) + 400, this.cameras.main.width - 120);
-      const targetZombie = new Zombie(this, targetX, 1, 'walker');
-      targetZombie.speed = 0; // 🛑 100% Frozen/Stopped in place
-      this.zombies = [targetZombie];
-
       this.showDirectionTutorialUI();
-      try { this.matter.world.pause(); } catch {}
-      try { crazyGames.gameplayStop(); } catch {}
-      // 🛑 Game & Zombie are 100% stopped! The zombie is frozen in place until player clicks "GOT IT! START DEFENDING"
+
+      // Auto-dismiss guide after 7 seconds if the player hasn't shot yet
+      setTimeout(() => {
+        if (this.isDirectionTutorialActive) {
+          this.completeDirectionTutorial();
+        }
+      }, 7000);
     } else {
       this.isDirectionTutorialActive = false;
       this.hideDirectionTutorialUI();
-      this.startNextWave();
     }
+
+    // Always start gameplay and wave 1 immediately (CrazyGames Quality Guidelines compliant)
+    this.startNextWave();
   }
 
   public showVictoryScreen(): void {
     crazyGames.gameplayStop();
     crazyGames.happyTime();
+    soundFX.stopBGM();
     this.campaignCompleted = true;
     this.campaignWave = 1;
     this.saveGameData();
+    crazyGames.submitScore(20, 'campaign');
     this.state = 'victory';
     soundFX.playGemCollect();
     soundFX.playBowRelease(0.5);
@@ -1025,27 +1071,46 @@ export class MainScene extends Phaser.Scene {
     this.setupBattlefieldHazards(true);
 
     this.waveFeaturedSpawned = false;
+    this.goblinSpawnedThisWave = false;
     if (this.player && this.player.hasSecondWind) {
       this.player.secondWindReady = true;
     }
     this.wave++;
+    this.updateBountyProgress('night', this.wave);
+
     if (this.gameMode === 'endless') {
-      // Original unnerfed Endless Mode swarm sizes and spawn pacing
-      this.enemiesToSpawn = 4 + Math.floor(this.wave * 2.8);
+      if (this.endlessBestWave > 0 && this.wave === this.endlessBestWave) {
+        this.spawnFloatingText(`🔥 RECORD IMMINENT: NIGHT ${this.wave} EQUALED! 🔥`, this.cameras.main.width / 2, 160, '#ff4757', 24);
+      } else if (this.wave > this.endlessBestWave && this.wave > 1) {
+        this.spawnFloatingText(`🏆 NEW RECORD! SURVIVED TO NIGHT ${this.wave}! 🏆`, this.cameras.main.width / 2, 160, '#ffd700', 26);
+        this.endlessBestWave = this.wave;
+      }
+    }
+    if (this.gameMode === 'endless') {
+      // Endless Mode swarm sizes: substantial hordes from Wave 1 for deep survival runs
+      this.enemiesToSpawn = 8 + Math.floor(this.wave * 3.0);
       this.spawnTimer = 0;
-      this.spawnInterval = Math.max(0.40, 1.2 - this.wave * 0.055);
+      this.spawnInterval = Math.max(0.45, 1.4 - this.wave * 0.05);
     } else {
-      // Calibrated Campaign Mode: slightly reduced horde counts from Night 3 onwards without over-nerfing
+      // Campaign Mode: Engaging waves lasting 40-75s for sustained immersion
       if (this.wave === 1) {
-        this.enemiesToSpawn = 4;
+        this.enemiesToSpawn = 8;
+        this.spawnInterval = 1.75;
       } else if (this.wave === 2) {
-        this.enemiesToSpawn = 6;
+        this.enemiesToSpawn = 12;
+        this.spawnInterval = 1.55;
+      } else if (this.wave === 3) {
+        this.enemiesToSpawn = 15;
+        this.spawnInterval = 1.45;
+      } else if (this.wave === 4) {
+        this.enemiesToSpawn = 18;
+        this.spawnInterval = 1.35;
       } else {
-        // Night 3: 7 (was 9), Night 4: 9 (was 11), Night 5: 10 (was 13), Night 6: 12 (was 15)...
-        this.enemiesToSpawn = 3 + Math.floor(this.wave * 1.55);
+        // Night 5: 22, Night 6: 24, Night 7: 26...
+        this.enemiesToSpawn = 12 + Math.floor(this.wave * 2.1);
+        this.spawnInterval = Math.max(0.70, 1.45 - this.wave * 0.035);
       }
       this.spawnTimer = 0;
-      this.spawnInterval = Math.max(0.70, 1.48 - this.wave * 0.035);
     }
     this.totalEnemiesThisWave = this.enemiesToSpawn;
     this.bigZombiesSpawnedThisWave = 0;
@@ -1120,7 +1185,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   public openShop(): void {
-    crazyGames.gameplayStop();
+    // Keep CrazyGames gameplay timer active during between-wave shop visits so active run duration is accurately tracked
     uiManager.shopOpenedFromMenu = false;
     // Clean up dead bodies immediately when entering shop
     for (const z of this.zombies) {
@@ -1221,8 +1286,60 @@ export class MainScene extends Phaser.Scene {
     } catch (e) {}
   }
 
+  public initBounties(): void {
+    this.currentBountyIdx = 0;
+    const def = this.bountiesSequence[0];
+    this.activeBounty = { ...def, current: 0 };
+    this.updateBountyHUD();
+  }
+
+  public updateBountyHUD(): void {
+    const el = document.getElementById('bounty-text');
+    if (!el || !this.activeBounty) return;
+    el.innerHTML = `
+      <span class="bounty-tag">BOUNTY</span>
+      <span class="bounty-title">${this.activeBounty.title}</span>
+      <span class="bounty-progress">(${this.activeBounty.current}/${this.activeBounty.target})</span>
+      <span class="bounty-reward">+${this.activeBounty.reward} 💀</span>
+    `;
+  }
+
+  public updateBountyProgress(type: 'headshots' | 'kills' | 'night' | 'combo', amount: number = 1): void {
+    if (!this.activeBounty || this.activeBounty.type !== type) return;
+
+    if (type === 'night') {
+      this.activeBounty.current = Math.min(this.activeBounty.target, amount);
+    } else if (type === 'combo') {
+      this.activeBounty.current = Math.min(this.activeBounty.target, Math.max(this.activeBounty.current, amount));
+    } else {
+      this.activeBounty.current = Math.min(this.activeBounty.target, this.activeBounty.current + amount);
+    }
+    this.updateBountyHUD();
+
+    if (this.activeBounty.current >= this.activeBounty.target) {
+      const reward = this.activeBounty.reward;
+      const title = this.activeBounty.title;
+      if (this.player) {
+        this.player.skulls += reward;
+        this.onSkullCollected(reward);
+      }
+      soundFX.playGemCollect();
+      this.cameras.main.flash(300, 241, 196, 15, true);
+      this.spawnFloatingText(`🎯 BOUNTY COMPLETE: ${title}! +${reward} 💀`, this.cameras.main.width / 2, 130, '#ffd700', 26);
+
+      // Advance to next bounty in sequence
+      this.currentBountyIdx = (this.currentBountyIdx + 1) % this.bountiesSequence.length;
+      const nextDef = this.bountiesSequence[this.currentBountyIdx];
+      let initialCurrent = 0;
+      if (nextDef.type === 'night') initialCurrent = Math.min(nextDef.target, this.wave);
+      this.activeBounty = { ...nextDef, current: initialCurrent };
+      this.updateBountyHUD();
+    }
+  }
+
   public returnToMenu(): void {
     crazyGames.gameplayStop();
+    soundFX.stopBGM();
     // 1. If ending an active endless run, bank all earned skulls and update peak wave
     if (this.gameMode === 'endless') {
       this.bankEndlessSkulls();
@@ -1288,6 +1405,33 @@ export class MainScene extends Phaser.Scene {
     this.loadGameData(false);
     uiManager.buildWardrobe(this.player, this);
     uiManager.setState('wardrobe');
+  }
+
+  public previousStateBeforeLeaderboard: GameState = 'menu';
+
+  public openLeaderboard(fromState: GameState = 'menu', mode?: 'endless' | 'campaign'): void {
+    this.previousStateBeforeLeaderboard = fromState;
+    this.state = 'leaderboard';
+    this.loadGameData(false);
+
+    const targetMode = mode || (this.gameMode === 'endless' ? 'endless' : 'campaign');
+    const bestWave = targetMode === 'endless' ? (this.endlessBestWave || 1) : (this.highestCampaignWave || 1);
+    const skulls = this.player ? (this.player.skulls || 0) : 0;
+
+    uiManager.setState('leaderboard');
+    uiManager.buildLeaderboard(targetMode, bestWave, skulls, (newMode) => {
+      const modeWave = newMode === 'endless' ? (this.endlessBestWave || 1) : (this.highestCampaignWave || 1);
+      uiManager.buildLeaderboard(newMode, modeWave, skulls);
+    });
+  }
+
+  public closeLeaderboard(): void {
+    if (this.previousStateBeforeLeaderboard === 'gameover') {
+      this.state = 'gameover';
+      uiManager.setState('gameover');
+    } else {
+      this.returnToMenu();
+    }
   }
 
   public loadGameData(restoreMode: boolean = false): void {
@@ -2050,11 +2194,89 @@ export class MainScene extends Phaser.Scene {
     uiManager.updateHUD(this.player, this.tower, this.wave, this.zombies.length, this.kills, this.gameMode);
   }
 
+  /**
+   * ⭐ Divine Second Chance Blessing:
+   * Triggers once per run upon fatal damage to hero or fortress.
+   * Completely restores both to 60% HP, casts a screen-wide repulsion shockwave,
+   * freezes undead, and grants 4.5s divine invincibility.
+   */
+  public triggerSecondChance(reason: string): boolean {
+    if (this.hasUsedSecondChance) return false;
+    this.hasUsedSecondChance = true;
+
+    if (this.gameOverTimeout) {
+      clearTimeout(this.gameOverTimeout);
+      this.gameOverTimeout = null;
+    }
+
+    // 1. Restore tower barricade to 60%
+    if (this.tower) {
+      this.tower.restore();
+      this.tower.hp = Math.round(this.tower.maxHP * 0.60);
+    }
+
+    // 2. Revive player entity upright on tower deck with 60% HP and full stamina
+    if (this.player) {
+      this.player.revive(this.tower ? this.tower.topY : this.player.y, this.tower ? this.tower.x : this.player.x);
+      this.player.hp = Math.round(this.player.maxHP * 0.60);
+      this.player.restoreStamina(100);
+    }
+
+    // 3. Divine Repulsion Shockwave: push back and freeze all zombies on screen
+    for (const z of this.zombies) {
+      if (!z.dead) {
+        z.x = Math.max(z.x + 300, (this.tower ? this.tower.x : 200) + 240);
+        z.isFrozen = true;
+        z.frozenTimer = 3.2;
+        for (let s = 0; s < 4; s++) {
+          this.bloodMists.push({
+            x: z.x + (Math.random() - 0.5) * 20,
+            y: z.y - 15 + (Math.random() - 0.5) * 20,
+            vx: (Math.random() - 0.5) * 60,
+            vy: -30 - Math.random() * 50,
+            r: 8 + Math.random() * 6,
+            maxR: 16 + Math.random() * 10,
+            alpha: 0.8,
+            col: 0xf1c40f,
+            life: 0.8,
+            maxLife: 0.8
+          });
+        }
+      }
+    }
+    this.enemyHazards = [];
+
+    // 4. Grant 4.5 seconds of Divine Aegis invulnerability
+    this.divineAegisTimer = 4.5;
+    if (this.player) this.player.invincible = true;
+    if (this.tower) this.tower.invincible = true;
+
+    this.state = 'playing';
+    uiManager.setState('playing');
+    uiManager.updateHUD(this.player, this.tower, this.wave, this.enemiesToSpawn + this.zombies.filter(z => !z.dead).length, this.kills, this.gameMode);
+
+    soundFX.playGemCollect();
+    this.cameras.main.flash(450, 241, 196, 15, true); // Golden divine flash
+    this.shakeScreen(12, 0.35);
+    this.triggerSlowMo(0.30, 0.85);
+
+    const px = this.player ? this.player.x : 200;
+    const py = this.player ? this.player.y : 200;
+    this.spawnFloatingText('⭐ DIVINE BLESSING: SECOND CHANCE! ⭐', px, py - 65, '#ffd700', 26);
+    this.spawnFloatingText('FORTRESS & HERO RESTORED + DIVINE AEGIS!', px, py - 35, '#2ecc71', 20);
+
+    return true;
+  }
+
   public onTowerDamage(_amount: number): void {
     uiManager.triggerDamageFlash();
     this.shakeScreen(6, 0.2);
     uiManager.updateHUD(this.player, this.tower, this.wave, this.zombies.length, this.kills, this.gameMode);
     if (this.tower.hp <= 0) {
+      if (!this.hasUsedSecondChance) {
+        this.triggerSecondChance('Tower Barricade Overrun!');
+        return;
+      }
       if (!this.tower.isDestroyed) {
         this.tower.triggerDestruction();
       }
@@ -2080,6 +2302,10 @@ export class MainScene extends Phaser.Scene {
     if (this.tower && (this.tower.hp <= 0 || this.tower.isDestroyed)) {
       return;
     }
+    if (!this.hasUsedSecondChance) {
+      this.triggerSecondChance('Archer Slain by Undead!');
+      return;
+    }
     if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
     this.gameOverTimeout = setTimeout(() => {
       this.gameOverTimeout = null;
@@ -2089,6 +2315,33 @@ export class MainScene extends Phaser.Scene {
 
   public onZombieKilled(z: Zombie): void {
     this.kills++;
+    this.updateBountyProgress('kills', 1);
+    if (z.killedByHeadshot) {
+      this.updateBountyProgress('headshots', 1);
+    }
+
+    // ── Combo Streak & Dynamic Multiplier ──
+    this.comboTimer = 3.6;
+    this.combo++;
+    if (this.combo >= 5) {
+      this.updateBountyProgress('combo', this.combo);
+    }
+
+    let comboBonusSkulls = 0;
+    if (this.combo >= 8) {
+      comboBonusSkulls = 2;
+      this.spawnFloatingText('⚡ GODLIKE SLAYER! 8x COMBO! ⚡ (+2 💀)', z.x, z.y - 85, '#9b59b6', 26);
+      this.shakeScreen(6, 0.2);
+    } else if (this.combo >= 5) {
+      comboBonusSkulls = 1;
+      this.spawnFloatingText('💀 UNSTOPPABLE RAMPAGE! 5x COMBO! (+1 💀)', z.x, z.y - 85, '#ff4757', 24);
+      this.shakeScreen(4, 0.15);
+    } else if (this.combo >= 3) {
+      this.spawnFloatingText('🔥 TRIPLE KILL! 3x COMBO!', z.x, z.y - 80, '#e67e22', 20);
+    } else if (this.combo === 2) {
+      this.spawnFloatingText('⚡ DOUBLE KILL!', z.x, z.y - 75, '#f1c40f', 18);
+    }
+
     if (this.player.adrenalineLevel > 0) {
       this.player.adrenalineTimer = 3.5;
       this.spawnFloatingText('ADRENALINE RUSH! ⚡', this.player.x, this.player.y - 75, '#ff4757', 20);
@@ -2103,21 +2356,21 @@ export class MainScene extends Phaser.Scene {
     const isMidBoss = z.type === 'boss' || (z.scale >= 1.5 && z.maxHP >= 600);
     const isBoss = isApexBoss || isMidBoss;
     
-    // Level scaling: +1.5 stamina per tier above Level 1; headshots scale at +2.2 per tier
-    const tierBonus = Math.round((zLevel - 1) * (z.killedByHeadshot ? 2.2 : 1.5));
+    // Level scaling: +0.6 stamina per tier above Level 1; headshots scale at +1.0 per tier
+    const tierBonus = Math.round((zLevel - 1) * (z.killedByHeadshot ? 1.0 : 0.6));
 
     // Boss extra bounty for taking down titanic threats
     let bossBonus = 0;
     if (isApexBoss) {
-      // Grand Apex God-Bosses (Malakor Lv 20, Abyssal Lich King Lv 15): massive stamina reward!
-      bossBonus = z.killedByHeadshot ? 35 : 22;
+      // Grand Apex God-Bosses (Malakor Lv 20, Abyssal Lich King Lv 15): stamina reward
+      bossBonus = z.killedByHeadshot ? 25 : 16;
     } else if (isMidBoss) {
       // Mid-Bosses (Gargantuar Titan Lv 10):
-      bossBonus = z.killedByHeadshot ? 20 : 12;
+      bossBonus = z.killedByHeadshot ? 15 : 10;
     }
 
     // Endless mode extra scaling above wave 15
-    const endlessBonus = (z.waveNum && z.waveNum > 15) ? Math.min(25, Math.floor((z.waveNum - 15) * 0.8)) : 0;
+    const endlessBonus = (z.waveNum && z.waveNum > 15) ? Math.min(10, Math.floor((z.waveNum - 15) * 0.4)) : 0;
 
     const staminaBonus = baseStamina + tierBonus + bossBonus + endlessBonus;
     this.player.restoreStamina(staminaBonus);
@@ -2135,34 +2388,43 @@ export class MainScene extends Phaser.Scene {
       baseBounty += z.killedByHeadshot ? 8 : 5;
     }
 
-    // Apply Bounty Hunter upgrade multiplier
-    let finalBounty = Math.round(baseBounty * (this.player.bountyMul || 1));
+    // Apply Bounty Hunter upgrade multiplier + flat combo streak bonus
+    let finalBounty = Math.round(baseBounty * (this.player.bountyMul || 1)) + comboBonusSkulls;
 
     const isBlood = this.isBloodMoon();
     const isEndless = this.gameMode === 'endless';
 
-    // 🩸 Blood Moon Multiplier: 3x Skulls!
+    // 🩸 Blood Moon Multiplier: 2x Skulls
     if (isBlood) {
-      finalBounty *= 3;
-    } else if (isEndless) {
-      // In Endless mode: DOUBLE the amount of skulls! (2x Multiplier)
-      finalBounty *= 2;
+      finalBounty = Math.round(finalBounty * 2);
     }
 
     this.pickups.push(new Pickup(this, z.x, z.y - 30, 'skull', finalBounty));
     const bountyColor = isBlood ? '#ff4757' : '#ffd700';
 
-    if (isBoss) {
+    if (z.isGoldenGoblin) {
+      // 💰 Golden Loot Goblin Jackpot Burst!
+      soundFX.playGemCollect();
       crazyGames.happyTime();
-      const modeText = isBlood ? ' (3x BLOOD MOON 🩸)' : (isEndless ? ' (2x ENDLESS)' : '');
+      this.shakeScreen(8, 0.25);
+      const jackpotSkulls = 25;
+      this.player.skulls += jackpotSkulls;
+      this.onSkullCollected(jackpotSkulls);
+      this.spawnFloatingText('💰 JACKPOT! +25 GOLDEN SKULLS! 💰', z.x, z.y - 80, '#ffd700', 28);
+      for (let k = 0; k < 3; k++) {
+        this.pickups.push(new Pickup(this, z.x + (Math.random() - 0.5) * 40, z.y - 20, 'skull', 1));
+      }
+    } else if (isBoss) {
+      crazyGames.happyTime();
+      const modeText = isBlood ? ' (2x BLOOD MOON 🩸)' : '';
       this.spawnFloatingText(`BOSS BOUNTY! 💀 +${finalBounty}${modeText}`, z.x, z.y - 50, bountyColor, 22);
     } else if (z.killedByHeadshot) {
-      const modeText = isBlood ? ' (3x BLOOD MOON 🩸)' : (isEndless ? ' (2x ENDLESS)' : '');
+      const modeText = isBlood ? ' (2x BLOOD MOON 🩸)' : '';
       this.spawnFloatingText(`HEADSHOT! 💀 +${finalBounty}${modeText}`, z.x, z.y - 45, bountyColor, 20);
     } else if (isBlood) {
-      this.spawnFloatingText(`BLOOD BOUNTY! 💀 +${finalBounty} (3x 🩸)`, z.x, z.y - 35, '#ff4757', 17);
+      this.spawnFloatingText(`BLOOD BOUNTY! 💀 +${finalBounty} (2x 🩸)`, z.x, z.y - 35, '#ff4757', 17);
     } else if (isEndless) {
-      this.spawnFloatingText(`💀 +${finalBounty} (2x)`, z.x, z.y - 35, '#ffd700', 16);
+      this.spawnFloatingText(`💀 +${finalBounty}`, z.x, z.y - 35, '#ffd700', 16);
     }
 
     if (Math.random() < 0.25) {
@@ -2172,11 +2434,14 @@ export class MainScene extends Phaser.Scene {
 
   public showGameOver(reason: string): void {
     crazyGames.gameplayStop();
+    soundFX.stopBGM();
     crazyGames.recordGamePlayedAndCheckMidgameAd();
     if (this.gameMode === 'campaign' && this.wave > 0) {
       this.campaignWave = this.wave;
     }
     this.saveGameData();
+    const scoreToSubmit = this.gameMode === 'endless' ? (this.endlessBestWave || this.wave) : (this.highestCampaignWave || this.wave);
+    crazyGames.submitScore(scoreToSubmit, this.gameMode);
     this.state = 'gameover';
     uiManager.setState('gameover');
     const title = document.getElementById('gameover-title');
@@ -2188,13 +2453,53 @@ export class MainScene extends Phaser.Scene {
     const gemsEl = document.getElementById('go-gems');
     if (gemsEl) gemsEl.textContent = `${this.player.skulls}`;
 
+    // Update Survival Rank Banner
+    const rankTitle = document.getElementById('go-rank-title');
+    const rankIcon = document.getElementById('go-rank-icon');
+    const rankSub = document.getElementById('go-rank-sub');
+    const rankPb = document.getElementById('go-rank-pb');
+
+    const w = this.wave || 1;
+    let rTitle = 'RECRUIT ARCHER';
+    let rSub = 'SURVIVED BETTER THAN 35% OF PLAYERS';
+    let iconSvg = `<svg class="rank-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" fill="rgba(229, 9, 20, 0.25)" stroke="#ff4757"/><circle cx="12" cy="11" r="3" fill="#ff4757"/></svg>`;
+
+    if (w >= 10) {
+      rTitle = 'APEX GODSLAYER';
+      rSub = 'TOP 1% OF ELITE DEFENDERS!';
+      iconSvg = `<svg class="rank-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" fill="rgba(255, 215, 0, 0.25)" stroke="#ffd700"/><path d="M6 10l3-4 3 3 3-3 3 4" stroke="#ffd700" stroke-linecap="round"/></svg>`;
+    } else if (w >= 7) {
+      rTitle = 'TITAN EXECUTIONER';
+      rSub = 'SURVIVED BETTER THAN 92% OF PLAYERS!';
+      iconSvg = `<svg class="rank-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" fill="rgba(229, 9, 20, 0.35)" stroke="#ff2a3b"/><circle cx="12" cy="11" r="2.5" fill="#ff2a3b"/></svg>`;
+    } else if (w >= 5) {
+      rTitle = 'HEROIC TITAN HUNTER';
+      rSub = 'SURVIVED BETTER THAN 84% OF PLAYERS!';
+      iconSvg = `<svg class="rank-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" fill="rgba(229, 9, 20, 0.25)" stroke="#ff4757"/><circle cx="12" cy="11" r="3" fill="#ff4757"/></svg>`;
+    } else if (w >= 3) {
+      rTitle = 'VETERAN MARKSMAN';
+      rSub = 'SURVIVED BETTER THAN 72% OF PLAYERS!';
+      iconSvg = `<svg class="rank-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke="#ff4757"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4" stroke="#ff4757"/><circle cx="12" cy="12" r="2.5" fill="#ff4757"/></svg>`;
+    } else if (w >= 2) {
+      rTitle = 'FRONTIER DEFENDER';
+      rSub = 'SURVIVED BETTER THAN 52% OF PLAYERS!';
+      iconSvg = `<svg class="rank-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" fill="rgba(229, 9, 20, 0.2)" stroke="#ff4757"/></svg>`;
+    }
+
+    if (rankTitle) rankTitle.textContent = rTitle;
+    if (rankIcon) rankIcon.innerHTML = iconSvg;
+    if (rankSub) rankSub.textContent = rSub;
+
+    const highest = Math.max(this.highestCampaignWave || 1, this.endlessBestWave || 0, w);
+    if (rankPb) rankPb.textContent = `PERSONAL BEST: NIGHT ${highest}`;
+
     // Update Tactical Upgrade Alert Callout
     const skulls = this.player.skulls || 0;
     const skullsHint = document.getElementById('go-alert-skulls');
     if (skullsHint) skullsHint.textContent = `💀 ${skulls} SKULLS READY`;
     const alertMsg = document.getElementById('go-alert-msg');
     if (alertMsg) {
-      if (skulls >= 35) {
+      if (skulls >= 25) {
         alertMsg.textContent = `You have ${skulls} unspent Skulls! Fortify your bow damage, turret ballistas, or fortress armor in the Armory before retrying.`;
       } else {
         alertMsg.textContent = `The horde breached your defenses! Upgrade bow kinetic pierce, passive health regeneration, or deploy rooftop ballistas to survive Night ${this.wave}.`;
@@ -3855,20 +4160,24 @@ export class MainScene extends Phaser.Scene {
 
   public showDirectionTutorialUI(): void {
     applyJumpButtonPosition();
-    const overlay = document.getElementById('tutorial-direction-overlay');
-    if (overlay) {
-      overlay.classList.remove('hidden');
-      overlay.classList.remove('fade-out');
+    const guide = document.getElementById('ingame-aim-guide');
+    if (guide) {
+      guide.classList.remove('hidden');
+      guide.classList.remove('fade-out');
+      const textEl = document.getElementById('aim-guide-text');
+      if (textEl && crazyGames.isMobile()) {
+        textEl.textContent = 'TOUCH & DRAG TO AIM • RELEASE TO FIRE';
+      }
     }
   }
 
   public hideDirectionTutorialUI(): void {
-    const overlay = document.getElementById('tutorial-direction-overlay');
-    if (overlay) {
-      overlay.classList.add('fade-out');
+    const guide = document.getElementById('ingame-aim-guide');
+    if (guide) {
+      guide.classList.add('fade-out');
       setTimeout(() => {
-        overlay.classList.add('hidden');
-      }, 350);
+        guide.classList.add('hidden');
+      }, 400);
     }
   }
 
@@ -3879,18 +4188,10 @@ export class MainScene extends Phaser.Scene {
       localStorage.setItem('ragdoll_archers_tutorial_seen', 'true');
     } catch {}
     this.hideDirectionTutorialUI();
-    try {
-      soundFX.playGemCollect();
-    } catch {}
-    try {
-      this.matter.world.resume();
-    } catch {}
     if (this.player) {
       const tip = this.player.getBowTipPosition();
-      this.spawnFloatingText('🎯 TARGET LOCKED! AIM FOR THE HEAD! 💀', tip.x + 80, tip.y - 40, '#f5a623', 22);
+      this.spawnFloatingText('🎯 AIM LOCKED! CRITICAL HEADSHOTS DEAL 2.5X! 💀', tip.x + 80, tip.y - 40, '#ffd700', 20);
     }
-    // Resume gameplay session & start Wave 1!
-    this.startNextWave();
   }
 
   /**
@@ -4375,25 +4676,17 @@ export class MainScene extends Phaser.Scene {
   }
 
   public update(_time: number, delta: number): void {
-    // 🛑 First-Time Direction Tutorial Freeze: Stop all gameplay updates & physics
-    if (this.isDirectionTutorialActive) {
-      this.graphicsLayer.clear();
-      this.renderAtmosphere(this.graphicsLayer);
-      if (this.tower) this.tower.render(this.graphicsLayer);
-      if (this.player) this.player.render(this.graphicsLayer);
-      // Render stopped zombies in place so the player sees the target zombie completely frozen
-      for (const z of this.zombies) {
-        z.render(this.graphicsLayer);
-      }
-      this.renderDirectionTutorial(this.graphicsLayer);
-      return;
-    }
-
     const rawDt = Math.min(delta / 1000, 0.05);
 
     if (this.slowMoTimer > 0) {
       this.slowMoTimer -= rawDt;
       if (this.slowMoTimer <= 0) this.timeScale = 1.0;
+    }
+    if (this.comboTimer > 0) {
+      this.comboTimer -= rawDt;
+      if (this.comboTimer <= 0) {
+        this.combo = 0;
+      }
     }
     const dt = rawDt * this.timeScale;
 
@@ -4542,6 +4835,28 @@ export class MainScene extends Phaser.Scene {
             }
           }
           this.enemiesToSpawn--;
+
+          // 💰 Spontaneous Golden Loot Goblin Event (Every 3rd Night, midway through the horde)
+          if (
+            this.wave >= 3 &&
+            this.wave % 3 === 0 &&
+            !this.goblinSpawnedThisWave &&
+            this.enemiesToSpawn <= Math.floor(this.totalEnemiesThisWave / 2)
+          ) {
+            this.goblinSpawnedThisWave = true;
+            const goblin = new Zombie(this, this.cameras.main.width + 90, this.wave, 'walker');
+            goblin.isGoldenGoblin = true;
+            goblin.speed = 175; // Fast sprinter!
+            goblin.skinColor = '#f1c40f';
+            goblin.clothesColor = '#ffd700';
+            goblin.maxHP = 65;
+            goblin.hp = 65;
+            goblin.skullBounty = 60;
+            this.zombies.push(goblin);
+            soundFX.playGemCollect();
+            this.shakeScreen(5, 0.2);
+            this.spawnFloatingText('💰 GOLDEN LOOT GOBLIN! SNIPE HIM FOR +60 💀! 💰', this.cameras.main.width * 0.60, 140, '#ffd700', 24);
+          }
         }
       }
 
@@ -5207,9 +5522,15 @@ export class MainScene extends Phaser.Scene {
       // Check Wave Completion (Fast, snappy transition after last kill before showing upgrade shop)
       if (this.enemiesToSpawn <= 0 && this.zombies.filter(z => !z.dead).length === 0) {
         if (!this.waveCompleting) {
-          // Last enemy just died! Fast 0.4s transition
+          // Last enemy just died! Snappy cinematic wave finisher with slow-mo and fanfare
           this.waveCompleting = true;
-          this.waveCompleteDelay = 0.4;
+          this.waveCompleteDelay = 0.55;
+
+          // Cinematic slow-mo wave finisher & victorious fanfare
+          this.triggerSlowMo(0.28, 0.65);
+          this.shakeScreen(7, 0.22);
+          soundFX.playGemCollect();
+          this.spawnFloatingText(`⚔️ NIGHT ${this.wave} CLEARED! 💀`, this.cameras.main.width / 2, this.cameras.main.height * 0.35, '#00d2d3', 30);
 
           // Wave clear rewards: Stamina and Health recovery
           if (this.player && !this.player.dead) {
@@ -5221,6 +5542,14 @@ export class MainScene extends Phaser.Scene {
             this.spawnFloatingText(`+${staminaBonus}% STAMINA! ⚡`, this.player.x, this.player.y - 45, '#00d2d3', 24);
 
             if (isCampaign) {
+              // First Night Victory Bounty: +15 Bonus Skulls (balanced starter reward)
+              if (this.wave === 1) {
+                const bonusSkulls = 15;
+                this.player.skulls += bonusSkulls;
+                this.onSkullCollected(bonusSkulls);
+                this.spawnFloatingText(`+${bonusSkulls} FIRST NIGHT BOUNTY! 💀`, this.player.x, this.player.y - 120, '#ffd700', 26);
+              }
+
               // Special permanent health upgrade after wave 1:
               if (this.wave === 1 && !this.player.hasWave1HealthBonus) {
                 this.player.hasWave1HealthBonus = true;

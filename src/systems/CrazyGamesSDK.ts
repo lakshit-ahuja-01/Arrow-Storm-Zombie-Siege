@@ -11,6 +11,7 @@ import { soundFX } from './SoundFX';
 import { fbInstant } from './FBInstantSDK';
 import { pokiSDK } from './PokiSDK';
 import { playgamaSDK } from './PlaygamaSDK';
+import { youtubePlayables } from './YouTubePlayablesSDK';
 
 declare global {
   interface Window {
@@ -59,9 +60,17 @@ class CrazyGamesManager {
   private soundWasMutedBeforeAd: boolean = false;
   private isGameplayActive: boolean = false;
   private deviceType: 'desktop' | 'tablet' | 'mobile' | null = null;
+  private cachedUser: { username: string; profilePictureUrl?: string } | null = null;
+  public onAuthChange: ((user: { username: string; profilePictureUrl?: string } | null) => void) | null = null;
 
   public async init(): Promise<void> {
     if (this.isInitialized) return;
+
+    if (youtubePlayables.isAvailable()) {
+      await youtubePlayables.init();
+      this.isInitialized = true;
+      return;
+    }
 
     if (playgamaSDK.isAvailable()) {
       await playgamaSDK.init();
@@ -116,6 +125,9 @@ class CrazyGamesManager {
 
   // ── Universal Data Storage Module (Cross-Device Cloud Sync + Local Fallback) ──
   public getItem(key: string): string | null {
+    if (youtubePlayables.isAvailable()) {
+      return youtubePlayables.getItem(key);
+    }
     if (playgamaSDK.isAvailable()) {
       return playgamaSDK.getItem(key);
     }
@@ -138,6 +150,10 @@ class CrazyGamesManager {
   }
 
   public setItem(key: string, value: string): void {
+    if (youtubePlayables.isAvailable()) {
+      youtubePlayables.setItem(key, value);
+      return;
+    }
     if (playgamaSDK.isAvailable()) {
       playgamaSDK.setItem(key, value);
       return;
@@ -161,6 +177,10 @@ class CrazyGamesManager {
   }
 
   public removeItem(key: string): void {
+    if (youtubePlayables.isAvailable()) {
+      youtubePlayables.removeItem(key);
+      return;
+    }
     if (playgamaSDK.isAvailable()) {
       playgamaSDK.removeItem(key);
       return;
@@ -243,6 +263,10 @@ class CrazyGamesManager {
   }
 
   public loadingStop(): void {
+    if (youtubePlayables.isAvailable()) {
+      youtubePlayables.gameReady();
+      return;
+    }
     if (pokiSDK.isAvailable()) {
       pokiSDK.loadingStop();
       return;
@@ -260,6 +284,10 @@ class CrazyGamesManager {
   public gameplayStart(): void {
     if (this.isGameplayActive) return;
     this.isGameplayActive = true;
+    if (youtubePlayables.isAvailable()) {
+      youtubePlayables.gameReady();
+      return;
+    }
     if (pokiSDK.isAvailable()) {
       pokiSDK.gameplayStart();
       return;
@@ -390,6 +418,12 @@ class CrazyGamesManager {
    * Request a Rewarded Ad (watch for Revive or Double Skulls).
    */
   public requestRewardedAd(onRewarded: () => void, onFailed?: () => void): void {
+    if (youtubePlayables.isAvailable()) {
+      // YouTube Playables does not permit external ad SDKs; auto-grant reward
+      onRewarded();
+      return;
+    }
+
     if (playgamaSDK.isAvailable()) {
       playgamaSDK.requestRewardedAd(onRewarded, onFailed);
       return;
@@ -460,6 +494,152 @@ class CrazyGamesManager {
     }
   }
 
+  public async submitScore(score: number, mode: 'endless' | 'campaign' = 'endless'): Promise<void> {
+    const safeScore = Math.floor(score);
+    if (isNaN(safeScore) || safeScore < 0) return;
+
+    // 1. YouTube Playables Engagement API
+    if (youtubePlayables.isAvailable()) {
+      youtubePlayables.sendScore(safeScore);
+      return;
+    }
+
+    // 2. Playgama / GamePush Bridge
+    if (playgamaSDK.isAvailable()) {
+      try {
+        const bridge = (window as any).bridge;
+        if (bridge?.leaderboard?.setScore) {
+          await bridge.leaderboard.setScore({
+            id: mode === 'endless' ? 'endless_best_wave' : 'campaign_wave',
+            score: safeScore
+          });
+        }
+      } catch (e) {
+        console.warn('[Playgama Bridge] Leaderboard error:', e);
+      }
+    }
+
+    // 3. Facebook Instant Games
+    if (fbInstant.isAvailable()) {
+      try {
+        const fb = (window as any).FBInstant;
+        if (fb?.getLeaderboardAsync) {
+          const boardName = mode === 'endless' ? 'endless_best_wave' : 'campaign_wave';
+          const board = await fb.getLeaderboardAsync(boardName);
+          await board.setScoreAsync(safeScore);
+        }
+      } catch (e) {
+        console.warn('[FBInstant] Leaderboard error:', e);
+      }
+    }
+
+    // 4. CrazyGames SDK v3 Data persistence
+    try {
+      const cg = window.CrazyGames?.SDK;
+      if (cg?.data) {
+        const key = mode === 'endless' ? 'ragdoll_endless_best' : 'ragdoll_campaign_best';
+        const existing = parseInt(cg.data.getItem(key) || '0', 10);
+        if (safeScore > existing) {
+          cg.data.setItem(key, `${safeScore}`);
+        }
+      }
+    } catch (e) {}
+  }
+
+  public async getUser(): Promise<{ username: string; profilePictureUrl?: string } | null> {
+    if (this.cachedUser) return this.cachedUser;
+
+    if (playgamaSDK.isAvailable()) {
+      try {
+        const bridge = (window as any).bridge;
+        if (bridge?.player?.name) {
+          this.cachedUser = {
+            username: bridge.player.name,
+            profilePictureUrl: bridge.player.avatar || undefined
+          };
+          return this.cachedUser;
+        }
+      } catch {}
+    }
+
+    try {
+      const cgUser = window.CrazyGames?.SDK?.user;
+      if (cgUser && (cgUser as any).getUser) {
+        const user = await (cgUser as any).getUser();
+        if (user && user.username) {
+          this.cachedUser = {
+            username: user.username,
+            profilePictureUrl: user.profilePictureUrl || undefined
+          };
+          return this.cachedUser;
+        }
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  public async showAuthPrompt(): Promise<{ username: string; profilePictureUrl?: string } | null> {
+    try {
+      const cgUser = window.CrazyGames?.SDK?.user;
+      if (cgUser && (cgUser as any).showAuthPrompt) {
+        const user = await (cgUser as any).showAuthPrompt();
+        if (user && user.username) {
+          this.cachedUser = {
+            username: user.username,
+            profilePictureUrl: user.profilePictureUrl || undefined
+          };
+          if (this.onAuthChange) this.onAuthChange(this.cachedUser);
+          return this.cachedUser;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  public async getLeaderboardEntries(mode: 'endless' | 'campaign' = 'endless'): Promise<Array<{ rank: number; name: string; score: number; skulls?: number; isPlayer?: boolean }> | null> {
+    if (playgamaSDK.isAvailable()) {
+      try {
+        const bridge = (window as any).bridge;
+        if (bridge?.leaderboard?.getEntries) {
+          const res = await bridge.leaderboard.getEntries({
+            id: mode === 'endless' ? 'endless_best_wave' : 'campaign_wave'
+          });
+          if (Array.isArray(res?.entries) && res.entries.length > 0) {
+            return res.entries.map((e: any, idx: number) => ({
+              rank: e.rank || idx + 1,
+              name: e.player?.name || 'Anonymous Survivor',
+              score: e.score || 0,
+              isPlayer: Boolean(e.isPlayer)
+            }));
+          }
+        }
+      } catch (err) {}
+    }
+
+    if (fbInstant.isAvailable()) {
+      try {
+        const fb = (window as any).FBInstant;
+        if (fb?.getLeaderboardAsync) {
+          const boardName = mode === 'endless' ? 'endless_best_wave' : 'campaign_wave';
+          const board = await fb.getLeaderboardAsync(boardName);
+          const entries = await board.getEntriesAsync(10, 0);
+          if (Array.isArray(entries) && entries.length > 0) {
+            const myId = fb.player?.getID?.();
+            return entries.map((e: any) => ({
+              rank: e.getRank(),
+              name: e.getPlayer()?.getName() || 'Survivor',
+              score: e.getScore(),
+              isPlayer: e.getPlayer()?.getID() === myId
+            }));
+          }
+        }
+      } catch (err) {}
+    }
+
+    return null;
+  }
+
   public async hasAdblock(): Promise<boolean> {
     try {
       if (window.CrazyGames?.SDK?.ad?.hasAdblock) {
@@ -474,4 +654,4 @@ class CrazyGamesManager {
 
 export const crazyGames = new CrazyGamesManager();
 export const platform = crazyGames;
-export { fbInstant, pokiSDK, playgamaSDK };
+export { fbInstant, pokiSDK, playgamaSDK, youtubePlayables };

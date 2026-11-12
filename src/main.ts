@@ -3,6 +3,7 @@ import { MainScene } from './scenes/MainScene';
 import { soundFX } from './systems/SoundFX';
 import { uiManager } from './systems/UIManager';
 import { crazyGames } from './systems/CrazyGamesSDK';
+import { youtubePlayables } from './systems/YouTubePlayablesSDK';
 import { syncMobileMode, requestLandscapeOrientation } from './utils/DeviceDetection';
 import { initMobileControlsUI } from './utils/MobileControls';
 
@@ -85,6 +86,11 @@ const config: Phaser.Types.Core.GameConfig = {
 
 export const game = new Phaser.Game(config);
 (window as any).game = game;
+
+// Signal first frame rendered to YouTube Playables host environment
+game.events.once('step', () => {
+  youtubePlayables.firstFrameReady();
+});
 
 function getScene(): MainScene | null {
   return (game.scene.getScene('MainScene') as MainScene) || null;

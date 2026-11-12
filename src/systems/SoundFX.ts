@@ -1,6 +1,11 @@
 export class SoundFX {
   private ctx: AudioContext | null = null;
   public muted: boolean = false;
+  private bgmGain: GainNode | null = null;
+  private bgmOscNodes: OscillatorNode[] = [];
+  private bgmHeartbeatTimer: number | null = null;
+  private isBgmPlaying: boolean = false;
+  private wasSuspendedByVisibility: boolean = false;
 
   constructor() {
     try {
@@ -11,6 +16,37 @@ export class SoundFX {
         this.muted = saved === 'true';
       }
     } catch (e) {}
+
+    // CrazyGames Quality Guideline: Automatically pause/mute audio when tab loses focus or is hidden
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.handleVisibilityPause();
+        } else {
+          this.handleVisibilityResume();
+        }
+      });
+      window.addEventListener('blur', () => this.handleVisibilityPause());
+      window.addEventListener('focus', () => this.handleVisibilityResume());
+    }
+  }
+
+  private handleVisibilityPause(): void {
+    if (this.ctx && this.ctx.state === 'running') {
+      this.wasSuspendedByVisibility = true;
+      try {
+        this.ctx.suspend();
+      } catch {}
+    }
+  }
+
+  private handleVisibilityResume(): void {
+    if (this.wasSuspendedByVisibility && this.ctx && !this.muted) {
+      this.wasSuspendedByVisibility = false;
+      try {
+        this.ctx.resume();
+      } catch {}
+    }
   }
 
   public init(): void {
@@ -21,7 +57,7 @@ export class SoundFX {
 
   public ensure(): void {
     this.init();
-    if (this.ctx && this.ctx.state === 'suspended') {
+    if (this.ctx && this.ctx.state === 'suspended' && !this.muted) {
       this.ctx.resume();
     }
   }
@@ -36,7 +72,115 @@ export class SoundFX {
       (window as any).CrazyGames?.SDK?.data?.setItem?.('ragdoll_archers_sound_muted', val);
       localStorage.setItem('ragdoll_archers_sound_muted', val);
     } catch (e) {}
+
+    if (this.bgmGain && this.ctx) {
+      this.bgmGain.gain.setValueAtTime(this.muted ? 0.0 : 0.08, this.ctx.currentTime);
+    }
     return !this.muted;
+  }
+
+  public setMuted(mute: boolean): void {
+    this.muted = mute;
+    try {
+      const val = this.muted ? 'true' : 'false';
+      localStorage.setItem('ragdoll_archers_sound_muted', val);
+    } catch (e) {}
+
+    if (this.bgmGain && this.ctx) {
+      this.bgmGain.gain.setValueAtTime(this.muted ? 0.0 : 0.08, this.ctx.currentTime);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // 🎵 CINEMATIC ATMOSPHERIC BGM (Procedural Ambient Zombie Siege Soundtrack)
+  // ══════════════════════════════════════════════════════════════════════
+  public startBGM(): void {
+    if (this.isBgmPlaying) return;
+    this.ensure();
+    if (!this.ctx) return;
+
+    try {
+      this.isBgmPlaying = true;
+      const now = this.ctx.currentTime;
+
+      // Master BGM Gain
+      this.bgmGain = this.ctx.createGain();
+      this.bgmGain.gain.setValueAtTime(this.muted ? 0.0 : 0.08, now);
+      this.bgmGain.connect(this.ctx.destination);
+
+      // Lowpass Atmosphere Filter
+      const atmosphereFilter = this.ctx.createBiquadFilter();
+      atmosphereFilter.type = 'lowpass';
+      atmosphereFilter.frequency.setValueAtTime(280, now);
+      atmosphereFilter.connect(this.bgmGain);
+
+      // Drone Bass Oscillators (Tense D Minor chord progression)
+      // D2 (73.4Hz), A2 (110.0Hz), F2 (87.3Hz)
+      const droneFreqs = [73.42, 110.0, 146.83];
+      this.bgmOscNodes = [];
+
+      droneFreqs.forEach((freq, idx) => {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const oscGain = this.ctx.createGain();
+        osc.type = idx === 0 ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        // Gentle subtle detune for eerie apocalyptic chorusing
+        osc.detune.setValueAtTime((idx - 1) * 7, now);
+
+        oscGain.gain.setValueAtTime(0.35 / (idx + 1), now);
+        osc.connect(oscGain);
+        oscGain.connect(atmosphereFilter);
+        osc.start(now);
+        this.bgmOscNodes.push(osc);
+      });
+
+      // Heartbeat pulse rhythm every 1.8 seconds (building suspense)
+      const playHeartbeat = () => {
+        if (!this.isBgmPlaying || !this.ctx || this.muted) return;
+        try {
+          const t = this.ctx.currentTime;
+          const kickOsc = this.ctx.createOscillator();
+          const kickGain = this.ctx.createGain();
+          kickOsc.type = 'sine';
+          kickOsc.frequency.setValueAtTime(56, t);
+          kickOsc.frequency.exponentialRampToValueAtTime(28, t + 0.16);
+
+          kickGain.gain.setValueAtTime(0.06, t);
+          kickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+          kickOsc.connect(kickGain);
+          kickGain.connect(this.ctx.destination);
+          kickOsc.start(t);
+          kickOsc.stop(t + 0.2);
+        } catch {}
+      };
+
+      this.bgmHeartbeatTimer = window.setInterval(playHeartbeat, 1800);
+    } catch (e) {
+      console.warn('[SoundFX] BGM start error:', e);
+    }
+  }
+
+  public stopBGM(): void {
+    this.isBgmPlaying = false;
+    if (this.bgmHeartbeatTimer !== null) {
+      clearInterval(this.bgmHeartbeatTimer);
+      this.bgmHeartbeatTimer = null;
+    }
+    if (this.bgmGain && this.ctx) {
+      try {
+        this.bgmGain.gain.setValueAtTime(this.bgmGain.gain.value, this.ctx.currentTime);
+        this.bgmGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+      } catch {}
+    }
+    setTimeout(() => {
+      this.bgmOscNodes.forEach(osc => {
+        try { osc.stop(); osc.disconnect(); } catch {}
+      });
+      this.bgmOscNodes = [];
+    }, 350);
   }
 
   private playNoise(duration: number, filterFreq: number, gainVal: number): void {

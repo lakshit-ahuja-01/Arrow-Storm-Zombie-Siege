@@ -27,9 +27,28 @@ if (!fs.existsSync(uploadDir)) {
 fs.cpSync(distDir, uploadDir, { recursive: true });
 console.log('✅ [CrazyGames Sync] Synced dist/ -> crazygames-upload/');
 
-// 2. Automatically generate updated CrazyGames zip package
+// 2. Remove unnecessary / non-CrazyGames platform files
+const unneededFiles = [
+  'fbapp-config.json',
+  'playgama-bridge-config.json',
+  'zombie_bg.jpg',
+  'portrait_cover.jpg'
+];
+
+for (const fileName of unneededFiles) {
+  const filePath = path.join(uploadDir, fileName);
+  if (fs.existsSync(filePath)) {
+    fs.rmSync(filePath, { force: true });
+    console.log(`🧹 [CrazyGames Sync] Removed unnecessary file: ${fileName}`);
+  }
+}
+
+// 3. Automatically generate updated CrazyGames zip package from clean uploadDir
 try {
-  const psCmd = `powershell -Command "Compress-Archive -Path '${distDir}\\*' -DestinationPath '${zipFile}' -Force"`;
+  if (fs.existsSync(zipFile)) {
+    fs.rmSync(zipFile, { force: true });
+  }
+  const psCmd = `powershell -Command "Compress-Archive -Path '${uploadDir}\\*' -DestinationPath '${zipFile}' -Force"`;
   execSync(psCmd, { stdio: 'inherit' });
   console.log(`✅ [CrazyGames Sync] Generated updated package: ${path.basename(zipFile)}`);
 } catch (err) {

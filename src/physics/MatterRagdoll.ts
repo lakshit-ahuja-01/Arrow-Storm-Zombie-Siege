@@ -1050,7 +1050,8 @@ export class MatterRagdoll {
     if (globalAlpha <= 0) return;
 
     const heroSkin = opts.heroSkin || 'default';
-    const isFlash = opts.hitFlash || false;
+    // Remove harsh white flashing light when hitting/killing zombies
+    const isFlash = this.isZombie ? false : (opts.hitFlash || false);
     let skinCol = isFlash ? 0xffffff : Phaser.Display.Color.HexStringToColor(this.skinColor).color;
     let clothCol = isFlash ? 0xffffff : Phaser.Display.Color.HexStringToColor(this.clothesColor).color;
     let outlineCol = isFlash ? 0xffffff : (this.isZombie ? 0x0f1a09 : 0x0a1408);

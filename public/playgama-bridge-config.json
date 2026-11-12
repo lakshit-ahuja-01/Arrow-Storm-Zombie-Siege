@@ -2,11 +2,17 @@
   "platform": {
     "id": "playgama"
   },
+  "platforms": {
+    "playgama": {}
+  },
   "advertisement": {
     "interstitial": {
-      "autoShow": []
+      "disable": false,
+      "autoShow": false
     },
-    "rewarded": {}
+    "rewarded": {
+      "disable": false
+    }
   },
   "payments": [],
   "leaderboards": [],
